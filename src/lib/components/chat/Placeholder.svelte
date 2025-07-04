@@ -164,14 +164,14 @@
 							placement="top"
 							className="flex items-center justify-center"
 						>
-							<h1 class="text-4xl font-bold text-gray-900">
-								Welcome to {models[selectedModelIdx].name}
+							<h1 class="text-[44px] font-normal text-gray-1000 leading-[52px]">
+								Welcome to <span class="font-bold">{models[selectedModelIdx].name}<span>
 							</h1>
 						</Tooltip>
 					{/if}
 
 					{#if $user?.name}
-						<p class="text-xl text-gray-500 mt-4">
+						<p class="text-[20px] leading-[22px] text-gray-1000 mt-4">
 							Hi {$user.name}, how can I help today?
 						</p>
 					{/if}
