@@ -159,20 +159,23 @@
 
 				<div class="text-center my-6" in:fade={{ duration: 100 }}>
 					{#if models[selectedModelIdx]?.name}
-						<Tooltip
+						<!--<Tooltip
 							content={models[selectedModelIdx]?.name}
 							placement="top"
 							className="flex items-center justify-center"
 						>
 							<h1 class="text-[44px] font-normal text-gray-1000 leading-[52px]">
-								Welcome to <span class="font-bold">{models[selectedModelIdx].name}<span>
+								Hi <span class="font-bold">{models[selectedModelIdx].name}<span>
 							</h1>
-						</Tooltip>
+						</Tooltip>-->
 					{/if}
 
 					{#if $user?.name}
-						<p class="text-[20px] leading-[22px] text-gray-1000 mt-4">
-							Hi {$user.name}, how can I help today?
+					       <h1 class="text-[44px] font-normal text-gray-1000 leading-[52px]">
+								Hi <span class="font-bold">{$user.name}<span>
+							</h1>
+						<p class="text-[20px] leading-[28px] text-gray-1000 mt-[24px]">
+							 What would you like to work on next? 
 						</p>
 					{/if}
 				</div>
