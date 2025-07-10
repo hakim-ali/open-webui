@@ -1,9 +1,9 @@
 import base64
+import json
 import logging
 import mimetypes
 import sys
 import uuid
-import json
 
 import aiohttp
 from authlib.integrations.starlette_client import OAuth
@@ -12,11 +12,6 @@ from fastapi import (
     HTTPException,
     status,
 )
-from starlette.responses import RedirectResponse
-
-from open_webui.models.auths import Auths
-from open_webui.models.users import Users
-from open_webui.models.groups import Groups, GroupModel, GroupUpdateForm, GroupForm
 from open_webui.config import (
     DEFAULT_USER_ROLE,
     ENABLE_OAUTH_SIGNUP,
@@ -46,11 +41,14 @@ from open_webui.env import (
     WEBUI_AUTH_COOKIE_SAME_SITE,
     WEBUI_AUTH_COOKIE_SECURE,
 )
-from open_webui.utils.misc import parse_duration
-from open_webui.utils.auth import get_password_hash, create_token
-from open_webui.utils.webhook import post_webhook
-
 from open_webui.env import SRC_LOG_LEVELS, GLOBAL_LOG_LEVEL
+from open_webui.models.auths import Auths
+from open_webui.models.groups import Groups, GroupModel, GroupUpdateForm, GroupForm
+from open_webui.models.users import Users
+from open_webui.utils.auth import get_password_hash, create_token
+from open_webui.utils.misc import parse_duration
+from open_webui.utils.webhook import post_webhook
+from starlette.responses import RedirectResponse
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
@@ -342,7 +340,9 @@ class OAuthManager:
             raise HTTPException(404)
         return await client.authorize_redirect(request, redirect_uri)
 
-    async def handle_callback(self, request, provider, response):
+    async def handle_callback(self, request, provider, response, return_json: bool = False):
+        log.debug(f"---In handle_callback return_json:  {return_json}")
+
         if provider not in OAUTH_PROVIDERS:
             raise HTTPException(404)
         client = self.get_client(provider)
@@ -517,29 +517,54 @@ class OAuthManager:
                 default_permissions=request.app.state.config.USER_PERMISSIONS,
             )
 
-        # Set the cookie token
-        response.set_cookie(
-            key="token",
-            value=jwt_token,
-            httponly=True,  # Ensures the cookie is not accessible via JavaScript
-            samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
-            secure=WEBUI_AUTH_COOKIE_SECURE,
-        )
-
         if ENABLE_OAUTH_SIGNUP.value:
             oauth_id_token = token.get("id_token")
+
+        if return_json :
+            log.debug(f"In return_json block ")
+
+            response = {
+                "token": jwt_token,
+                "user": {
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "role": user.role,
+                    "profile_image_url": user.profile_image_url,
+                }
+            }
+
+            if ENABLE_OAUTH_SIGNUP.value:
+                response["id_token"] = oauth_id_token
+
+            return response
+
+        else :
+            log.debug(f"In cookie block ")
+            # Set the cookie token
             response.set_cookie(
-                key="oauth_id_token",
-                value=oauth_id_token,
-                httponly=True,
+                key="token",
+                value=jwt_token,
+                httponly=True,  # Ensures the cookie is not accessible via JavaScript
                 samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
                 secure=WEBUI_AUTH_COOKIE_SECURE,
             )
-        # Redirect back to the frontend with the JWT token
 
-        redirect_base_url = str(request.app.state.config.WEBUI_URL or request.base_url)
-        if redirect_base_url.endswith("/"):
-            redirect_base_url = redirect_base_url[:-1]
-        redirect_url = f"{redirect_base_url}/auth#token={jwt_token}"
+            if ENABLE_OAUTH_SIGNUP.value:
+                response.set_cookie(
+                    key="oauth_id_token",
+                    value=oauth_id_token,
+                    httponly=True,
+                    samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
+                    secure=WEBUI_AUTH_COOKIE_SECURE,
+                )
+            # Redirect back to the frontend with the JWT token
 
-        return RedirectResponse(url=redirect_url, headers=response.headers)
+            redirect_base_url = str(request.app.state.config.WEBUI_URL or request.base_url)
+            if redirect_base_url.endswith("/"):
+                redirect_base_url = redirect_base_url[:-1]
+            redirect_url = f"{redirect_base_url}/auth#token={jwt_token}"
+
+            return RedirectResponse(url=redirect_url, headers=response.headers)
+
+
