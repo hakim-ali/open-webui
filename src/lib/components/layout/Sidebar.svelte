@@ -295,6 +295,11 @@
 
 	let touchstart;
 	let touchend;
+	let topEl;
+
+  function scrollToTop() {
+    topEl.scrollIntoView({ behavior: 'smooth' });
+  }
 
 	function checkDirection() {
 		const screenWidth = window.innerWidth;
@@ -645,7 +650,7 @@
 
 			
 
-			<div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+			<div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden" bind:this={topEl}>
 				{#if ($models ?? []).length > 0 && ($settings?.pinnedModels ?? []).length > 0}
 					<div class="mt-0.5">
 						{#each $settings.pinnedModels as modelId (modelId)}
@@ -947,6 +952,13 @@
 						</div>
 					{/if}
 				</Folder>
+				<div class="w-full left-0 absolute bottom-0 h-[108px]  flex justify-center items-center bg-[linear-gradient(180deg,_rgba(255,255,255,0)_0%,_#FFF_100%)]">
+					<button on:click={scrollToTop} class="w-[32px] h-[32px] border-[#DEE0E3] rounded-full flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+  <path d="M14.4603 8.27341C14.4081 8.32571 14.346 8.3672 14.2777 8.39551C14.2094 8.42381 14.1362 8.43839 14.0623 8.43839C13.9884 8.43839 13.9152 8.42381 13.8469 8.39551C13.7786 8.3672 13.7166 8.32571 13.6644 8.27341L9.56232 4.17068V15.1879C9.56232 15.3371 9.50306 15.4802 9.39757 15.5857C9.29208 15.6912 9.14901 15.7504 8.99982 15.7504C8.85064 15.7504 8.70757 15.6912 8.60208 15.5857C8.49659 15.4802 8.43732 15.3371 8.43732 15.1879V4.17068L4.33529 8.27341C4.22975 8.37896 4.08659 8.43826 3.93732 8.43826C3.78806 8.43826 3.6449 8.37896 3.53936 8.27341C3.43381 8.16786 3.37451 8.02471 3.37451 7.87544C3.37451 7.72618 3.43381 7.58302 3.53936 7.47747L8.60186 2.41497C8.6541 2.36267 8.71613 2.32119 8.78442 2.29288C8.85271 2.26457 8.9259 2.25 8.99982 2.25C9.07375 2.25 9.14694 2.26457 9.21523 2.29288C9.28351 2.32119 9.34555 2.36267 9.39779 2.41497L14.4603 7.47747C14.5126 7.52971 14.5541 7.59175 14.5824 7.66004C14.6107 7.72832 14.6253 7.80152 14.6253 7.87544C14.6253 7.94936 14.6107 8.02256 14.5824 8.09085C14.5541 8.15913 14.5126 8.22117 14.4603 8.27341Z" fill="#36383B"/>
+</svg>
+					</button>
+				</div>
 			</div>
 		</div>
 		<div class="sidebar__bottom">

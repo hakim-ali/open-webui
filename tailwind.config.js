@@ -19,7 +19,7 @@ export default {
 					   black: 'var(--color-neutrals-black, #1D1F22)',  
 					   white: 'var(--color-neutrals-white, #ffffff)', 
 					   error:'var(--color-neutrals-error, #D91938)', 
-					   errorTone:'var(--color-neutrals-errorTone, #C2451E) ',
+					   errorTone:'var(--color-neutrals-errorTone, #C2451E)',
 				},
 				primary:{
 					400: 'var(--color-primary-400, #0054F2)',  

@@ -299,7 +299,7 @@
 >
 	{#if confirmEdit}
 		<div
-			class=" w-full flex justify-between text-neutrals-800 text-[16px] leading-[24px] font-medium {id === $chatId ||
+			class="px-[16px] py-[14px] rounded-[8px] w-full flex justify-between text-neutrals-800 text-[16px] leading-[24px] font-medium {id === $chatId ||
 			confirmEdit
 				? 'bg-gray-200 dark:bg-gray-900'
 				: selected
