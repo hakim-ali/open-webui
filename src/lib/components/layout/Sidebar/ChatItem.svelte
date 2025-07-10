@@ -387,7 +387,7 @@
 	<div
 		class="
         {id === $chatId || confirmEdit
-			? 'from-gray-200 dark:from-gray-900'
+			? 'from-gray-200 dark:from-gray-900 '
 			: selected
 				? 'from-gray-100 dark:from-gray-950'
 				: 'invisible group-hover:visible from-gray-100 dark:from-gray-950'}

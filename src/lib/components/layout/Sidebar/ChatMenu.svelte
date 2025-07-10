@@ -319,7 +319,7 @@
 					</DropdownMenu.Item>
 
 					<DropdownMenu.Item
-						class="p-[8px] flex gap-2 items-center text-neutrals-800 text-[16px] leading-[24px] font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
+						class="p-[8px] flex gap-2 items-center  text-neutrals-800 text-[16px] leading-[24px] font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
 						on:click={() => {
 							downloadPdf();
 						}}

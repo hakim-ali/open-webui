@@ -99,7 +99,7 @@
 
 	<slot name="content">
 		<DropdownMenu.Content
-			class="w-full {className} rounded-[8px] z-50 bg-white dark:bg-gray-850 dark:text-white shadow-custom font-primary"
+			class="w-full {className} rounded-[8px] z-50 bg-white dark:bg-gray-850 dark:text-white shadow-custom font-primary "
 			sideOffset={1}
 			side="bottom"
 			align="end"

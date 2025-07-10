@@ -530,7 +530,7 @@
     box-shadow: 0px 0px 16px -8px rgba(28, 27, 27, 0.04);
   "
 	>
-		<div class="sidebar__top h-[calc(100vh-58px)] overflow-y-auto">
+		<div class="sidebar__top h-[calc(100vh-58px)] overflow-y-auto ">
 			<div
 				class="flex justify-between items-center text-gray-600 dark:text-gray-400"
 				class:justify-center={!$showSidebar}
