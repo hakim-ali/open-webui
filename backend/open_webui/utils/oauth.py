@@ -342,8 +342,7 @@ class OAuthManager:
             raise HTTPException(404)
         return await client.authorize_redirect(request, redirect_uri)
 
-    async def handle_callback(self, request, provider, response, return_json: bool = False):
-        log.debug(f"---In handle_callback return_json:  {return_json}")
+    async def handle_callback(self, request, provider, response):
 
         if provider not in OAUTH_PROVIDERS:
             raise HTTPException(404)
@@ -522,52 +521,28 @@ class OAuthManager:
         if ENABLE_OAUTH_SIGNUP.value:
             oauth_id_token = token.get("id_token")
 
-        if return_json :
-            log.debug(f"In return_json block ")
-
-            response = {
-                "token": jwt_token,
-                "user": {
-                    "id": user.id,
-                    "name": user.name,
-                    "email": user.email,
-                    "role": user.role,
-                    "profile_image_url": user.profile_image_url,
-                }
-            }
-
-            if ENABLE_OAUTH_SIGNUP.value:
-                response["id_token"] = oauth_id_token
-
-            return response
-
-        else :
-            log.debug(f"In cookie block ")
-            # Set the cookie token
+        # Set the cookie token
+        response.set_cookie(
+            key="token",
+            value=jwt_token,
+            httponly=True,  # Ensures the cookie is not accessible via JavaScript
+            samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
+            secure=WEBUI_AUTH_COOKIE_SECURE,
+        )
+        if ENABLE_OAUTH_SIGNUP.value:
             response.set_cookie(
-                key="token",
-                value=jwt_token,
-                httponly=True,  # Ensures the cookie is not accessible via JavaScript
+                key="oauth_id_token",
+                value=oauth_id_token,
+                httponly=True,
                 samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
                 secure=WEBUI_AUTH_COOKIE_SECURE,
             )
-
-            if ENABLE_OAUTH_SIGNUP.value:
-                response.set_cookie(
-                    key="oauth_id_token",
-                    value=oauth_id_token,
-                    httponly=True,
-                    samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
-                    secure=WEBUI_AUTH_COOKIE_SECURE,
-                )
-            # Redirect back to the frontend with the JWT token
-
-            redirect_base_url = str(request.app.state.config.WEBUI_URL or request.base_url)
-            if redirect_base_url.endswith("/"):
-                redirect_base_url = redirect_base_url[:-1]
-            redirect_url = f"{redirect_base_url}/auth#token={jwt_token}"
-
-            return RedirectResponse(url=redirect_url, headers=response.headers)
+        # Redirect back to the frontend with the JWT token
+        redirect_base_url = str(request.app.state.config.WEBUI_URL or request.base_url)
+        if redirect_base_url.endswith("/"):
+            redirect_base_url = redirect_base_url[:-1]
+        redirect_url = f"{redirect_base_url}/auth#token={jwt_token}"
+        return RedirectResponse(url=redirect_url, headers=response.headers)
 
     async def handle_callback_mob(
             self, request: Request, provider: str):
