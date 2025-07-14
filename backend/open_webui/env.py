@@ -564,3 +564,12 @@ PIP_PACKAGE_INDEX_OPTIONS = os.getenv("PIP_PACKAGE_INDEX_OPTIONS", "").split()
 ####################################
 
 EXTERNAL_PWA_MANIFEST_URL = os.environ.get("EXTERNAL_PWA_MANIFEST_URL")
+
+
+
+############
+
+OAUTH_CLIENT_ID = os.getenv("OAUTH_CLIENT_ID")
+OAUTH_CLIENT_SECRET = os.getenv("OAUTH_CLIENT_SECRET")
+OPENID_PROVIDER_URL = os.getenv("OPENID_PROVIDER_URL")
+# JWT_EXPIRES_IN = os.getenv("JWT_EXPIRES_IN", "20h")

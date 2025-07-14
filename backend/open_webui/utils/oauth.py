@@ -11,6 +11,8 @@ from authlib.oidc.core import UserInfo
 from fastapi import (
     HTTPException,
     status,
+    Request,
+    Response,
 )
 from open_webui.config import (
     DEFAULT_USER_ROLE,
@@ -41,7 +43,7 @@ from open_webui.env import (
     WEBUI_AUTH_COOKIE_SAME_SITE,
     WEBUI_AUTH_COOKIE_SECURE,
 )
-from open_webui.env import SRC_LOG_LEVELS, GLOBAL_LOG_LEVEL
+from open_webui.env import SRC_LOG_LEVELS, GLOBAL_LOG_LEVEL, OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET, OPENID_PROVIDER_URL
 from open_webui.models.auths import Auths
 from open_webui.models.groups import Groups, GroupModel, GroupUpdateForm, GroupForm
 from open_webui.models.users import Users
@@ -567,4 +569,98 @@ class OAuthManager:
 
             return RedirectResponse(url=redirect_url, headers=response.headers)
 
+    async def handle_callback_mob(
+            self, request: Request, provider: str):
+        log.info("In handle_callback_mob")
+
+        if provider not in OAUTH_PROVIDERS:
+            raise HTTPException(404, detail="OAuth provider not found")
+
+        code = request.query_params.get("code")
+        redirect_uri = request.query_params.get("redirect_uri")
+
+        provider_base = OPENID_PROVIDER_URL.replace("/.well-known/openid-configuration", "")
+        token_url = f"{provider_base}/protocol/openid-connect/token"
+        userinfo_url = f"{provider_base}/protocol/openid-connect/userinfo"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(token_url, data={
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri, #just placeholder as /token needs a redirect uri
+                "client_id": OAUTH_CLIENT_ID,
+                "client_secret": OAUTH_CLIENT_SECRET
+            }) as token_resp:
+                token_json = await token_resp.json()
+                if token_resp.status != 200:
+                    log.warning(f"Token exchange failed: {token_json}")
+                    raise HTTPException(status_code=token_resp.status, detail=token_json)
+
+            access_token = token_json.get("access_token")
+            id_token = token_json.get("id_token")
+
+            async with session.get(userinfo_url, headers={
+                "Authorization": f"Bearer {access_token}"
+            }) as userinfo_resp:
+                userinfo = await userinfo_resp.json()
+                if userinfo_resp.status != 200:
+                    log.warning(f"Userinfo fetch failed: {userinfo}")
+                    raise HTTPException(status_code=userinfo_resp.status, detail=userinfo)
+
+        email = userinfo.get("email", "").lower()
+        if not email:
+            raise HTTPException(400, detail="Email is required for login")
+
+        provider_sub = f"{provider}@{userinfo.get('sub', '')}"
+
+        user = Users.get_user_by_oauth_sub(provider_sub)
+
+        if not user:
+            # merge by email
+            user = Users.get_user_by_email(email)
+            if user:
+                Users.update_user_oauth_sub_by_id(user.id, provider_sub)
+
+        if not user:
+            name = userinfo.get("preferred_username") or email
+            picture_url = await self._process_picture_url(userinfo.get("picture", ""), access_token)
+            role = self.get_user_role(None, userinfo)
+
+            user = Auths.insert_new_auth(
+                email=email,
+                password=get_password_hash("mobile-autogen"),
+                name=name,
+                profile_image_url=picture_url,
+                role=role,
+                oauth_sub=provider_sub,
+            )
+
+            if auth_manager_config.WEBHOOK_URL:
+                post_webhook(
+                    WEBUI_NAME,
+                    auth_manager_config.WEBHOOK_URL,
+                    WEBHOOK_MESSAGES.USER_SIGNUP(user.name),
+                    {
+                        "action": "signup",
+                        "message": WEBHOOK_MESSAGES.USER_SIGNUP(user.name),
+                        "user": user.model_dump_json(exclude_none=True),
+                    },
+                )
+
+        jwt_token = create_token(
+            data={"id": user.id},
+            expires_delta=parse_duration(auth_manager_config.JWT_EXPIRES_IN),
+        )
+
+        return {
+            "token": jwt_token,
+            "id_token": id_token,
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "profile_image_url": user.profile_image_url
+            }
+        }
 
