@@ -218,11 +218,13 @@
 	let showGovKnoWebSearchToggle = false;
 	let govBtnEnable = false;
 	let showGovKnoButton = false;
-	$: showGovKnoButton = $models.find((model) => model.id.includes($config.govgpt.rag_wog_model_name));
+	$: showGovKnoButton = $models.find((model) =>
+		model.id.includes($config.govgpt.rag_wog_model_name)
+	);
 
 	// Reactive statement to update selectedModelName based on current state
 	$: selectedModelName = (() => {
-				console.log('Reactive selectedModelName update:', {
+		console.log('Reactive selectedModelName update:', {
 			govBtnEnable,
 			webSearchEnabled,
 			attachFileEnabled,
@@ -230,9 +232,9 @@
 			selectedModels,
 			historyMessages: history?.messages ? Object.keys(history.messages).length : 0
 		});
-		
+
 		// Priority order: Gov Knowledge > Web Search > Files > Specific Model
-		
+
 		// Check if Gov Knowledge model is selected (highest priority)
 
 		if (webSearchEnabled) {
@@ -244,17 +246,22 @@
 			console.log('Returning: Gov Knowledge');
 			return 'Gov Knowledge';
 		}
-		
+
 		// Check if web search is enabled (second priority)
-		
-		
+
 		// Check if files are attached (either in current files or in chat history)
-		if (attachFileEnabled || files.length > 0 || 
-			(history?.messages && Object.values(history.messages).some((message: any) => message.files && message.files.length > 0))) {
+		if (
+			attachFileEnabled ||
+			files.length > 0 ||
+			(history?.messages &&
+				Object.values(history.messages).some(
+					(message: any) => message.files && message.files.length > 0
+				))
+		) {
 			console.log('Returning: Attach Files');
 			return 'Attach Files';
 		}
-		
+
 		// Check if a specific model is selected (lowest priority)
 		// if (selectedModels && selectedModels.length > 0 && selectedModels[0] !== '') {
 		// 	const selectedModel = $models.find(model => model.id === selectedModels[0]);
@@ -263,7 +270,7 @@
 		// 		return selectedModel.name || selectedModel.id;
 		// 	}
 		// }
-		
+
 		console.log('Returning: empty string');
 		return '';
 	})();
@@ -277,14 +284,17 @@
 		// Get all messages and sort by timestamp to find the latest
 		const allMessages = Object.values(history.messages) as any[];
 		const sortedMessages = allMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-		
+
 		// Find the last assistant message (which contains the model info)
-		const lastAssistantMessage = sortedMessages.find(msg => msg.role === 'assistant');
-		
+		const lastAssistantMessage = sortedMessages.find((msg) => msg.role === 'assistant');
+
 		if (lastAssistantMessage) {
 			console.log('Last assistant message:', lastAssistantMessage);
 
-			if(lastAssistantMessage.statusHistory && lastAssistantMessage.statusHistory.some((x: any) => x.action === 'web_search')) {
+			if (
+				lastAssistantMessage.statusHistory &&
+				lastAssistantMessage.statusHistory.some((x: any) => x.action === 'web_search')
+			) {
 				webSearchEnabled = true;
 				attachFileEnabled = false;
 				selectedModels = [lastAssistantMessage.model || $config.default_models];
@@ -300,9 +310,9 @@
 				selectedModels = [lastAssistantMessage.model || $config.default_models];
 				return;
 			}
-			
+
 			// Check if any message in history has files
-			const hasFilesInHistory = allMessages.some(msg => msg.files && msg.files.length > 0);
+			const hasFilesInHistory = allMessages.some((msg) => msg.files && msg.files.length > 0);
 			if (hasFilesInHistory) {
 				console.log('Auto-selecting Files model (from history)');
 				govBtnEnable = false;
@@ -312,9 +322,11 @@
 				return;
 			}
 
-			
 			// Check if it's a Gov Knowledge model
-			if (lastAssistantMessage.model && lastAssistantMessage.model.includes($config.govgpt.rag_wog_model_name)) {
+			if (
+				lastAssistantMessage.model &&
+				lastAssistantMessage.model.includes($config.govgpt.rag_wog_model_name)
+			) {
 				console.log('Auto-selecting Gov Knowledge model');
 				govBtnEnable = true;
 				webSearchEnabled = false;
@@ -323,7 +335,7 @@
 				return;
 			}
 		}
-		
+
 		// If none of the specific conditions are met, don't select any model
 		// console.log('No specific model type detected, not auto-selecting any model');
 		// govBtnEnable = false;
@@ -338,11 +350,15 @@
 
 	// Handle click outside the toggle content
 	const handleClickOutside = (event: MouseEvent) => {
-		if (showGovKnoWebSearchToggle && toggleContentElement && !toggleContentElement.contains(event.target as Node)) {
+		if (
+			showGovKnoWebSearchToggle &&
+			toggleContentElement &&
+			!toggleContentElement.contains(event.target as Node)
+		) {
 			// Check if the clicked element is a filter toggle button
 			const target = event.target as HTMLElement;
 			const isFilterButton = target.closest('[data-filter-toggle]');
-			
+
 			if (!isFilterButton) {
 				showGovKnoWebSearchToggle = false;
 			}
@@ -359,21 +375,22 @@
 	});
 
 	const handleFilterToggle = (event) => {
-		event.preventDefault(); 
+		event.preventDefault();
 		showGovKnoWebSearchToggle = !showGovKnoWebSearchToggle;
 	};
 
 	const clearFilterToggle = (event) => {
-		event.preventDefault(); 
+		event.preventDefault();
 		showGovKnoWebSearchToggle = false;
-		webSearchEnabled =false;
-		govBtnEnable=false;
-		attachFileEnabled=false;
+		webSearchEnabled = false;
+		govBtnEnable = false;
+		attachFileEnabled = false;
 	};
 
 	const saveGovKnoModel = async () => {
 		govBtnEnable = !govBtnEnable;
-		const modelId = $models.find((model) => model.id.includes($config.govgpt.rag_wog_model_name))?.id || '';
+		const modelId =
+			$models.find((model) => model.id.includes($config.govgpt.rag_wog_model_name))?.id || '';
 		const modelName = govBtnEnable ? modelId : $config.default_models;
 
 		// Update the selectedModels prop to trigger the binding
@@ -534,17 +551,35 @@
 	const inputFilesHandler = async (inputFiles) => {
 		console.log('Input files handler called with:', inputFiles);
 
-		if (
-			($config?.file?.max_count ?? null) !== null &&
-			files.length + inputFiles.length > $config?.file?.max_count
-		) {
+		// Filter only PDF files
+		const pdfFiles = inputFiles.filter(
+			(file) =>
+				file.type === 'application/pdf' ||
+				file.name.toLowerCase().endsWith('.pdf') ||
+				file.name.toLowerCase().endsWith('.PDF')
+		);
+
+		// Check if any non-PDF files were filtered out
+		if (pdfFiles.length < inputFiles.length) {
+			toast.error($i18n.t('Only PDF files are allowed for upload.'));
+		}
+
+		if (pdfFiles.length === 0) {
+			return;
+		}
+
+		// Check maximum file count limit (5 files max)
+		const maxFileCount = 5;
+		if (files.length + pdfFiles.length > maxFileCount) {
 			toast.error(
-				$i18n.t(`You can only chat with a maximum of {{maxCount}} file(s) at a time.`, {
-					maxCount: $config?.file?.max_count
+				$i18n.t(`You can only upload a maximum of {{maxCount}} PDF file(s) at a time.`, {
+					maxCount: maxFileCount
 				})
 			);
 			return;
 		}
+
+		inputFiles = pdfFiles;
 
 		inputFiles.forEach((file) => {
 			console.log('Processing file:', {
@@ -1003,7 +1038,7 @@
 								<div class="">
 									{#if $settings?.richTextInput ?? true}
 										<div
-										dir={ $isRTL ? 'rtl' : 'ltr' }
+											dir={$isRTL ? 'rtl' : 'ltr'}
 											class="scrollbar-hidden rtl:text-right ltr:text-left bg-transparent dark:text-gray-100 outline-hidden w-full text-[16px] leading-[24px] text-disabled resize-none h-fit max-h-80 overflow-auto"
 											id="chat-input-container"
 										>
@@ -1610,11 +1645,11 @@
 															class="px-[8px] font-Inter_Medium flex items-center gap-[8px] text-[14px] leading-[22px] text-typography-titles"
 														>
 															{$i18n.t(selectedModelName)}
-															<button 
+															<button
 																data-filter-toggle
-																class="flex items-center" 
-																on:click={clearFilterToggle}
-															><Cross /></button>
+																class="flex items-center"
+																on:click={clearFilterToggle}><Cross /></button
+															>
 														</div>{/if}
 												</div>
 
