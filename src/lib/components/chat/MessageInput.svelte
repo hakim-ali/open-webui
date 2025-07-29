@@ -884,7 +884,7 @@
 								dispatch('submit', prompt);
 							}}
 						>
-							{#if history.currentId && history.messages && Object.values(history.messages).some((message) => message.files && message.files.length > 0)}<div
+							{#if attachFileEnabled && history.currentId && history.messages && Object.values(history.messages).some((message) => message.files && message.files.length > 0)}<div
 									class="text-left rounded-tl-[12px] rounded-tr-[12px] bg-[#D6E5FC] border border-[#90C9FF] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[10px] leading-[16px] text-typography-titles"
 								>
 									{$i18n.t("Chat is limited to the '{{count}}' uploaded documents.", {
