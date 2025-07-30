@@ -328,35 +328,52 @@ async def update_embedding_config(
             request.app.state.config.RAG_EMBEDDING_MODEL,
         )
 
-        request.app.state.EMBEDDING_FUNCTION = get_embedding_function(
-            request.app.state.config.RAG_EMBEDDING_ENGINE,
-            request.app.state.config.RAG_EMBEDDING_MODEL,
-            request.app.state.ef,
-            (
-                request.app.state.config.RAG_OPENAI_API_BASE_URL
-                if request.app.state.config.RAG_EMBEDDING_ENGINE == "openai"
-                else (
-                    request.app.state.config.RAG_OLLAMA_BASE_URL
-                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
-                    else request.app.state.config.RAG_AZURE_OPENAI_BASE_URL
-                )
-            ),
-            (
-                request.app.state.config.RAG_OPENAI_API_KEY
-                if request.app.state.config.RAG_EMBEDDING_ENGINE == "openai"
-                else (
-                    request.app.state.config.RAG_OLLAMA_API_KEY
-                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
-                    else request.app.state.config.RAG_AZURE_OPENAI_API_KEY
-                )
-            ),
-            request.app.state.config.RAG_EMBEDDING_BATCH_SIZE,
-            azure_api_version=(
-                request.app.state.config.RAG_AZURE_OPENAI_API_VERSION
-                if request.app.state.config.RAG_EMBEDDING_ENGINE == "azure_openai"
-                else None
-            ),
-        )
+        # Check if we should bypass embedding for GOVGPT_FILE_SEARCH_API_URL
+        from open_webui.env import USE_CUSTOM_QA_API, GOVGPT_FILE_SEARCH_API_URL, BYPASS_EMBEDDING_FOR_GOVGPT
+        bypass_for_govgpt = USE_CUSTOM_QA_API and GOVGPT_FILE_SEARCH_API_URL and BYPASS_EMBEDDING_FOR_GOVGPT
+        
+        if bypass_for_govgpt:
+            log.info("Bypassing embedding function creation in retrieval.py - files will be sent to GOVGPT_FILE_SEARCH_API_URL service")
+            log.info(f"USE_CUSTOM_QA_API: {USE_CUSTOM_QA_API}, GOVGPT_FILE_SEARCH_API_URL: {GOVGPT_FILE_SEARCH_API_URL}, BYPASS_EMBEDDING_FOR_GOVGPT: {BYPASS_EMBEDDING_FOR_GOVGPT}")
+            # Create a dummy embedding function that returns empty results
+            def dummy_embedding_function(texts, prefix=None, user=None):
+                log.info("Dummy embedding function called - bypassing actual embedding")
+                if isinstance(texts, str):
+                    return [0.0] * 1536  # Return dummy embedding for single text
+                else:
+                    return [[0.0] * 1536 for _ in texts]  # Return dummy embeddings for multiple texts
+            
+            request.app.state.EMBEDDING_FUNCTION = dummy_embedding_function
+        else:
+            request.app.state.EMBEDDING_FUNCTION = get_embedding_function(
+                request.app.state.config.RAG_EMBEDDING_ENGINE,
+                request.app.state.config.RAG_EMBEDDING_MODEL,
+                request.app.state.ef,
+                (
+                    request.app.state.config.RAG_OPENAI_API_BASE_URL
+                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "openai"
+                    else (
+                        request.app.state.config.RAG_OLLAMA_BASE_URL
+                        if request.app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
+                        else request.app.state.config.RAG_AZURE_OPENAI_BASE_URL
+                    )
+                ),
+                (
+                    request.app.state.config.RAG_OPENAI_API_KEY
+                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "openai"
+                    else (
+                        request.app.state.config.RAG_OLLAMA_API_KEY
+                        if request.app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
+                        else request.app.state.config.RAG_AZURE_OPENAI_API_KEY
+                    )
+                ),
+                request.app.state.config.RAG_EMBEDDING_BATCH_SIZE,
+                azure_api_version=(
+                    request.app.state.config.RAG_AZURE_OPENAI_API_VERSION
+                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "azure_openai"
+                    else None
+                ),
+            )
 
         return {
             "status": True,
@@ -1210,6 +1227,18 @@ def save_docs_to_vector_db(
                 return True
 
         log.info(f"adding to collection {collection_name}")
+        
+        # Check if we should bypass embedding for GOVGPT_FILE_SEARCH_API_URL
+        from open_webui.env import USE_CUSTOM_QA_API, GOVGPT_FILE_SEARCH_API_URL, BYPASS_EMBEDDING_FOR_GOVGPT
+        bypass_for_govgpt = USE_CUSTOM_QA_API and GOVGPT_FILE_SEARCH_API_URL and BYPASS_EMBEDDING_FOR_GOVGPT
+        
+        if bypass_for_govgpt:
+            log.info("Bypassing embedding generation in save_docs_to_vector_db - files will be sent to GOVGPT_FILE_SEARCH_API_URL service")
+            log.info(f"USE_CUSTOM_QA_API: {USE_CUSTOM_QA_API}, GOVGPT_FILE_SEARCH_API_URL: {GOVGPT_FILE_SEARCH_API_URL}, BYPASS_EMBEDDING_FOR_GOVGPT: {BYPASS_EMBEDDING_FOR_GOVGPT}")
+            # Skip embedding generation and return success
+            # The external service will handle the embedding and storage
+            return True
+        
         embedding_function = get_embedding_function(
             request.app.state.config.RAG_EMBEDDING_ENGINE,
             request.app.state.config.RAG_EMBEDDING_MODEL,

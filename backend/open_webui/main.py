@@ -877,35 +877,52 @@ except Exception as e:
     pass
 
 
-app.state.EMBEDDING_FUNCTION = get_embedding_function(
-    app.state.config.RAG_EMBEDDING_ENGINE,
-    app.state.config.RAG_EMBEDDING_MODEL,
-    app.state.ef,
-    (
-        app.state.config.RAG_OPENAI_API_BASE_URL
-        if app.state.config.RAG_EMBEDDING_ENGINE == "openai"
-        else (
-            app.state.config.RAG_OLLAMA_BASE_URL
-            if app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
-            else app.state.config.RAG_AZURE_OPENAI_BASE_URL
-        )
-    ),
-    (
-        app.state.config.RAG_OPENAI_API_KEY
-        if app.state.config.RAG_EMBEDDING_ENGINE == "openai"
-        else (
-            app.state.config.RAG_OLLAMA_API_KEY
-            if app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
-            else app.state.config.RAG_AZURE_OPENAI_API_KEY
-        )
-    ),
-    app.state.config.RAG_EMBEDDING_BATCH_SIZE,
-    azure_api_version=(
-        app.state.config.RAG_AZURE_OPENAI_API_VERSION
-        if app.state.config.RAG_EMBEDDING_ENGINE == "azure_openai"
-        else None
-    ),
-)
+# Check if we should bypass embedding for GOVGPT_FILE_SEARCH_API_URL
+from open_webui.env import USE_CUSTOM_QA_API, GOVGPT_FILE_SEARCH_API_URL, BYPASS_EMBEDDING_FOR_GOVGPT
+bypass_for_govgpt = USE_CUSTOM_QA_API and GOVGPT_FILE_SEARCH_API_URL and BYPASS_EMBEDDING_FOR_GOVGPT
+
+if bypass_for_govgpt:
+    log.info("Bypassing embedding function creation in main.py - files will be sent to GOVGPT_FILE_SEARCH_API_URL service")
+    log.info(f"USE_CUSTOM_QA_API: {USE_CUSTOM_QA_API}, GOVGPT_FILE_SEARCH_API_URL: {GOVGPT_FILE_SEARCH_API_URL}, BYPASS_EMBEDDING_FOR_GOVGPT: {BYPASS_EMBEDDING_FOR_GOVGPT}")
+    # Create a dummy embedding function that returns empty results
+    def dummy_embedding_function(texts, prefix=None, user=None):
+        log.info("Dummy embedding function called - bypassing actual embedding")
+        if isinstance(texts, str):
+            return [0.0] * 1536  # Return dummy embedding for single text
+        else:
+            return [[0.0] * 1536 for _ in texts]  # Return dummy embeddings for multiple texts
+    
+    app.state.EMBEDDING_FUNCTION = dummy_embedding_function
+else:
+    app.state.EMBEDDING_FUNCTION = get_embedding_function(
+        app.state.config.RAG_EMBEDDING_ENGINE,
+        app.state.config.RAG_EMBEDDING_MODEL,
+        app.state.ef,
+        (
+            app.state.config.RAG_OPENAI_API_BASE_URL
+            if app.state.config.RAG_EMBEDDING_ENGINE == "openai"
+            else (
+                app.state.config.RAG_OLLAMA_BASE_URL
+                if app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
+                else app.state.config.RAG_AZURE_OPENAI_BASE_URL
+            )
+        ),
+        (
+            app.state.config.RAG_OPENAI_API_KEY
+            if app.state.config.RAG_EMBEDDING_ENGINE == "openai"
+            else (
+                app.state.config.RAG_OLLAMA_API_KEY
+                if app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
+                else app.state.config.RAG_AZURE_OPENAI_API_KEY
+            )
+        ),
+        app.state.config.RAG_EMBEDDING_BATCH_SIZE,
+        azure_api_version=(
+            app.state.config.RAG_AZURE_OPENAI_API_VERSION
+            if app.state.config.RAG_EMBEDDING_ENGINE == "azure_openai"
+            else None
+        ),
+    )
 
 ########################################
 #

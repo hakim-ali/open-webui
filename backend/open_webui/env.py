@@ -583,3 +583,5 @@ MS_LOGOUT_URL = os.getenv("MS_LOGOUT_URL")
 GOVGPT_FILE_SEARCH_API_URL = os.environ.get("GOVGPT_FILE_SEARCH_API_URL", "http://40.119.184.8:8102/query")
 CUSTOM_QA_TIMEOUT = int(os.environ.get("GOVGPT_FILE_SEARCH_TIMEOUT", "30"))
 USE_CUSTOM_QA_API = os.environ.get("ENABLE_GOVGPT_FILE_SEARCH", "false").lower() == "true"
+# Bypass embedding process when using GOVGPT_FILE_SEARCH_API_URL
+BYPASS_EMBEDDING_FOR_GOVGPT = os.environ.get("BYPASS_EMBEDDING_FOR_GOVGPT", "true").lower() == "true"

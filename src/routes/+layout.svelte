@@ -690,7 +690,7 @@
 {/if}
 
 <Toaster
-	theme={$theme.includes('dark')
+	theme={$theme?.includes('dark')
 		? 'dark'
 		: $theme === 'system'
 			? window.matchMedia('(prefers-color-scheme: dark)').matches
