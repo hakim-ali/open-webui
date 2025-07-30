@@ -75,6 +75,7 @@
 	import Toggle from '../icons/Toggle.svelte';
 	import SearchModal from './SearchModal.svelte';
 	import { isRTL } from '$lib/i18n';
+	import ArrowUp from '../icons/ArrowUp.svelte';
 
 	const BREAKPOINT = 768;
 
@@ -98,6 +99,40 @@
 	let isHovered = false;
 	let wasOpenedByClick = false;
 	let hoverTimeout: number | null = null;
+
+	
+	let showScrollToTop = false;
+	let chatListContainer: HTMLElement;
+
+	// Function to scroll to today's chat history
+	const scrollToTop = () => {
+		console.log('Scroll to  chat history ');
+		if (chatListContainer) {
+			
+			const todaySectionElement = Array.from(chatListContainer.querySelectorAll('div')).find(
+				(el) => el.textContent && el.textContent.trim() === $i18n.t('Today')
+			);
+
+			if (todaySectionElement) {
+				
+				todaySectionElement.scrollIntoView({ behavior: 'smooth' });
+			} else {
+				
+				chatListContainer.scrollTop = 0;
+			}
+		}
+	};
+
+	
+	const handleScroll = (e: Event) => {
+		const target = e.target as HTMLElement;
+		if (target) {
+			const scrollTop = target.scrollTop;
+			console.log('Scroll position:', scrollTop);
+			
+			showScrollToTop = scrollTop > 200;
+		}
+	};
 
 	function openSidebarOnAction() {
 		if (!$showSidebar) {
@@ -538,7 +573,11 @@
 	<div
 		class="flex flex-col justify-between max-h-[100dvh] overflow-x-hidden z-50 bg-light-bg shadow-[0px_48px_96px_0px_rgba(0,0,0,0.08)] dark:shadow-none"
 	>
-		<div class="px-[8px] py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto">
+		<div
+			class="px-[8px] py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto"
+			bind:this={chatListContainer}
+			on:scroll={handleScroll}
+		>
 			{#if $mobile}
 				<div class="sidebar__mobile">
 					<div
@@ -624,7 +663,7 @@
 						href="#"
 						on:click={onSidebarClick}
 					>
-						<MaterialIcon name="menu" size="1.25rem"  />
+						<MaterialIcon name="menu" size="1.25rem" />
 					</a>
 
 					<!-- Search icon only when sidebar is expanded, right aligned -->
@@ -888,79 +927,81 @@
 				{/if}
 
 				{#if $user?.role === 'admin'}
-				<Folder
-					className=""
-					name={$i18n.t('Folders')}
-					onAdd={() => {
-						createFolder();
-					}}
-					onAddLabel={$i18n.t('New Folder')}
-					showSidebar={$showSidebar}
-					on:import={(e) => {
-						importChatHandler(e.detail);
-					}}
-					on:drop={async (e) => {
-						const { type, id, item } = e.detail;
+					<Folder
+						className=""
+						name={$i18n.t('Folders')}
+						onAdd={() => {
+							createFolder();
+						}}
+						onAddLabel={$i18n.t('New Folder')}
+						showSidebar={$showSidebar}
+						on:import={(e) => {
+							importChatHandler(e.detail);
+						}}
+						on:drop={async (e) => {
+							const { type, id, item } = e.detail;
 
-						if (type === 'chat') {
-							let chat = await getChatById(localStorage.token, id).catch((error) => {
-								return null;
-							});
-							if (!chat && item) {
-								chat = await importChat(localStorage.token, item.chat, item?.meta ?? {});
-							}
+							if (type === 'chat') {
+								let chat = await getChatById(localStorage.token, id).catch((error) => {
+									return null;
+								});
+								if (!chat && item) {
+									chat = await importChat(localStorage.token, item.chat, item?.meta ?? {});
+								}
 
-							if (chat) {
-								console.log(chat);
-								if (chat.folder_id) {
-									const res = await updateChatFolderIdById(localStorage.token, chat.id, null).catch(
-										(error) => {
+								if (chat) {
+									console.log(chat);
+									if (chat.folder_id) {
+										const res = await updateChatFolderIdById(
+											localStorage.token,
+											chat.id,
+											null
+										).catch((error) => {
 											toast.error(`${error}`);
 											return null;
-										}
-									);
+										});
+									}
+
+									if (chat.pinned) {
+										const res = await toggleChatPinnedStatusById(localStorage.token, chat.id);
+									}
+
+									initChatList();
+								}
+							} else if (type === 'folder') {
+								if (folders[id].parent_id === null) {
+									return;
 								}
 
-								if (chat.pinned) {
-									const res = await toggleChatPinnedStatusById(localStorage.token, chat.id);
+								const res = await updateFolderParentIdById(localStorage.token, id, null).catch(
+									(error) => {
+										toast.error(`${error}`);
+										return null;
+									}
+								);
+
+								if (res) {
+									await initFolders();
 								}
-
-								initChatList();
 							}
-						} else if (type === 'folder') {
-							if (folders[id].parent_id === null) {
-								return;
-							}
-
-							const res = await updateFolderParentIdById(localStorage.token, id, null).catch(
-								(error) => {
-									toast.error(`${error}`);
-									return null;
-								}
-							);
-
-							if (res) {
-								await initFolders();
-							}
-						}
-					}}
-				>
-					{#if folders}
-						<Folders
-							{folders}
-							on:import={(e) => {
-								const { folderId, items } = e.detail;
-								importChatHandler(items, false, folderId);
-							}}
-							on:update={async (e) => {
-								initChatList();
-							}}
-							on:change={async () => {
-								initChatList();
-							}}
-						/>
-					{/if}
-				</Folder>
+						}}
+					>
+						{#if folders}
+							<Folders
+								{folders}
+								on:import={(e) => {
+									const { folderId, items } = e.detail;
+									importChatHandler(items, false, folderId);
+								}}
+								on:update={async (e) => {
+									initChatList();
+								}}
+								on:change={async () => {
+									initChatList();
+								}}
+							/>
+						{/if}
+					</Folder>
 				{/if}
 
 				{#if false && $pinnedChats.length > 0}
@@ -1049,17 +1090,15 @@
 						<div class="flex flex-col space-y-1 rounded-xl">
 							{#each $pinnedChats as chat, idx (`pinned-chat-${chat?.id ?? idx}`)}
 								<ChatItem
-											className=""
-											id={chat.id}
-											title={chat.title}
-											{shiftKey}
-											selected={selectedChatId === chat.id}
-											
-											on:change={async () => {
-												initChatList();
-											}}
-											
-										/>
+									className=""
+									id={chat.id}
+									title={chat.title}
+									{shiftKey}
+									selected={selectedChatId === chat.id}
+									on:change={async () => {
+										initChatList();
+									}}
+								/>
 							{/each}
 						</div>
 					</div>
@@ -1067,7 +1106,12 @@
 
 				<div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
 					{#if $showSidebar}
-						<div class=" flex-1 flex flex-col overflow-y-auto scrollbar-hidden">
+						<div
+							class=" flex-1 flex flex-col overflow-y-auto scrollbar-hidden"
+							bind:this={chatListContainer}
+							on:scroll={handleScroll}
+							data-scroll-container
+						>
 							<div class="py-1.5">
 								{#if $chats}
 									{#each $chats as chat, idx (`chat-${chat?.id ?? idx}`)}
@@ -1147,6 +1191,22 @@
 									</div>
 								{/if}
 							</div>
+						</div>
+					{/if}
+
+					<!-- Scroll to top button -->
+					{#if $showSidebar && showScrollToTop}
+						<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+							<button
+								class="bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full p-3 shadow-lg transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-200 dark:border-gray-600"
+								on:click={() => {
+									console.log('Button clicked!');
+									scrollToTop();
+								}}
+								title="Scroll to top"
+							>
+								<ArrowUp className="w-5 h-5" strokeWidth="2.5" />
+							</button>
 						</div>
 					{/if}
 				</div>
