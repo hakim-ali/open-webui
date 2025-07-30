@@ -347,7 +347,8 @@
 									const decoder = new TextDecoder();
 
 									const processStream = async () => {
-										while (true) {
+										const condition = true;
+										while (condition) {
 											// Read data chunks from the response stream
 											const { done, value } = await reader.read();
 											if (done) {
@@ -463,6 +464,15 @@
 	};
 
 	onMount(async () => {
+		// Hide splash screen
+		const splash = document.getElementById('splash-screen');
+		if (splash) {
+			splash.classList.add('hidden');
+		}
+
+		// Reveal app content smoothly
+		document.body.style.opacity = '1';
+
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
 		}
@@ -646,7 +656,11 @@
 	});
 
 	$: {
-		const lang = document.documentElement.lang || 'en-US';
+		const i18nLanguage = get(i18n)?.language;
+		const localStorageLang = localStorage?.locale;
+		const documentLang = document.documentElement.lang;
+		
+		const lang = i18nLanguage || localStorageLang || documentLang || 'en-US';
 		document.documentElement.dir = lang.startsWith('ar') ? 'rtl' : 'ltr';
 	}
 </script>
