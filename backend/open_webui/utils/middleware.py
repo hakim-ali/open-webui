@@ -766,7 +766,7 @@ async def run_gov_gpt_web_search(user_query, user, session_id, user_message, eve
                     async with session.post(
                         CUSTOM_WEB_SEARCH_URL,
                         json=payload,
-                        timeout=aiohttp.ClientTimeout(total=120, connect=10)
+                        timeout=aiohttp.ClientTimeout(total=300, connect=10)
                     ) as resp:
                         end_time = time.time()
                         response_time = end_time - start_time
