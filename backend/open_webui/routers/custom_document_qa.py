@@ -102,8 +102,9 @@ async def call_custom_qa_api(
     try:
         log.info(f"{SERVICE_NAME} REQUEST starting API call to {GOVGPT_FILE_SEARCH_API_URL}")
         start_time = time.time()
+
         
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=CUSTOM_QA_TIMEOUT)) as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=900)) as session:
             async with session.post(
                 GOVGPT_FILE_SEARCH_API_URL,
                 headers={"Content-Type": "application/json"},
