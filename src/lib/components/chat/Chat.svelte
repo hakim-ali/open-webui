@@ -169,9 +169,7 @@
 						imageGenerationEnabled = input.imageGenerationEnabled;
 						codeInterpreterEnabled = input.codeInterpreterEnabled;
 					}
-				} catch (e) {
-					toast.error($i18n.t('Error'));
-				}
+				} catch (e) {}
 			}
 
 			if (chatIdProp && (await loadChat())) {
@@ -494,9 +492,7 @@
 					imageGenerationEnabled = input.imageGenerationEnabled;
 					codeInterpreterEnabled = input.codeInterpreterEnabled;
 				}
-			} catch (e) {
-				toast.error($i18n.t('Error'));
-			}
+			} catch (e) {}
 		}
 
 		if (!chatIdProp) {
@@ -2101,9 +2097,7 @@
 							{initNewChat}
 						/>
 
-						<div
-							class="m-auto h-full max-w-[1440px] md:px-4 lg:px-8 w-full flex-1 flex flex-col flex-auto z-10 @container"
-						>
+						<div class="m-auto h-full w-full flex-1 flex flex-col flex-auto z-10 @container">
 							{#if (false && $settings?.landingPageMode === 'chat') || createMessagesList(history, history.currentId).length > 0}
 								<div
 									class="w-full mx-auto pb-2.5 flex flex-col justify-between w-full flex-auto overflow-auto h-0 max-w-full z-10 scrollbar-hidden"
