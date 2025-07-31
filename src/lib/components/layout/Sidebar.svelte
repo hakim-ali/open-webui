@@ -73,6 +73,7 @@
 	import MagnifyingGlass from '../icons/MagnifyingGlass.svelte';
 	import LogoText from '../icons/LogoText.svelte';
 	import Toggle from '../icons/Toggle.svelte';
+	import ScrollUp from '../icons/ScrollUp.svelte';
 	import SearchModal from './SearchModal.svelte';
 	import { isRTL } from '$lib/i18n';
 
@@ -98,6 +99,12 @@
 	let isHovered = false;
 	let wasOpenedByClick = false;
 	let hoverTimeout: number | null = null;
+	 let scrollContainer;
+
+  function scrollToTop() {
+    scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
 
 	function openSidebarOnAction() {
 		if (!$showSidebar) {
@@ -538,7 +545,7 @@
 	<div
 		class="flex flex-col justify-between max-h-[100dvh] overflow-x-hidden z-50 bg-light-bg shadow-[0px_48px_96px_0px_rgba(0,0,0,0.08)] dark:shadow-none"
 	>
-		<div class="px-[8px] py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto">
+		<div class="px-[8px] py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto" bind:this={scrollContainer}>
 			{#if $mobile}
 				<div class="sidebar__mobile">
 					<div
@@ -1120,6 +1127,7 @@
 												tagEventHandler(type, name, chat.id);
 											}}
 										/>
+										
 									{/each}
 
 									{#if $scrollPaginationEnabled && !allChatsLoaded}
@@ -1148,6 +1156,9 @@
 								{/if}
 							</div>
 						</div>
+							
+<div class="scroll-to-top-box fixed bottom-[76px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"><button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}><ScrollUp/></button></div>
+										
 					{/if}
 				</div>
 			</div>
