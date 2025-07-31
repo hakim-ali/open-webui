@@ -21,6 +21,7 @@
 	import DocumentDuplicate from '$lib/components/icons/DocumentDuplicate.svelte';
 	import Bookmark from '$lib/components/icons/Bookmark.svelte';
 	import BookmarkSlash from '$lib/components/icons/BookmarkSlash.svelte';
+	import Separator from '$lib/components/icons/Separator.svelte';
 	import {
 		getChatById,
 		getChatPinnedStatusById,
@@ -252,6 +253,7 @@
 					<div class="flex items-center">{$i18n.t('Pin')}</div>
 				{/if}
 			</DropdownMenu.Item>
+			<Separator />
 
 			<DropdownMenu.Item
 				class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"
@@ -262,6 +264,7 @@
 				<Pencil strokeWidth="2" />
 				<div class="flex items-center">{$i18n.t('Rename')}</div>
 			</DropdownMenu.Item>
+			<Separator />
 
 			<DropdownMenu.Item
 				class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"
@@ -272,6 +275,7 @@
 				<DocumentDuplicate strokeWidth="2" />
 				<div class="flex items-center">{$i18n.t('Duplicate')}</div>
 			</DropdownMenu.Item>
+			<Separator />
 
 			<DropdownMenu.Item
 				class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"
@@ -282,6 +286,7 @@
 				<ArchiveBox strokeWidth="2" />
 				<div class="flex items-center">{$i18n.t('Archive')}</div>
 			</DropdownMenu.Item>
+			<Separator />
 
 			<DropdownMenu.Sub>
 				<DropdownMenu.SubTrigger
@@ -305,6 +310,7 @@
 						>
 							<div class="flex items-center line-clamp-1">{$i18n.t('Export chat (.json)')}</div>
 						</DropdownMenu.Item>
+						<Separator />
 					{/if}
 
 					<DropdownMenu.Item
@@ -315,6 +321,7 @@
 					>
 						<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 					</DropdownMenu.Item>
+					<Separator />
 
 					<DropdownMenu.Item
 						class=" px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"
@@ -326,6 +333,7 @@
 					</DropdownMenu.Item>
 				</DropdownMenu.SubContent>
 			</DropdownMenu.Sub>
+			<Separator />
 			{#if $user?.role === 'admin' || ($user.permissions?.chat?.share ?? true)}
 				<DropdownMenu.Item
 					class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] font-medium cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800  rounded-md"
@@ -336,6 +344,7 @@
 					<Share />
 					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</DropdownMenu.Item>
+				<Separator />
 			{/if}
 			<DropdownMenu.Item
 				class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] font-medium cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"

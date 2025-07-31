@@ -28,6 +28,7 @@
 
 	import { deleteFileById } from '$lib/apis/files';
 	import MaterialIcon from './MaterialIcon.svelte';
+	import Trash from '../icons/Trash.svelte';
 
 	let showModal = false;
 
@@ -135,7 +136,7 @@
 					dispatch('dismiss');
 				}}
 			>
-				<MaterialIcon name="delete" className="size-4" />
+			<Trash className="size-4" />
 
 				<!-- <svg
 				xmlns="http://www.w3.org/2000/svg"
