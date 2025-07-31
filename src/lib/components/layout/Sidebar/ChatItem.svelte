@@ -2,6 +2,7 @@
 	import { toast } from 'svelte-sonner';
 	import { goto, invalidate, invalidateAll } from '$app/navigation';
 	import { onMount, getContext, createEventDispatcher, tick, onDestroy } from 'svelte';
+	import { isRTL } from '$lib/i18n';
 	const i18n = getContext('i18n');
 
 	const dispatch = createEventDispatcher();
@@ -53,6 +54,7 @@
 
 	let mouseOver = false;
 	let draggable = false;
+
 	$: if (mouseOver) {
 		loadChat();
 	}
@@ -294,7 +296,12 @@
 
 <div
 	bind:this={itemElement}
-	class=" w-full {className} relative group flex items-center"
+	class="w-full ${className} relative group flex items-center flex-row rounded-[5px] {id ===
+		$chatId || confirmEdit
+		? 'bg-gradient-bg-2 dark:bg-gray-900'
+		: selected
+			? 'bg-gradient-bg-2 dark:bg-gray-950'
+			: ' group-hover:bg-gradient-bg-2 dark:group-hover:bg-gray-950'}"
 	draggable={draggable && !confirmEdit}
 >
 	{#if confirmEdit}
@@ -345,12 +352,7 @@
 		</div>
 	{:else}
 		<a
-			class=" w-full flex items-center justify-between text-typography-titles link-style rounded-[8px] px-[16px] py-[15px] truncate {id ===
-				$chatId || confirmEdit
-				? 'bg-gradient-bg-2 dark:bg-gray-900'
-				: selected
-					? 'bg-gradient-bg-2 dark:bg-gray-950'
-					: ' group-hover:bg-gradient-bg-2 dark:group-hover:bg-gray-950'}  whitespace-nowrap text-ellipsis"
+			class=" w-full flex items-center justify-between text-typography-titles link-style rounded-[8px] px-[16px] py-[15px] truncate whitespace-nowrap text-ellipsis"
 			href="/c/{id}"
 			on:click={() => {
 				dispatch('select');
@@ -376,7 +378,10 @@
 			draggable="false"
 		>
 			<div class=" flex items-center justify-between self-center flex-1 w-full">
-				<div dir="auto" class="text-left self-center overflow-hidden w-full h-[22px] mr-[8px] truncate">
+				<div
+					dir={$isRTL ? 'rtl' : 'ltr'}
+					class="text-left self-center overflow-hidden w-full h-[22px] mr-[8px] truncate"
+				>
 					{title}
 				</div>
 				{#if className === 'pinned'}<div class="visible group-hover:invisible">
@@ -405,9 +410,7 @@
 			: selected
 				? 'from-gray-100 dark:from-gray-950'
 				: 'invisible group-hover:visible '}
-            absolute {className === 'pr-2'
-			? 'right-[8px]'
-			: 'right-1'} top-[10px] py-1 pr-0.5 mr-1.5 pl-5"
+             {className === 'pr-2' ? 'right-[8px]' : 'right-1'} top-[10px] py-1 pr-0.5 mr-1.5 pl-5"
 		on:mouseenter={(e) => {
 			mouseOver = true;
 		}}
