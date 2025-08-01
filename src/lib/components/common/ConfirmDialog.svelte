@@ -14,9 +14,6 @@
 	export let title = '';
 	export let message = '';
 
-	export let cancelLabel = $i18n.t('Cancel');
-	export let confirmLabel = $i18n.t('Confirm');
-
 	export let onConfirm = () => {};
 
 	export let input = false;
@@ -140,7 +137,7 @@
 						}}
 						type="button"
 					>
-						{cancelLabel}
+						{$i18n.t('Cancel')}
 					</button>
 					<button
 						class="px-[12px] py-[8px] bg-[#C2451E] hover:bg-gray-850 text-gray-100 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-800 font-medium rounded-full transition"
@@ -149,7 +146,7 @@
 						}}
 						type="button"
 					>
-						{confirmLabel}
+						{$i18n.t('Confirm')}
 					</button>
 				</div>
 			</div>
