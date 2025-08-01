@@ -62,6 +62,8 @@
 	let element;
 	let editor;
 
+	$: placeholderText = placeholder;
+
 	const options = {
 		throwOnError: false
 	};
@@ -200,7 +202,7 @@
 				}),
 				Highlight,
 				Typography,
-				Placeholder.configure({ placeholder }),
+				Placeholder.configure({ placeholder: () => placeholderText }),
 				Table.configure({ resizable: true }),
 				TableRow,
 				TableHeader,
@@ -451,6 +453,9 @@
 			}
 		}
 	};
+	$: if (editor && placeholderText) {
+		editor.view.dispatch(editor.view.state.tr); // Force redraw
+	}
 </script>
 
 <div bind:this={element} class="relative w-full min-w-full h-full min-h-fit {className}" />
