@@ -9,6 +9,7 @@
 	import { generateInitialsImage } from '$lib/utils';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Visible from '$lib/components/icons/visible.svelte';
+	import EyeSlash from '$lib/components/icons/EyeSlash.svelte';
 	import { toast } from 'svelte-sonner';
 
 	const i18n = getContext('i18n');
@@ -284,10 +285,14 @@
 													{/if}
 													<button
 														type="button"
-														class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+														class="absolute inset-y-0 right-3 flex items-center justify-center w-8 h-8 my-auto text-gray-400 hover:text-gray-600"
 														on:click={() => (showPassword = !showPassword)}
 													>
-														<Visible className="w-5 h-5" />
+														{#if showPassword}
+															<EyeSlash className="w-5 h-5" />
+														{:else}
+															<Visible className="w-5 h-5" />
+														{/if}
 													</button>
 												</div>
 											</div>

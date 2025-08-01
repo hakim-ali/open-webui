@@ -43,9 +43,15 @@
 	});
 
 	const handlePromptSelect = async (prompt: any, index: number) => {
-		selectedIndex = index;
-		const content = $i18n.t(`suggestion.${prompt.id}.content`);
-		dispatch('select', content);
+		if (selectedIndex === index) {
+			// If clicking on already selected item, deselect it
+			selectedIndex = -1;
+		} else {
+			// Otherwise, select the new item
+			selectedIndex = index;
+			const content = $i18n.t(`suggestion.${prompt.id}.content`);
+			dispatch('select', content);
+		}
 	};
 </script>
 

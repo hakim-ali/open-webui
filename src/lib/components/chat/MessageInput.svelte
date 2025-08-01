@@ -108,6 +108,9 @@
 	let attachFileDisable = false;
 	let selectedModelName = '';
 
+	// Check if any files are currently uploading
+	$: isUploading = files.some(file => file.status === 'uploading');
+
 	const Modeloptions = [
 		{ label: 'Gov knowledge', icon: MenuBook },
 		{ label: 'Procurement', icon: EditNotes }
@@ -2146,11 +2149,11 @@
 												<Tooltip content={$i18n.t('Send message')}>
 													<button
 														id="send-message-button"
-														class="{!(prompt === '' && files.length === 0)
+														class="{!(prompt === '' && files.length === 0) && !isUploading
 															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 															: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-[#1F2531] disabled'} transition rounded-full p-1.5 self-center"
 														type="submit"
-														disabled={prompt === '' && files.length === 0}
+														disabled={prompt === '' && files.length === 0 || isUploading}
 													>
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
