@@ -109,7 +109,7 @@
 	let selectedModelName = '';
 
 	// Check if any files are currently uploading
-	$: isUploading = files.some(file => file.status === 'uploading');
+	$: isUploading = files.some((file) => file.status === 'uploading');
 
 	const Modeloptions = [
 		{ label: 'Gov knowledge', icon: MenuBook },
@@ -263,8 +263,7 @@
 					(message: any) => message.files && message.files.length > 0
 				))
 		) {
-			console.log('Returning: Attach Files');
-			return 'Attach Files';
+			return $i18n.t('Attach files');
 		}
 
 		// Check if a specific model is selected (lowest priority)
@@ -389,6 +388,9 @@
 		showGovKnoWebSearchToggle = false;
 		webSearchEnabled = false;
 		govBtnEnable = false;
+		if (attachFileEnabled) {
+			files = [];
+		}
 		attachFileEnabled = false;
 	};
 
@@ -1036,7 +1038,7 @@
 									{#if $settings?.richTextInput ?? true}
 										<div
 											dir={$isRTL ? 'rtl' : 'ltr'}
-											class="scrollbar-hidden rtl:text-right ltr:text-left bg-transparent dark:text-gray-100 outline-hidden w-full text-[16px] leading-[24px] text-disabled resize-none h-fit max-h-[175px] overflow-auto"
+											class="scrollbar-hidden rtl:text-right ltr:text-left bg-transparent dark:text-gray-100 outline-hidden w-full text-[16px] leading-[24px] text-disabled resize-none h-fit max-h-[175] overflow-auto"
 											id="chat-input-container"
 										>
 											<RichTextInput
@@ -1648,7 +1650,7 @@
 															<button
 																data-filter-toggle
 																class="flex items-center"
-																on:click={clearFilterToggle}><Cross /></button
+																on:click={(e) => clearFilterToggle(e)}><Cross /></button
 															>
 														</div>{/if}
 												</div>
@@ -1775,32 +1777,6 @@
 																	<CheckFilter />
 																</button>
 															</Tooltip>
-														{/if}
-
-														{#if showFileUploadButton}
-															<button
-																on:click={() => {
-																	attachFileEnabled = !attachFileEnabled;
-																	showGovKnoWebSearchToggle = false;
-																	filesInputElement.click();
-																	govBtnEnable = false;
-																	webSearchEnabled = false;
-																}}
-																type="button"
-																class="flex items-center flex justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {attachFileEnabled
-																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-white '}"
-															>
-																<div class="flex items-center justify-center gap-[8px]">
-																	<Attach />
-																	<span
-																		class="font-heading font-medium text-[14px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
-																	>
-																		{$i18n.t('Attach files')}
-																	</span>
-																</div>
-																{#if attachFileEnabled && files.length > 0}<CheckFilter />{/if}
-															</button>
 														{/if}
 													</div>
 												{/if}
@@ -2153,7 +2129,7 @@
 															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 															: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-[#1F2531] disabled'} transition rounded-full p-1.5 self-center"
 														type="submit"
-														disabled={prompt === '' && files.length === 0 || isUploading}
+														disabled={(prompt === '' && files.length === 0) || isUploading}
 													>
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
