@@ -380,7 +380,7 @@
 			<div class=" flex items-center justify-between self-center flex-1 w-full">
 				<div
 					dir={$isRTL ? 'rtl' : 'ltr'}
-					class="text-left self-center overflow-hidden w-full h-[22px] mr-[8px] truncate"
+					class="text-left self-center overflow-hidden w-full h-[22px] mr-[8px] truncate flex flex-row"
 				>
 					{title}
 				</div>
