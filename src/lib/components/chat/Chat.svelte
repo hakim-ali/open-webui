@@ -170,7 +170,8 @@
 						codeInterpreterEnabled = input.codeInterpreterEnabled;
 					}
 				} catch (e) {
-					toast.error($i18n.t('Error'));
+					//TODO: Refactor it using transaltion.
+					toast.error('Error');
 				}
 			}
 
@@ -495,7 +496,8 @@
 					codeInterpreterEnabled = input.codeInterpreterEnabled;
 				}
 			} catch (e) {
-				toast.error($i18n.t('Error'));
+				//TODO: Refactor it using transaltion.
+				toast.error('Error');
 			}
 		}
 
