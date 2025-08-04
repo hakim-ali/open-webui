@@ -1038,7 +1038,7 @@
 									{#if $settings?.richTextInput ?? true}
 										<div
 											dir={$isRTL ? 'rtl' : 'ltr'}
-											class="scrollbar-hidden rtl:text-right ltr:text-left bg-transparent dark:text-gray-100 outline-hidden w-full text-[16px] leading-[24px] text-disabled resize-none h-fit max-h-[175] overflow-auto"
+											class="scrollbar-hidden rtl:text-right ltr:text-left bg-transparent dark:text-gray-100 outline-hidden w-full text-[16px] leading-[24px] text-disabled resize-none h-fit max-h-[175px] overflow-auto"
 											id="chat-input-container"
 										>
 											<RichTextInput
