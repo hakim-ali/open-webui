@@ -451,7 +451,6 @@
 			}
 		}
 	};
-
 	$: if (editor && placeholderText) {
 		editor.view.dispatch(editor.view.state.tr); // Force redraw
 	}
