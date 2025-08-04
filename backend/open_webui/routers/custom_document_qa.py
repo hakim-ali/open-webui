@@ -13,7 +13,7 @@ from open_webui.models.files import Files
 from open_webui.retrieval.utils import get_sources_from_files
 from open_webui.env import SRC_LOG_LEVELS
 
-from open_webui.env import CUSTOM_QA_TIMEOUT, GOVGPT_FILE_SEARCH_API_URL, USE_CUSTOM_QA_API
+from open_webui.env import CUSTOM_QA_TIMEOUT, GOVGPT_FILE_SEARCH_API_URL, USE_CUSTOM_QA_API, GOVGPT_API_KEY
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
@@ -78,25 +78,71 @@ async def call_custom_qa_api(
     user_id: str,
     user_name: str,
     session_id: str = None,
-    chat_history: List[Dict[str, str]] = None
+    chat_history: List[Dict[str, str]] = None,
+    file_info: List[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Call the external custom QA API
     """
+    # Convert document_texts to the expected documents format
+    documents = []
+    log.info(f"{SERVICE_NAME} Converting {len(document_texts)} document texts to structured format")
+    log.info(f"{SERVICE_NAME} File info available: {file_info is not None}, File info length: {len(file_info) if file_info else 0}")
+    
+    for i, text in enumerate(document_texts):
+        log.info(f"{SERVICE_NAME} Processing document {i + 1}/{len(document_texts)}")
+        log.info(f"{SERVICE_NAME} Document {i + 1} text length: {len(text)} characters")
+        log.info(f"{SERVICE_NAME} Document {i + 1} text preview: '{text[:100]}...'")
+        
+        if text.strip():  # Only include non-empty documents
+            # Use file info if available, otherwise use default values
+            if file_info and i < len(file_info) and file_info[i]:
+                file_data = file_info[i]
+                log.info(f"{SERVICE_NAME} Using file info for document {i + 1}: {file_data}")
+                
+                created_at = file_data.get("created_at", time.time())
+                log.info(f"{SERVICE_NAME} Document {i + 1} created_at timestamp: {created_at}")
+                
+                formatted_date = time.strftime("%Y-%m-%d %H:%M:%S.%f", time.localtime(created_at))[:-3]
+                log.info(f"{SERVICE_NAME} Document {i + 1} formatted date: {formatted_date}")
+                
+                document = {
+                    "id": file_data.get("id", str(i + 1)),
+                    "name": file_data.get("filename", f"document_{i + 1}.txt"),
+                    "text": text,
+                    "uploaded_at": formatted_date
+                }
+                log.info(f"{SERVICE_NAME} Created document {i + 1} with file info: {document}")
+            else:
+                log.info(f"{SERVICE_NAME} No file info available for document {i + 1}, using defaults")
+                document = {
+                    "id": str(i + 1),
+                    "name": f"document_{i + 1}.txt",
+                    "text": text,
+                    "uploaded_at": time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                }
+                log.info(f"{SERVICE_NAME} Created document {i + 1} with defaults: {document}")
+            documents.append(document)
+        else:
+            log.warning(f"{SERVICE_NAME} Skipping document {i + 1} - empty content")
+    
+    log.info(f"{SERVICE_NAME} Final documents count: {len(documents)}")
+    
     payload = {
         "user_query": user_query,
         "user_id": user_id,
         "user_name": user_name,
         "session_id": session_id or f"session_{user_id}",
         "chat_history": chat_history or [],
-        "document_texts": document_texts
+        "documents": documents
     }
     
     # Log the request details
     log.info(f"{SERVICE_NAME} REQUEST to {GOVGPT_FILE_SEARCH_API_URL}")
+    log.info(f"{SERVICE_NAME} REQUEST headers: Content-Type=application/json, X-API-Key={GOVGPT_API_KEY}")
     log.info(f"{SERVICE_NAME} REQUEST payload: {json.dumps(payload, indent=2)}")
     log.info(f"{SERVICE_NAME} REQUEST user_query: '{user_query}'")
-    log.info(f"{SERVICE_NAME} REQUEST document_texts size: {len(document_texts)} ")
+    log.info(f"{SERVICE_NAME} REQUEST documents size: {len(documents)} ")
     log.info(f"{SERVICE_NAME} REQUEST chat_history length: {len(chat_history or [])} messages")
     
     try:
@@ -107,7 +153,10 @@ async def call_custom_qa_api(
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=900)) as session:
             async with session.post(
                 GOVGPT_FILE_SEARCH_API_URL,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "X-API-Key": GOVGPT_API_KEY
+                },
                 json=payload
             ) as response:
                 response_text = await response.text()
@@ -171,28 +220,61 @@ async def call_custom_qa_api(
         )
 
 
-def get_document_content_from_files(request: Request, file_ids: List[str], user) -> str:
+def get_document_content_from_files(request: Request, file_ids: List[str], user) -> tuple[List[str], List[Dict[str, Any]]]:
     """
     Retrieve document content from uploaded files
+    Returns a tuple of (document_texts, file_info)
     """
+    log.info(f"{SERVICE_NAME} Starting document content retrieval for {len(file_ids)} files")
+    log.info(f"{SERVICE_NAME} File IDs: {file_ids}")
+    log.info(f"{SERVICE_NAME} User ID: {user.id}, User role: {getattr(user, 'role', 'unknown')}")
+    
     try:
         # Get files from database
         files = []
-        for file_id in file_ids:
+        file_info = []
+        
+        log.info(f"{SERVICE_NAME} Retrieving files from database...")
+        for i, file_id in enumerate(file_ids):
+            log.info(f"{SERVICE_NAME} Processing file {i + 1}/{len(file_ids)}: {file_id}")
+            
             file = Files.get_file_by_id(file_id)
-            if file and (file.user_id == user.id or user.role == "admin"):
-                # Convert FileModel to dictionary format expected by get_sources_from_files
-                file_dict = {
-                    "id": file.id,
-                    "name": file.filename,
-                    "type": "file",
-                    "legacy": False
-                }
-                files.append(file_dict)
+            if file:
+                log.info(f"{SERVICE_NAME} File {file_id} found in database")
+                log.info(f"{SERVICE_NAME} File {file_id} details: id={file.id}, filename={file.filename}, user_id={file.user_id}")
+                log.info(f"{SERVICE_NAME} File {file_id} timestamps: created_at={file.created_at}, updated_at={file.updated_at}")
+                
+                # Check access permissions
+                if file.user_id == user.id or user.role == "admin":
+                    log.info(f"{SERVICE_NAME} Access granted for file {file_id}")
+                    
+                    # Convert FileModel to dictionary format expected by get_sources_from_files
+                    file_dict = {
+                        "id": file.id,
+                        "name": file.filename,
+                        "type": "file",
+                        "legacy": False
+                    }
+                    files.append(file_dict)
+                    
+                    # Store file info for later use
+                    file_info_entry = {
+                        "id": file.id,
+                        "filename": file.filename,
+                        "created_at": file.created_at,
+                        "updated_at": file.updated_at
+                    }
+                    file_info.append(file_info_entry)
+                    log.info(f"{SERVICE_NAME} Added file info for {file_id}: {file_info_entry}")
+                else:
+                    log.warning(f"{SERVICE_NAME} Access denied for file {file_id} - user {user.id} cannot access file owned by {file.user_id}")
             else:
-                log.warning(f"File {file_id} not found or access denied for user {user.id}")
+                log.warning(f"{SERVICE_NAME} File {file_id} not found in database")
+        
+        log.info(f"{SERVICE_NAME} Database retrieval complete: {len(files)} accessible files found")
         
         if not files:
+            log.error(f"{SERVICE_NAME} No accessible files found for user {user.id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No accessible files found"
@@ -201,25 +283,36 @@ def get_document_content_from_files(request: Request, file_ids: List[str], user)
         # Get document content directly from files
         document_texts = []
         
-        for file_dict in files:
+        log.info(f"{SERVICE_NAME} Extracting content from {len(files)} files...")
+        for i, file_dict in enumerate(files):
             file_id = file_dict["id"]
+            log.info(f"{SERVICE_NAME} Extracting content from file {i + 1}/{len(files)}: {file_id}")
+            
             file = Files.get_file_by_id(file_id)
             
-            if file and file.data and file.data.get("content"):
-                content = file.data.get("content", "")
-                if content.strip():
-                    document_texts.append(content)
-                    log.info(f"Retrieved content from file {file_id}: {len(content)} characters")
+            if file and file.data:
+                log.info(f"{SERVICE_NAME} File {file_id} has data structure")
+                log.info(f"{SERVICE_NAME} File {file_id} data keys: {list(file.data.keys()) if file.data else 'None'}")
+                
+                if file.data.get("content"):
+                    content = file.data.get("content", "")
+                    log.info(f"{SERVICE_NAME} File {file_id} content length: {len(content)} characters")
+                    log.info(f"{SERVICE_NAME} File {file_id} content preview: '{content[:100]}...'")
+                    
+                    if content.strip():
+                        document_texts.append(content)
+                        log.info(f"{SERVICE_NAME} Successfully added content from file {file_id}")
+                    else:
+                        log.warning(f"{SERVICE_NAME} File {file_id} has empty content after stripping")
                 else:
-                    log.warning(f"File {file_id} has empty content")
+                    log.warning(f"{SERVICE_NAME} File {file_id} has no 'content' key in data")
             else:
-                log.warning(f"File {file_id} not found or has no content")
+                log.warning(f"{SERVICE_NAME} File {file_id} not found or has no data")
         
-        # Combine all text with proper spacing
-        # combined_text = "\n\n".join(document_texts)
+        log.info(f"{SERVICE_NAME} Content extraction complete: {len(document_texts)} documents with content")
+        log.info(f"{SERVICE_NAME} File info collected: {len(file_info)} entries")
         
-        log.info(f"Retrieved {len(document_texts)} document files, for user {user.id}")
-        return document_texts #return list
+        return document_texts, file_info #return tuple
         
     except Exception as e:
         log.error(f"Error retrieving document content: {e}")
@@ -306,7 +399,7 @@ async def custom_qa_filter_inlet(body: dict, __user__: dict, __request__: Reques
             return body
         
         # Get document content
-        document_text = get_document_content_from_files(__request__, file_ids, __user__)
+        document_text, file_info = get_document_content_from_files(__request__, file_ids, __user__)
         
         if not any(doc.strip() for doc in document_text):
             return body
@@ -331,7 +424,8 @@ async def custom_qa_filter_inlet(body: dict, __user__: dict, __request__: Reques
             user_id=__user__["id"],
             user_name=__user__["name"],
             session_id=body.get("metadata", {}).get("session_id"),
-            chat_history=chat_history
+            chat_history=chat_history,
+            file_info=file_info
         )
         
         # Extract the response and enhance the user message
@@ -385,7 +479,7 @@ async def custom_document_qa(
         
         if form_data.file_ids:
             # Get content from uploaded files
-            file_content = get_document_content_from_files(request, form_data.file_ids, user)
+            file_content, file_info = get_document_content_from_files(request, form_data.file_ids, user)
             document_text.extend(file_content)
         
         if form_data.collection_names:
@@ -413,7 +507,8 @@ async def custom_document_qa(
             user_id=user.id,
             user_name=user.name,
             session_id=form_data.session_id,
-            chat_history=form_data.chat_history
+            chat_history=form_data.chat_history,
+            file_info=file_info if 'file_info' in locals() else None
         )
         
         # Format the response

@@ -585,3 +585,5 @@ CUSTOM_QA_TIMEOUT = int(os.environ.get("GOVGPT_FILE_SEARCH_TIMEOUT", "900"))  # 
 USE_CUSTOM_QA_API = os.environ.get("ENABLE_GOVGPT_FILE_SEARCH", "false").lower() == "true"
 # Bypass embedding process when using GOVGPT_FILE_SEARCH_API_URL
 BYPASS_EMBEDDING_FOR_GOVGPT = os.environ.get("BYPASS_EMBEDDING_FOR_GOVGPT", "true").lower() == "true"
+# API Key for external services
+GOVGPT_API_KEY = os.environ.get("GOVGPT_API_KEY", "gotgpt-sandbox")
