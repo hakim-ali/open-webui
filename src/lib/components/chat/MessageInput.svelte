@@ -1723,7 +1723,7 @@
 																	<div class="flex items-center justify-center gap-[8px]">
 																		<GovKno />
 																		<span
-																			class="whitespace-nowrap overflow-hidden text-ellipsis leading-none pr-0.5"
+																			class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5"
 																			>{$i18n.t('Gov Knowledge')}</span
 																		>
 																	</div>
