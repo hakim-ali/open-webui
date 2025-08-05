@@ -98,6 +98,7 @@ from open_webui.internal.db import Session, engine
 
 from open_webui.models.functions import Functions
 from open_webui.models.models import Models
+from open_webui.mobile_config import get_mobile_config
 from open_webui.models.users import UserModel, Users
 from open_webui.models.chats import Chats
 
@@ -464,6 +465,8 @@ from open_webui.env import MOBILE_INPUT_LINES, FILE_UPLOAD_COUNT_ALLOWED, ALLOWE
     PRIVACY_POLICY_URL, TERMS_CONDITIONS_URL, MAX_FILE_SIZE
 
 from open_webui.env import ALLOW_CREDENTIALS_LOGIN
+
+from open_webui.mobile_config import get_mobile_config
 
 if SAFE_MODE:
     print("SAFE MODE ENABLED")
@@ -877,35 +880,52 @@ except Exception as e:
     pass
 
 
-app.state.EMBEDDING_FUNCTION = get_embedding_function(
-    app.state.config.RAG_EMBEDDING_ENGINE,
-    app.state.config.RAG_EMBEDDING_MODEL,
-    app.state.ef,
-    (
-        app.state.config.RAG_OPENAI_API_BASE_URL
-        if app.state.config.RAG_EMBEDDING_ENGINE == "openai"
-        else (
-            app.state.config.RAG_OLLAMA_BASE_URL
-            if app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
-            else app.state.config.RAG_AZURE_OPENAI_BASE_URL
-        )
-    ),
-    (
-        app.state.config.RAG_OPENAI_API_KEY
-        if app.state.config.RAG_EMBEDDING_ENGINE == "openai"
-        else (
-            app.state.config.RAG_OLLAMA_API_KEY
-            if app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
-            else app.state.config.RAG_AZURE_OPENAI_API_KEY
-        )
-    ),
-    app.state.config.RAG_EMBEDDING_BATCH_SIZE,
-    azure_api_version=(
-        app.state.config.RAG_AZURE_OPENAI_API_VERSION
-        if app.state.config.RAG_EMBEDDING_ENGINE == "azure_openai"
-        else None
-    ),
-)
+# Check if we should bypass embedding for GOVGPT_FILE_SEARCH_API_URL
+from open_webui.env import USE_CUSTOM_QA_API, GOVGPT_FILE_SEARCH_API_URL, BYPASS_EMBEDDING_FOR_GOVGPT
+bypass_for_govgpt = USE_CUSTOM_QA_API and GOVGPT_FILE_SEARCH_API_URL and BYPASS_EMBEDDING_FOR_GOVGPT
+
+if bypass_for_govgpt:
+    log.info("Bypassing embedding function creation in main.py - files will be sent to GOVGPT_FILE_SEARCH_API_URL service")
+    log.info(f"USE_CUSTOM_QA_API: {USE_CUSTOM_QA_API}, GOVGPT_FILE_SEARCH_API_URL: {GOVGPT_FILE_SEARCH_API_URL}, BYPASS_EMBEDDING_FOR_GOVGPT: {BYPASS_EMBEDDING_FOR_GOVGPT}")
+    # Create a dummy embedding function that returns empty results
+    def dummy_embedding_function(texts, prefix=None, user=None):
+        log.info("Dummy embedding function called - bypassing actual embedding")
+        if isinstance(texts, str):
+            return [0.0] * 1536  # Return dummy embedding for single text
+        else:
+            return [[0.0] * 1536 for _ in texts]  # Return dummy embeddings for multiple texts
+    
+    app.state.EMBEDDING_FUNCTION = dummy_embedding_function
+else:
+    app.state.EMBEDDING_FUNCTION = get_embedding_function(
+        app.state.config.RAG_EMBEDDING_ENGINE,
+        app.state.config.RAG_EMBEDDING_MODEL,
+        app.state.ef,
+        (
+            app.state.config.RAG_OPENAI_API_BASE_URL
+            if app.state.config.RAG_EMBEDDING_ENGINE == "openai"
+            else (
+                app.state.config.RAG_OLLAMA_BASE_URL
+                if app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
+                else app.state.config.RAG_AZURE_OPENAI_BASE_URL
+            )
+        ),
+        (
+            app.state.config.RAG_OPENAI_API_KEY
+            if app.state.config.RAG_EMBEDDING_ENGINE == "openai"
+            else (
+                app.state.config.RAG_OLLAMA_API_KEY
+                if app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
+                else app.state.config.RAG_AZURE_OPENAI_API_KEY
+            )
+        ),
+        app.state.config.RAG_EMBEDDING_BATCH_SIZE,
+        azure_api_version=(
+            app.state.config.RAG_AZURE_OPENAI_API_VERSION
+            if app.state.config.RAG_EMBEDDING_ENGINE == "azure_openai"
+            else None
+        ),
+    )
 
 ########################################
 #
@@ -1697,131 +1717,20 @@ async def get_app_config(request: Request):
 
 @app.get("/api/config/mobile")
 async def get_app_config_mobile():
-    suggestions = app.state.config.DEFAULT_PROMPT_SUGGESTIONS or []
-
-    return JSONResponse({
-        "inputLinesNum": int(MOBILE_INPUT_LINES),
-        "suggestions": suggestions,
-        "fileUploadCountAllowed": int(FILE_UPLOAD_COUNT_ALLOWED),
-        "maxFileSizeAllowed": int(MAX_FILE_SIZE),
-        "fileTypesAllowed": ALLOWED_FILE_TYPES.split(","),
-        "privacyPolicyURL": PRIVACY_POLICY_URL, #url will be provided later
-        "termsConditionsURL": TERMS_CONDITIONS_URL, #url will be provided later
-        "govgpt": {
-            "rag_wog_model_name": app.state.config.GOVGPT_RAG_WOG_MODEL_NAME,
-        },
-        "allowCredentialsLogin": ALLOW_CREDENTIALS_LOGIN
-    })
-
-class UrlForm(BaseModel):
-    url: str
+    """Get mobile-specific configuration."""
+    return JSONResponse(get_mobile_config(app.state))
 
 
-@app.get("/api/webhook")
-async def get_webhook_url(user=Depends(get_admin_user)):
-    return {
-        "url": app.state.config.WEBHOOK_URL,
-    }
+from open_webui.wog_documents import get_wog_documents_by_department
 
 
-@app.post("/api/webhook")
-async def update_webhook_url(form_data: UrlForm, user=Depends(get_admin_user)):
-    app.state.config.WEBHOOK_URL = form_data.url
-    app.state.WEBHOOK_URL = app.state.config.WEBHOOK_URL
-    return {"url": app.state.config.WEBHOOK_URL}
+@app.get("/api/wog/documents")
+async def get_wog_documents():
+    """Get Whole of Government (WOG) documents organized by department."""
+    return JSONResponse(get_wog_documents_by_department())
 
 
-@app.get("/api/version")
-async def get_app_version():
-    return {
-        "version": VERSION,
-    }
 
-
-@app.get("/api/version/updates")
-async def get_app_latest_release_version(user=Depends(get_verified_user)):
-    if OFFLINE_MODE:
-        log.debug(
-            f"Offline mode is enabled, returning current version as latest version"
-        )
-        return {"current": VERSION, "latest": VERSION}
-    try:
-        timeout = aiohttp.ClientTimeout(total=1)
-        async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
-            async with session.get(
-                "https://api.github.com/repos/open-webui/open-webui/releases/latest",
-                ssl=AIOHTTP_CLIENT_SESSION_SSL,
-            ) as response:
-                response.raise_for_status()
-                data = await response.json()
-                latest_version = data["tag_name"]
-
-                return {"current": VERSION, "latest": latest_version[1:]}
-    except Exception as e:
-        log.debug(e)
-        return {"current": VERSION, "latest": VERSION}
-
-
-@app.get("/api/changelog")
-async def get_app_changelog():
-    return {key: CHANGELOG[key] for idx, key in enumerate(CHANGELOG) if idx < 5}
-
-
-@app.get("/api/usage")
-async def get_current_usage(user=Depends(get_verified_user)):
-    """
-    Get current usage statistics for Open WebUI.
-    This is an experimental endpoint and subject to change.
-    """
-    try:
-        return {"model_ids": get_models_in_use(), "user_ids": get_active_user_ids()}
-    except Exception as e:
-        log.error(f"Error getting usage statistics: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-############################
-# OAuth Login & Callback
-############################
-
-# SessionMiddleware is used by authlib for oauth
-if len(OAUTH_PROVIDERS) > 0:
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key=WEBUI_SECRET_KEY,
-        session_cookie="oui-session",
-        same_site=WEBUI_SESSION_COOKIE_SAME_SITE,
-        https_only=WEBUI_SESSION_COOKIE_SECURE,
-    )
-
-
-@app.get("/oauth/{provider}/login")
-async def oauth_login(provider: str, request: Request):
-    return await oauth_manager.handle_login(request, provider)
-
-
-# OAuth login logic is as follows:
-# 1. Attempt to find a user with matching subject ID, tied to the provider
-# 2. If OAUTH_MERGE_ACCOUNTS_BY_EMAIL is true, find a user with the email address provided via OAuth
-#    - This is considered insecure in general, as OAuth providers do not always verify email addresses
-# 3. If there is no user, and ENABLE_OAUTH_SIGNUP is true, create a user
-#    - Email addresses are considered unique, so we fail registration if the email address is already taken
-@app.get("/oauth/{provider}/callback")
-async def oauth_callback(provider: str, request: Request, response: Response):
-    return await oauth_manager.handle_callback(request, provider, response)
-
-
-# OAuth login
-# for mobile auth process
-# returns user info, token, auth_token
-@app.get("/oauth/{provider}/token")
-async def oauth_callback_mob(provider: str, request: Request, response: Response):
-    try:
-        log.info(f"Validating the token oauth_callback_mob")
-        return await oauth_manager.handle_mobile_callback(request, provider)
-    except Exception as e:
-        log.error(f"Error in oauth_callback_mob: {e}")
-        raise HTTPException(500, detail="Internal Server Error")
 
 @app.get("/manifest.json")
 async def get_manifest_json():

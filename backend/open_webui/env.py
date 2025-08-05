@@ -581,5 +581,9 @@ CUSTOM_WEB_SEARCH_URL = os.getenv("CUSTOM_WEB_SEARCH_URL")
 MS_LOGOUT_URL = os.getenv("MS_LOGOUT_URL")
 
 GOVGPT_FILE_SEARCH_API_URL = os.environ.get("GOVGPT_FILE_SEARCH_API_URL", "http://40.119.184.8:8102/query")
-CUSTOM_QA_TIMEOUT = int(os.environ.get("GOVGPT_FILE_SEARCH_TIMEOUT", "30"))
+CUSTOM_QA_TIMEOUT = int(os.environ.get("GOVGPT_FILE_SEARCH_TIMEOUT", "900"))  # 15 minutes default (increased from 10 minutes)
 USE_CUSTOM_QA_API = os.environ.get("ENABLE_GOVGPT_FILE_SEARCH", "false").lower() == "true"
+# Bypass embedding process when using GOVGPT_FILE_SEARCH_API_URL
+BYPASS_EMBEDDING_FOR_GOVGPT = os.environ.get("BYPASS_EMBEDDING_FOR_GOVGPT", "true").lower() == "true"
+# API Key for external services
+GOVGPT_API_KEY = os.environ.get("GOVGPT_API_KEY", "gotgpt-sandbox")

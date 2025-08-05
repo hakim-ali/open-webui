@@ -1643,7 +1643,7 @@
 													<button
 														data-filter-toggle
 														on:click={handleFilterToggle}
-														class="flex items-center px-[12px] gap-[4px] py-[8px] shadow-custom3 border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#004280] dark:bg-[#004280] text-typography-titles text-[14px] leading-[22px] rounded-full"
+														class="flex items-center px-[12px] gap-[4px] py-[8px] shadow-custom3 border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[14px] leading-[22px] rounded-full"
 														><Filter />{$mobile ? '' : $i18n.t('Tools')}</button
 													>
 													{#if selectedModelName !== ''}<div
@@ -2124,11 +2124,15 @@
 												<Tooltip content={$i18n.t('Send message')}>
 													<button
 														id="send-message-button"
-														class="{!(prompt === '' && files.length === 0) && !isUploading
+														class="{!(files.length > 0
+															? prompt.length === 0 || files.length === 0
+															: prompt.length === 0)
 															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 															: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-[#1F2531] disabled'} transition rounded-full p-1.5 self-center"
 														type="submit"
-														disabled={(prompt === '' && files.length === 0) || isUploading}
+														disabled={files.length > 0
+															? prompt.length === 0 || files.length === 0
+															: prompt.length === 0}
 													>
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
