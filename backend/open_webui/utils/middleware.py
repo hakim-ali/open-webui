@@ -99,7 +99,7 @@ from open_webui.env import (
 )
 from open_webui.constants import TASKS
 
-from open_webui.env import CUSTOM_WEB_SEARCH_URL, MAX_RETRIALS_WEB_SEARCH, GOV_GPT_WEB_SEARCH
+from open_webui.env import CUSTOM_WEB_SEARCH_URL, MAX_RETRIALS_WEB_SEARCH, GOV_GPT_WEB_SEARCH, GOVGPT_API_KEY
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
@@ -344,7 +344,7 @@ async def chat_memory_handler(
 
 
 async def chat_web_search_handler(
-    request: Request, form_data: dict, extra_params: dict, user
+    request: Request, form_data: dict, extra_params: dict, user, web_search_enabled=True
 ):
     log.info(f"Web Search Handler: Starting web search for user {getattr(user, 'id', 'anonymous')}")
     log.info(f"Web Search Handler: Request method: {request.method}")
@@ -358,16 +358,21 @@ async def chat_web_search_handler(
 
 
     event_emitter = extra_params["__event_emitter__"]
-    await event_emitter(
-        {
-            "type": "status",
-            "data": {
-                "action": "web_search",
-                "description": "Generating search query",
-                "done": False,
-            },
-        }
-    )
+    
+    # Only emit status events if web_search_enabled is True
+    if web_search_enabled:
+        await event_emitter(
+            {
+                "type": "status",
+                "data": {
+                    "action": "web_search",
+                    "description": "Generating search query",
+                    "done": False,
+                },
+            }
+        )
+    else:
+        log.info(f"Web Search Handler: web_search_enabled=False, skipping status event emission")
 
     messages = form_data["messages"]
     user_message = get_last_user_message(messages)
@@ -379,8 +384,9 @@ async def chat_web_search_handler(
         log.info(f"Web Search Handler: Using GOV_GPT_WEB_SEARCH for user {getattr(user, 'id', 'anonymous')}")
         log.info(f"Web Search Handler: User query: '{user_query}'")
         log.info(f"Web Search Handler: Session ID: {session_id}")
+        log.info(f"Web Search Handler: webSearchEnabled={web_search_enabled}")
 
-        result = await run_gov_gpt_web_search(user_query, user, session_id, user_message, event_emitter, request, form_data)
+        result = await run_gov_gpt_web_search(user_query, user, session_id, user_message, event_emitter, request, form_data, web_search_enabled)
 
         log.info(f"Web Search Handler: Received result from GOV_GPT web search")
         log.info(f"Web Search Handler: Result has response: {bool(result and result.get('response'))}")
@@ -648,7 +654,7 @@ async def get_web_results_from_serper(query, request):
         return []
 
 #for custom gov gpt web search--
-async def run_gov_gpt_web_search(user_query, user, session_id, user_message, event_emitter, request, form_data):
+async def run_gov_gpt_web_search(user_query, user, session_id, user_message, event_emitter, request, form_data, web_search_enabled=True):
     log.info(f"GOV_GPT Web Search: Starting search for user {getattr(user, 'id', 'anonymous')}")
     log.info(f"GOV_GPT Web Search: Original query: '{user_query}'")
     log.info(f"GOV_GPT Web Search: Session ID: {session_id}")
@@ -680,6 +686,7 @@ async def run_gov_gpt_web_search(user_query, user, session_id, user_message, eve
             else:
                 # Subsequent runs - perform web search with refined queries
                 log.info(f"GOV_GPT Web Search: Searching for refined queries: {refined_query}")
+                # Only emit status events if web_search_enabled is True
                 await event_emitter(
                     {
                         "type": "status",
@@ -710,6 +717,7 @@ async def run_gov_gpt_web_search(user_query, user, session_id, user_message, eve
                 
                 log.info(f"GOV_GPT Web Search: Total website results collected: {len(website_results)}")
                 
+                # Only emit status events if web_search_enabled is True
                 await event_emitter(
                     {
                         "type": "status",
@@ -721,7 +729,7 @@ async def run_gov_gpt_web_search(user_query, user, session_id, user_message, eve
                         },
                     }
                 )
-
+               
             # Call custom /search API with current state
             log.info(f"GOV_GPT Web Search: Preparing to call custom API at {CUSTOM_WEB_SEARCH_URL}")
             
@@ -741,13 +749,16 @@ async def run_gov_gpt_web_search(user_query, user, session_id, user_message, eve
             
             log.info(f"GOV_GPT Web Search: Prepared {len(chat_history)} chat history messages")
             
+            log.info(f"GOV_GPT Web Search: web_search_enabled parameter: {web_search_enabled}")
+            
             payload = {
                 "user_query": org_query,
                 "user_name": user_name,
                 "user_id": user_id,
                 "session_id": session_id,
                 "chat_history": chat_history,
-                "website_results": website_results
+                "website_results": website_results,
+                "web_search_enabled": web_search_enabled
             }
 
             log.info(f"GOV_GPT Web Search: Request payload: {json.dumps(payload, indent=2)}")
@@ -765,8 +776,12 @@ async def run_gov_gpt_web_search(user_query, user, session_id, user_message, eve
                 async with aiohttp.ClientSession() as session:
                     async with session.post(
                         CUSTOM_WEB_SEARCH_URL,
+                        headers={
+                            "Content-Type": "application/json",
+                            "X-API-Key": GOVGPT_API_KEY
+                        },
                         json=payload,
-                        timeout=aiohttp.ClientTimeout(total=120, connect=10)
+                        timeout=aiohttp.ClientTimeout(total=300, connect=10)
                     ) as resp:
                         end_time = time.time()
                         response_time = end_time - start_time
@@ -1012,48 +1027,71 @@ async def chat_completion_files_handler(
                 return body, {"sources": sources}
             
             # Use govGpt-file-search-service instead of regular retrieval
+            log.info(f"govGpt-file-search-service starting processing for user {user.id}")
+            log.info(f"govGpt-file-search-service files count: {len(files)}")
+            log.info(f"govGpt-file-search-service files structure: {files}")
+            
             try:
                 from open_webui.routers.custom_document_qa import (
                     call_custom_qa_api, 
                     get_document_content_from_files, 
                     get_last_user_message
                 )
+                log.info(f"govGpt-file-search-service successfully imported required modules")
                 
                 user_message = get_last_user_message(body["messages"])
                 log.info(f"govGpt-file-search-service processing user message: '{user_message}'")
                 
                 # Get file IDs from the files list
                 file_ids = []
-                for file_item in files:
+                log.info(f"govGpt-file-search-service extracting file IDs from {len(files)} file items")
+                
+                for i, file_item in enumerate(files):
+                    log.info(f"govGpt-file-search-service processing file item {i + 1}/{len(files)}: {file_item}")
+                    
                     if isinstance(file_item, dict):
                         if "id" in file_item:
                             file_ids.append(file_item["id"])
+                            log.info(f"govGpt-file-search-service added file ID from 'id' field: {file_item['id']}")
                         elif "file_id" in file_item:
                             file_ids.append(file_item["file_id"])
+                            log.info(f"govGpt-file-search-service added file ID from 'file_id' field: {file_item['file_id']}")
+                        else:
+                            log.warning(f"govGpt-file-search-service file item {i + 1} has no 'id' or 'file_id' field: {file_item}")
                     elif isinstance(file_item, str):
                         file_ids.append(file_item)
+                        log.info(f"govGpt-file-search-service added file ID from string: {file_item}")
+                    else:
+                        log.warning(f"govGpt-file-search-service file item {i + 1} has unexpected type: {type(file_item)}")
                 
                 log.info(f"govGpt-file-search-service found {len(file_ids)} file IDs: {file_ids}")
                 
                 if file_ids:
                     # Get document content
                     log.info(f"govGpt-file-search-service extracting document content for {len(file_ids)} files")
-                    document_text = get_document_content_from_files(request, file_ids, user)
+                    document_text, file_info = get_document_content_from_files(request, file_ids, user)
                     log.info(f"govGpt-file-search-service extracted {len(document_text)} document content")
                     
                     # Get chat history for context
                     chat_history = []
                     messages = body.get("messages", [])
+                    log.info(f"govGpt-file-search-service building chat history from {len(messages)} messages")
+                    
                     for i in range(0, len(messages) - 1, 2):  # Skip the last user message
                         if i + 1 < len(messages):
+                            user_msg = messages[i].get("content", "")
+                            assistant_msg = messages[i + 1].get("content", "")
+                            
                             chat_history.append({
                                 "role": "user",
-                                "content": messages[i].get("content", "")
+                                "content": user_msg
                             })
                             chat_history.append({
                                 "role": "assistant", 
-                                "content": messages[i + 1].get("content", "")
+                                "content": assistant_msg
                             })
+                            
+                            log.info(f"govGpt-file-search-service added chat history entry {len(chat_history)//2}: user='{user_msg[:50]}...', assistant='{assistant_msg[:50]}...'")
                     
                     log.info(f"govGpt-file-search-service prepared {len(chat_history)} chat history messages")
                     
@@ -1065,22 +1103,28 @@ async def chat_completion_files_handler(
                         user_id=user.id,
                         user_name=user.name,
                         session_id=body.get("metadata", {}).get("session_id"),
-                        chat_history=chat_history
+                        chat_history=chat_history,
+                        file_info=file_info
                     )
                     
                     # Extract the response and add it to the user message
+                    log.info(f"govGpt-file-search-service API response received")
                     log.info(f"govGpt-file-search-service API response keys: {list(api_response.keys())}")
+                    
                     custom_response = api_response.get("response", "")
+                    log.info(f"govGpt-file-search-service custom response length: {len(custom_response)} characters")
+                    log.info(f"govGpt-file-search-service custom response preview: '{custom_response[:200]}...'")
                     
                     if custom_response.strip():
-                        log.info(f"govGpt-file-search-service received response: {len(custom_response)} characters")
-                        log.info(f"govGpt-file-search-service response preview: '{custom_response[:200]}...'")
+                        log.info(f"govGpt-file-search-service received valid response: {len(custom_response)} characters")
                         log.info(f"govGpt-file-search-service full response: {custom_response}")
                         
                         # Add sources from the custom API if available
                         if api_response.get("sources"):
                             sources.extend(api_response["sources"])
                             log.info(f"govGpt-file-search-service added {len(api_response['sources'])} sources")
+                        else:
+                            log.info(f"govGpt-file-search-service no sources in API response")
                         
                         # Mark the body to skip regular chat completion and use streaming
                         body["skip_chat_completion"] = True
@@ -1092,14 +1136,17 @@ async def chat_completion_files_handler(
                         }
                         
                         log.info(f"govGpt-file-search-service streaming response configured for user {user.id}")
+                        log.info(f"govGpt-file-search-service body keys after configuration: {list(body.keys())}")
                         
                         # Return the body with the custom streaming response
                         return body, {"sources": sources}
                     else:
                         log.warning(f"govGpt-file-search-service received empty response for user {user.id}")
+                        log.warning(f"govGpt-file-search-service custom_response: '{custom_response}'")
                     
             except Exception as e:
-                log.error(f"Error calling govGpt-file-search-service: {e}")
+                log.error(f"govGpt-file-search-service error calling external API: {e}")
+                log.exception(f"govGpt-file-search-service full exception details:")
                 # Fall back to regular retrieval if custom service fails
                 use_govgpt_service = False
         
@@ -1332,7 +1379,19 @@ async def process_chat_payload(request, form_data, user, metadata, model):
 
     features = form_data.pop("features", None)
 
-    log.warning(f"features - :{features}")
+    # Check if default model is selected before popping it
+    current_model = form_data.get("model", "")
+    log.info(f"Current model before popping: {current_model}")
+    
+    # Check if this is the default model
+    default_model = request.app.state.config.DEFAULT_MODELS
+    log.info(f"Default model from config: {default_model}")
+    
+    is_default_model = current_model == default_model
+    log.info(f"Is default model selected: {is_default_model}")
+
+
+    log.info(f"features - :{features}")
 
     if features:
         if "memory" in features and features["memory"]:
@@ -1340,14 +1399,35 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 request, form_data, extra_params, user
             )
 
-        if "web_search" in features and features["web_search"]:
-
+        # Check if files are attached
+        files = form_data.get("files", [])
+        has_files = len(files) > 0
+        log.info(f"Files attached: {has_files}, File count: {len(files)}")
+        
+        # Check if we should call web search handler
+        should_call_web_search = False
+        web_search_enabled = False
+        
+        if has_files:
+            # Files are attached, skip web search
+            log.warning("Files are attached, skipping web search handler ------------------")
+        elif "web_search" in features and features["web_search"]:
+            # Normal web search is enabled
+            should_call_web_search = True
+            web_search_enabled = True
             log.warning("inside web_search block ------------------")
-
+        elif is_default_model:
+            # Default model is selected but web_search is not enabled
+            # Still call web search handler but with web_search_enabled = false
+            should_call_web_search = True
+            web_search_enabled = False
+            log.warning("inside default model web search block (no status events) ------------------")
+        
+        if should_call_web_search:
             form_data = await chat_web_search_handler(
-                request, form_data, extra_params, user
+                request, form_data, extra_params, user, web_search_enabled
             )
-
+            
         if "image_generation" in features and features["image_generation"]:
             form_data = await chat_image_generation_handler(
                 request, form_data, extra_params, user

@@ -52,7 +52,7 @@
 	let isOn = false;
 
 	const setDefaultModel = async () => {
-		settings.set({ ...$settings, models: ['gpt-4.1'] });
+		settings.set({ ...$settings, models: [$config?.default_models] });
 		await updateUserSettings(localStorage.token, { ui: $settings });
 	};
 	onMount(() => {

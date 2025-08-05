@@ -328,35 +328,52 @@ async def update_embedding_config(
             request.app.state.config.RAG_EMBEDDING_MODEL,
         )
 
-        request.app.state.EMBEDDING_FUNCTION = get_embedding_function(
-            request.app.state.config.RAG_EMBEDDING_ENGINE,
-            request.app.state.config.RAG_EMBEDDING_MODEL,
-            request.app.state.ef,
-            (
-                request.app.state.config.RAG_OPENAI_API_BASE_URL
-                if request.app.state.config.RAG_EMBEDDING_ENGINE == "openai"
-                else (
-                    request.app.state.config.RAG_OLLAMA_BASE_URL
-                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
-                    else request.app.state.config.RAG_AZURE_OPENAI_BASE_URL
-                )
-            ),
-            (
-                request.app.state.config.RAG_OPENAI_API_KEY
-                if request.app.state.config.RAG_EMBEDDING_ENGINE == "openai"
-                else (
-                    request.app.state.config.RAG_OLLAMA_API_KEY
-                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
-                    else request.app.state.config.RAG_AZURE_OPENAI_API_KEY
-                )
-            ),
-            request.app.state.config.RAG_EMBEDDING_BATCH_SIZE,
-            azure_api_version=(
-                request.app.state.config.RAG_AZURE_OPENAI_API_VERSION
-                if request.app.state.config.RAG_EMBEDDING_ENGINE == "azure_openai"
-                else None
-            ),
-        )
+        # Check if we should bypass embedding for GOVGPT_FILE_SEARCH_API_URL
+        from open_webui.env import USE_CUSTOM_QA_API, GOVGPT_FILE_SEARCH_API_URL, BYPASS_EMBEDDING_FOR_GOVGPT
+        bypass_for_govgpt = USE_CUSTOM_QA_API and GOVGPT_FILE_SEARCH_API_URL and BYPASS_EMBEDDING_FOR_GOVGPT
+        
+        if bypass_for_govgpt:
+            log.info("Bypassing embedding function creation in retrieval.py - files will be sent to GOVGPT_FILE_SEARCH_API_URL service")
+            log.info(f"USE_CUSTOM_QA_API: {USE_CUSTOM_QA_API}, GOVGPT_FILE_SEARCH_API_URL: {GOVGPT_FILE_SEARCH_API_URL}, BYPASS_EMBEDDING_FOR_GOVGPT: {BYPASS_EMBEDDING_FOR_GOVGPT}")
+            # Create a dummy embedding function that returns empty results
+            def dummy_embedding_function(texts, prefix=None, user=None):
+                log.info("Dummy embedding function called - bypassing actual embedding")
+                if isinstance(texts, str):
+                    return [0.0] * 1536  # Return dummy embedding for single text
+                else:
+                    return [[0.0] * 1536 for _ in texts]  # Return dummy embeddings for multiple texts
+            
+            request.app.state.EMBEDDING_FUNCTION = dummy_embedding_function
+        else:
+            request.app.state.EMBEDDING_FUNCTION = get_embedding_function(
+                request.app.state.config.RAG_EMBEDDING_ENGINE,
+                request.app.state.config.RAG_EMBEDDING_MODEL,
+                request.app.state.ef,
+                (
+                    request.app.state.config.RAG_OPENAI_API_BASE_URL
+                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "openai"
+                    else (
+                        request.app.state.config.RAG_OLLAMA_BASE_URL
+                        if request.app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
+                        else request.app.state.config.RAG_AZURE_OPENAI_BASE_URL
+                    )
+                ),
+                (
+                    request.app.state.config.RAG_OPENAI_API_KEY
+                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "openai"
+                    else (
+                        request.app.state.config.RAG_OLLAMA_API_KEY
+                        if request.app.state.config.RAG_EMBEDDING_ENGINE == "ollama"
+                        else request.app.state.config.RAG_AZURE_OPENAI_API_KEY
+                    )
+                ),
+                request.app.state.config.RAG_EMBEDDING_BATCH_SIZE,
+                azure_api_version=(
+                    request.app.state.config.RAG_AZURE_OPENAI_API_VERSION
+                    if request.app.state.config.RAG_EMBEDDING_ENGINE == "azure_openai"
+                    else None
+                ),
+            )
 
         return {
             "status": True,
@@ -1210,6 +1227,18 @@ def save_docs_to_vector_db(
                 return True
 
         log.info(f"adding to collection {collection_name}")
+        
+        # Check if we should bypass embedding for GOVGPT_FILE_SEARCH_API_URL
+        from open_webui.env import USE_CUSTOM_QA_API, GOVGPT_FILE_SEARCH_API_URL, BYPASS_EMBEDDING_FOR_GOVGPT
+        bypass_for_govgpt = USE_CUSTOM_QA_API and GOVGPT_FILE_SEARCH_API_URL and BYPASS_EMBEDDING_FOR_GOVGPT
+        
+        if bypass_for_govgpt:
+            log.info("Bypassing embedding generation in save_docs_to_vector_db - files will be sent to GOVGPT_FILE_SEARCH_API_URL service")
+            log.info(f"USE_CUSTOM_QA_API: {USE_CUSTOM_QA_API}, GOVGPT_FILE_SEARCH_API_URL: {GOVGPT_FILE_SEARCH_API_URL}, BYPASS_EMBEDDING_FOR_GOVGPT: {BYPASS_EMBEDDING_FOR_GOVGPT}")
+            # Skip embedding generation and return success
+            # The external service will handle the embedding and storage
+            return True
+        
         embedding_function = get_embedding_function(
             request.app.state.config.RAG_EMBEDDING_ENGINE,
             request.app.state.config.RAG_EMBEDDING_MODEL,
@@ -1279,23 +1308,42 @@ def process_file(
     form_data: ProcessFileForm,
     user=Depends(get_verified_user),
 ):
+    log.info(f"Processing file request - file_id: {form_data.file_id}, user_id: {user.id}, collection_name: {form_data.collection_name}")
+    
     try:
+        log.debug(f"Retrieving file from database: {form_data.file_id}")
         file = Files.get_file_by_id(form_data.file_id)
+        
+        if not file:
+            log.error(f"File not found: {form_data.file_id}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"File not found: {form_data.file_id}",
+            )
+
+        log.info(f"File retrieved successfully - filename: {file.filename}, user_id: {file.user_id}")
 
         collection_name = form_data.collection_name
 
         if collection_name is None:
             collection_name = f"file-{file.id}"
+            log.debug(f"Using default collection name: {collection_name}")
+        else:
+            log.debug(f"Using provided collection name: {collection_name}")
 
         if form_data.content:
+            log.info(f"Processing file with provided content - file_id: {file.id}")
             # Update the content in the file
             # Usage: /files/{file_id}/data/content/update, /files/ (audio file upload pipeline)
 
             try:
                 # /files/{file_id}/data/content/update
+                log.debug(f"Deleting existing collection: file-{file.id}")
                 VECTOR_DB_CLIENT.delete_collection(collection_name=f"file-{file.id}")
-            except:
+                log.debug(f"Successfully deleted collection: file-{file.id}")
+            except Exception as e:
                 # Audio file upload pipeline
+                log.debug(f"Collection deletion failed (expected for audio files): {e}")
                 pass
 
             docs = [
@@ -1312,15 +1360,20 @@ def process_file(
             ]
 
             text_content = form_data.content
+            log.debug(f"Created document with content length: {len(text_content)} characters")
+            
         elif form_data.collection_name:
+            log.info(f"Processing file with existing collection - file_id: {file.id}")
             # Check if the file has already been processed and save the content
             # Usage: /knowledge/{id}/file/add, /knowledge/{id}/file/update
 
+            log.debug(f"Querying existing collection: file-{file.id}")
             result = VECTOR_DB_CLIENT.query(
                 collection_name=f"file-{file.id}", filter={"file_id": file.id}
             )
 
             if result is not None and len(result.ids[0]) > 0:
+                log.debug(f"Found existing documents in collection: {len(result.ids[0])} documents")
                 docs = [
                     Document(
                         page_content=result.documents[0][idx],
@@ -1329,6 +1382,7 @@ def process_file(
                     for idx, id in enumerate(result.ids[0])
                 ]
             else:
+                log.debug("No existing documents found, using file data content")
                 docs = [
                     Document(
                         page_content=file.data.get("content", ""),
@@ -1343,12 +1397,19 @@ def process_file(
                 ]
 
             text_content = file.data.get("content", "")
+            log.debug(f"Using file data content with length: {len(text_content)} characters")
+            
         else:
+            log.info(f"Processing file from path - file_id: {file.id}, path: {file.path}")
             # Process the file and save the content
             # Usage: /files/
             file_path = file.path
             if file_path:
+                log.debug(f"Getting file from storage: {file_path}")
                 file_path = Storage.get_file(file_path)
+                log.debug(f"File retrieved from storage: {file_path}")
+                
+                log.debug(f"Creating loader with engine: {request.app.state.config.CONTENT_EXTRACTION_ENGINE}")
                 loader = Loader(
                     engine=request.app.state.config.CONTENT_EXTRACTION_ENGINE,
                     DATALAB_MARKER_API_KEY=request.app.state.config.DATALAB_MARKER_API_KEY,
@@ -1377,9 +1438,12 @@ def process_file(
                     DOCUMENT_INTELLIGENCE_KEY=request.app.state.config.DOCUMENT_INTELLIGENCE_KEY,
                     MISTRAL_OCR_API_KEY=request.app.state.config.MISTRAL_OCR_API_KEY,
                 )
+                
+                log.debug(f"Loading documents from file: {file.filename}")
                 docs = loader.load(
                     file.filename, file.meta.get("content_type"), file_path
                 )
+                log.debug(f"Successfully loaded {len(docs)} documents from file")
 
                 docs = [
                     Document(
@@ -1395,6 +1459,7 @@ def process_file(
                     for doc in docs
                 ]
             else:
+                log.debug("No file path available, using file data content")
                 docs = [
                     Document(
                         page_content=file.data.get("content", ""),
@@ -1408,17 +1473,22 @@ def process_file(
                     )
                 ]
             text_content = " ".join([doc.page_content for doc in docs])
+            log.debug(f"Extracted text content with length: {len(text_content)} characters")
 
-        log.debug(f"text_content: {text_content}")
+        log.debug(f"Final text content length: {len(text_content)} characters")
+        log.info(f"Updating file data with content for file: {file.id}")
         Files.update_file_data_by_id(
             file.id,
             {"content": text_content},
         )
 
+        log.debug(f"Calculating hash for file: {file.id}")
         hash = calculate_sha256_string(text_content)
+        log.info(f"Updating file hash: {hash}")
         Files.update_file_hash_by_id(file.id, hash)
 
         if not request.app.state.config.BYPASS_EMBEDDING_AND_RETRIEVAL:
+            log.info(f"Saving documents to vector database - collection: {collection_name}, documents: {len(docs)}")
             try:
                 result = save_docs_to_vector_db(
                     request,
@@ -1434,6 +1504,8 @@ def process_file(
                 )
 
                 if result:
+                    log.info(f"Successfully saved documents to vector database - collection: {collection_name}")
+                    log.debug(f"Updating file metadata with collection name: {collection_name}")
                     Files.update_file_metadata_by_id(
                         file.id,
                         {
@@ -1441,15 +1513,21 @@ def process_file(
                         },
                     )
 
+                    log.info(f"File processing completed successfully - file_id: {file.id}, collection: {collection_name}")
                     return {
                         "status": True,
                         "collection_name": collection_name,
                         "filename": file.filename,
                         "content": text_content,
                     }
+                else:
+                    log.error(f"Failed to save documents to vector database - collection: {collection_name}")
+                    raise Exception("Failed to save documents to vector database")
             except Exception as e:
+                log.exception(f"Error saving documents to vector database: {e}")
                 raise e
         else:
+            log.info(f"Bypassing embedding and retrieval for file: {file.id}")
             return {
                 "status": True,
                 "collection_name": None,
@@ -1458,13 +1536,15 @@ def process_file(
             }
 
     except Exception as e:
-        log.exception(e)
+        log.exception(f"Error processing file {form_data.file_id}: {e}")
         if "No pandoc was found" in str(e):
+            log.error(f"Pandoc not installed error for file {form_data.file_id}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=ERROR_MESSAGES.PANDOC_NOT_INSTALLED,
             )
         else:
+            log.error(f"General error processing file {form_data.file_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e),
@@ -2200,15 +2280,21 @@ def process_files_batch(
     """
     Process a batch of files and save them to the vector database.
     """
+    log.info(f"Starting batch file processing - user_id: {user.id}, collection_name: {form_data.collection_name}, files_count: {len(form_data.files)}")
+    
     results: List[BatchProcessFilesResult] = []
     errors: List[BatchProcessFilesResult] = []
     collection_name = form_data.collection_name
 
     # Prepare all documents first
     all_docs: List[Document] = []
+    log.debug(f"Preparing {len(form_data.files)} files for batch processing")
+    
     for file in form_data.files:
         try:
+            log.debug(f"Processing file in batch - file_id: {file.id}, filename: {file.filename}")
             text_content = file.data.get("content", "")
+            log.debug(f"File {file.id} content length: {len(text_content)} characters")
 
             docs: List[Document] = [
                 Document(
@@ -2223,12 +2309,17 @@ def process_files_batch(
                 )
             ]
 
+            log.debug(f"Calculating hash for file {file.id}")
             hash = calculate_sha256_string(text_content)
+            log.debug(f"Updating file hash for {file.id}: {hash}")
             Files.update_file_hash_by_id(file.id, hash)
+            
+            log.debug(f"Updating file data for {file.id}")
             Files.update_file_data_by_id(file.id, {"content": text_content})
 
             all_docs.extend(docs)
             results.append(BatchProcessFilesResult(file_id=file.id, status="prepared"))
+            log.debug(f"Successfully prepared file {file.id} for batch processing")
 
         except Exception as e:
             log.error(f"process_files_batch: Error processing file {file.id}: {str(e)}")
@@ -2236,8 +2327,11 @@ def process_files_batch(
                 BatchProcessFilesResult(file_id=file.id, status="failed", error=str(e))
             )
 
+    log.info(f"Batch preparation completed - successful: {len(results)}, failed: {len(errors)}, total_docs: {len(all_docs)}")
+
     # Save all documents in one batch
     if all_docs:
+        log.info(f"Saving {len(all_docs)} documents to vector database in batch - collection: {collection_name}")
         try:
             save_docs_to_vector_db(
                 request=request,
@@ -2246,22 +2340,29 @@ def process_files_batch(
                 add=True,
                 user=user,
             )
+            log.info(f"Successfully saved {len(all_docs)} documents to vector database - collection: {collection_name}")
 
             # Update all files with collection name
+            log.debug(f"Updating {len(results)} files with collection name: {collection_name}")
             for result in results:
                 Files.update_file_metadata_by_id(
                     result.file_id, {"collection_name": collection_name}
                 )
                 result.status = "completed"
+                log.debug(f"Updated file {result.file_id} status to completed")
+
+            log.info(f"Batch processing completed successfully - completed: {len(results)}, errors: {len(errors)}")
 
         except Exception as e:
-            log.error(
-                f"process_files_batch: Error saving documents to vector DB: {str(e)}"
-            )
+            log.error(f"process_files_batch: Error saving documents to vector DB: {str(e)}")
             for result in results:
                 result.status = "failed"
                 errors.append(
                     BatchProcessFilesResult(file_id=result.file_id, error=str(e))
                 )
+            log.error(f"Batch processing failed - all {len(results)} files marked as failed")
+    else:
+        log.warning("No documents to save to vector database")
 
+    log.info(f"Batch processing summary - results: {len(results)}, errors: {len(errors)}")
     return BatchProcessFilesResponse(results=results, errors=errors)

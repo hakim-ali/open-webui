@@ -41,6 +41,12 @@ from typing import Any
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.retrievers import BaseRetriever
 
+# Add timeout configuration for embedding requests
+EMBEDDING_REQUEST_TIMEOUT = int(os.environ.get("EMBEDDING_REQUEST_TIMEOUT", "300"))  # 5 minutes default
+EMBEDDING_CONNECT_TIMEOUT = int(os.environ.get("EMBEDDING_CONNECT_TIMEOUT", "60"))   # 1 minute default
+EMBEDDING_MAX_RETRIES = int(os.environ.get("EMBEDDING_MAX_RETRIES", "3"))
+EMBEDDING_BATCH_SIZE = int(os.environ.get("EMBEDDING_BATCH_SIZE", "100"))  # Smaller batches for large files
+
 
 class VectorSearchRetriever(BaseRetriever):
     collection_name: Any
@@ -458,6 +464,16 @@ def get_sources_from_files(
         f"files: {files} {queries} {embedding_function} {reranking_function} {full_context}"
     )
 
+    # Check if we should bypass embedding for GOVGPT_FILE_SEARCH_API_URL
+    from open_webui.env import USE_CUSTOM_QA_API, GOVGPT_FILE_SEARCH_API_URL, BYPASS_EMBEDDING_FOR_GOVGPT
+    bypass_for_govgpt = USE_CUSTOM_QA_API and GOVGPT_FILE_SEARCH_API_URL and BYPASS_EMBEDDING_FOR_GOVGPT
+    
+    if bypass_for_govgpt:
+        log.info("Bypassing embedding process - files will be sent to GOVGPT_FILE_SEARCH_API_URL service")
+        log.info(f"USE_CUSTOM_QA_API: {USE_CUSTOM_QA_API}, GOVGPT_FILE_SEARCH_API_URL: {GOVGPT_FILE_SEARCH_API_URL}, BYPASS_EMBEDDING_FOR_GOVGPT: {BYPASS_EMBEDDING_FOR_GOVGPT}")
+        # Return empty sources since the external service will handle the file processing
+        return []
+
     extracted_collections = []
     relevant_contexts = []
 
@@ -663,41 +679,110 @@ def generate_openai_batch_embeddings(
     prefix: str = None,
     user: UserModel = None,
 ) -> Optional[list[list[float]]]:
+    """
+    Generate embeddings with improved timeout handling and retry logic.
+    For large files, this will automatically chunk the requests.
+    """
     try:
         log.debug(
             f"generate_openai_batch_embeddings:model {model} batch size: {len(texts)}"
         )
-        json_data = {"input": texts, "model": model}
-        if isinstance(RAG_EMBEDDING_PREFIX_FIELD_NAME, str) and isinstance(prefix, str):
-            json_data[RAG_EMBEDDING_PREFIX_FIELD_NAME] = prefix
-
-        r = requests.post(
-            f"{url}/embeddings",
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {key}",
-                **(
-                    {
-                        "X-OpenWebUI-User-Name": user.name,
-                        "X-OpenWebUI-User-Id": user.id,
-                        "X-OpenWebUI-User-Email": user.email,
-                        "X-OpenWebUI-User-Role": user.role,
-                    }
-                    if ENABLE_FORWARD_USER_INFO_HEADERS and user
-                    else {}
-                ),
-            },
-            json=json_data,
-        )
-        r.raise_for_status()
-        data = r.json()
-        if "data" in data:
-            return [elem["embedding"] for elem in data["data"]]
+        
+        # For large batches, chunk them to avoid timeouts
+        if len(texts) > EMBEDDING_BATCH_SIZE:
+            log.info(f"Large batch detected ({len(texts)} texts), chunking into batches of {EMBEDDING_BATCH_SIZE}")
+            all_embeddings = []
+            for i in range(0, len(texts), EMBEDDING_BATCH_SIZE):
+                chunk = texts[i:i + EMBEDDING_BATCH_SIZE]
+                chunk_embeddings = _generate_openai_embeddings_chunk(
+                    model, chunk, url, key, prefix, user
+                )
+                if chunk_embeddings is None:
+                    log.error(f"Failed to generate embeddings for chunk {i//EMBEDDING_BATCH_SIZE + 1}")
+                    return None
+                all_embeddings.extend(chunk_embeddings)
+            return all_embeddings
         else:
-            raise "Something went wrong :/"
+            return _generate_openai_embeddings_chunk(model, texts, url, key, prefix, user)
+            
     except Exception as e:
         log.exception(f"Error generating openai batch embeddings: {e}")
         return None
+
+
+def _generate_openai_embeddings_chunk(
+    model: str,
+    texts: list[str],
+    url: str,
+    key: str,
+    prefix: str,
+    user: UserModel,
+) -> Optional[list[list[float]]]:
+    """Helper function to generate embeddings for a single chunk with retry logic."""
+    json_data = {"input": texts, "model": model}
+    if isinstance(RAG_EMBEDDING_PREFIX_FIELD_NAME, str) and isinstance(prefix, str):
+        json_data[RAG_EMBEDDING_PREFIX_FIELD_NAME] = prefix
+
+    for attempt in range(EMBEDDING_MAX_RETRIES):
+        try:
+            r = requests.post(
+                f"{url}/embeddings",
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {key}",
+                    **(
+                        {
+                            "X-OpenWebUI-User-Name": user.name,
+                            "X-OpenWebUI-User-Id": user.id,
+                            "X-OpenWebUI-User-Email": user.email,
+                            "X-OpenWebUI-User-Role": user.role,
+                        }
+                        if ENABLE_FORWARD_USER_INFO_HEADERS and user
+                        else {}
+                    ),
+                },
+                json=json_data,
+                timeout=(EMBEDDING_CONNECT_TIMEOUT, EMBEDDING_REQUEST_TIMEOUT),
+            )
+            r.raise_for_status()
+            data = r.json()
+            if "data" in data:
+                return [elem["embedding"] for elem in data["data"]]
+            else:
+                raise Exception("Invalid response format from embedding API")
+                
+        except requests.exceptions.Timeout as e:
+            log.warning(f"Timeout on attempt {attempt + 1}/{EMBEDDING_MAX_RETRIES}: {e}")
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                # Exponential backoff: 2^attempt seconds
+                backoff_time = 2 ** attempt
+                log.info(f"Retrying in {backoff_time} seconds...")
+                time.sleep(backoff_time)
+            else:
+                log.error(f"All {EMBEDDING_MAX_RETRIES} attempts timed out")
+                return None
+                
+        except requests.exceptions.RequestException as e:
+            if hasattr(e, 'response') and e.response and e.response.status_code == 429:  # Rate limit
+                retry_after = float(e.response.headers.get("Retry-After", "1"))
+                log.warning(f"Rate limit hit, retrying in {retry_after} seconds")
+                time.sleep(retry_after)
+                continue
+            else:
+                log.error(f"Request failed on attempt {attempt + 1}: {e}")
+                if attempt < EMBEDDING_MAX_RETRIES - 1:
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                else:
+                    return None
+                    
+        except Exception as e:
+            log.error(f"Unexpected error on attempt {attempt + 1}: {e}")
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                time.sleep(2 ** attempt)
+            else:
+                return None
+    
+    return None
 
 
 def generate_azure_openai_batch_embeddings(
@@ -709,19 +794,57 @@ def generate_azure_openai_batch_embeddings(
     prefix: str = None,
     user: UserModel = None,
 ) -> Optional[list[list[float]]]:
+    """
+    Generate Azure OpenAI embeddings with improved timeout handling and retry logic.
+    For large files, this will automatically chunk the requests.
+    """
     try:
         log.debug(
             f"generate_azure_openai_batch_embeddings:deployment {model} batch size: {len(texts)}"
         )
-        json_data = {"input": texts}
-        if isinstance(RAG_EMBEDDING_PREFIX_FIELD_NAME, str) and isinstance(prefix, str):
-            json_data[RAG_EMBEDDING_PREFIX_FIELD_NAME] = prefix
+        
+        # For large batches, chunk them to avoid timeouts
+        if len(texts) > EMBEDDING_BATCH_SIZE:
+            log.info(f"Large batch detected ({len(texts)} texts), chunking into batches of {EMBEDDING_BATCH_SIZE}")
+            all_embeddings = []
+            for i in range(0, len(texts), EMBEDDING_BATCH_SIZE):
+                chunk = texts[i:i + EMBEDDING_BATCH_SIZE]
+                chunk_embeddings = _generate_azure_openai_embeddings_chunk(
+                    model, chunk, url, key, version, prefix, user
+                )
+                if chunk_embeddings is None:
+                    log.error(f"Failed to generate embeddings for chunk {i//EMBEDDING_BATCH_SIZE + 1}")
+                    return None
+                all_embeddings.extend(chunk_embeddings)
+            return all_embeddings
+        else:
+            return _generate_azure_openai_embeddings_chunk(model, texts, url, key, version, prefix, user)
+            
+    except Exception as e:
+        log.exception(f"Error generating azure openai batch embeddings: {e}")
+        return None
 
-        url = f"{url}/openai/deployments/{model}/embeddings?api-version={version}"
 
-        for _ in range(5):
+def _generate_azure_openai_embeddings_chunk(
+    model: str,
+    texts: list[str],
+    url: str,
+    key: str,
+    version: str,
+    prefix: str,
+    user: UserModel,
+) -> Optional[list[list[float]]]:
+    """Helper function to generate Azure OpenAI embeddings for a single chunk with retry logic."""
+    json_data = {"input": texts}
+    if isinstance(RAG_EMBEDDING_PREFIX_FIELD_NAME, str) and isinstance(prefix, str):
+        json_data[RAG_EMBEDDING_PREFIX_FIELD_NAME] = prefix
+
+    api_url = f"{url}/openai/deployments/{model}/embeddings?api-version={version}"
+
+    for attempt in range(EMBEDDING_MAX_RETRIES):
+        try:
             r = requests.post(
-                url,
+                api_url,
                 headers={
                     "Content-Type": "application/json",
                     "api-key": key,
@@ -737,21 +860,47 @@ def generate_azure_openai_batch_embeddings(
                     ),
                 },
                 json=json_data,
+                timeout=(EMBEDDING_CONNECT_TIMEOUT, EMBEDDING_REQUEST_TIMEOUT),
             )
-            if r.status_code == 429:
-                retry = float(r.headers.get("Retry-After", "1"))
-                time.sleep(retry)
-                continue
             r.raise_for_status()
             data = r.json()
             if "data" in data:
                 return [elem["embedding"] for elem in data["data"]]
             else:
-                raise Exception("Something went wrong :/")
-        return None
-    except Exception as e:
-        log.exception(f"Error generating azure openai batch embeddings: {e}")
-        return None
+                raise Exception("Invalid response format from Azure embedding API")
+                
+        except requests.exceptions.Timeout as e:
+            log.warning(f"Timeout on attempt {attempt + 1}/{EMBEDDING_MAX_RETRIES}: {e}")
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                # Exponential backoff: 2^attempt seconds
+                backoff_time = 2 ** attempt
+                log.info(f"Retrying in {backoff_time} seconds...")
+                time.sleep(backoff_time)
+            else:
+                log.error(f"All {EMBEDDING_MAX_RETRIES} attempts timed out")
+                return None
+                
+        except requests.exceptions.RequestException as e:
+            if hasattr(e, 'response') and e.response and e.response.status_code == 429:  # Rate limit
+                retry_after = float(e.response.headers.get("Retry-After", "1"))
+                log.warning(f"Azure API rate limit hit, retrying in {retry_after} seconds")
+                time.sleep(retry_after)
+                continue
+            else:
+                log.error(f"Azure API request failed on attempt {attempt + 1}: {e}")
+                if attempt < EMBEDDING_MAX_RETRIES - 1:
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                else:
+                    return None
+                    
+        except Exception as e:
+            log.error(f"Unexpected error on attempt {attempt + 1}: {e}")
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                time.sleep(2 ** attempt)
+            else:
+                return None
+    
+    return None
 
 
 def generate_ollama_batch_embeddings(
@@ -762,42 +911,105 @@ def generate_ollama_batch_embeddings(
     prefix: str = None,
     user: UserModel = None,
 ) -> Optional[list[list[float]]]:
+    """
+    Generate Ollama embeddings with improved timeout handling and retry logic.
+    For large files, this will automatically chunk the requests.
+    """
     try:
         log.debug(
             f"generate_ollama_batch_embeddings:model {model} batch size: {len(texts)}"
         )
-        json_data = {"input": texts, "model": model}
-        if isinstance(RAG_EMBEDDING_PREFIX_FIELD_NAME, str) and isinstance(prefix, str):
-            json_data[RAG_EMBEDDING_PREFIX_FIELD_NAME] = prefix
-
-        r = requests.post(
-            f"{url}/api/embed",
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {key}",
-                **(
-                    {
-                        "X-OpenWebUI-User-Name": user.name,
-                        "X-OpenWebUI-User-Id": user.id,
-                        "X-OpenWebUI-User-Email": user.email,
-                        "X-OpenWebUI-User-Role": user.role,
-                    }
-                    if ENABLE_FORWARD_USER_INFO_HEADERS
-                    else {}
-                ),
-            },
-            json=json_data,
-        )
-        r.raise_for_status()
-        data = r.json()
-
-        if "embeddings" in data:
-            return data["embeddings"]
+        
+        # For large batches, chunk them to avoid timeouts
+        if len(texts) > EMBEDDING_BATCH_SIZE:
+            log.info(f"Large batch detected ({len(texts)} texts), chunking into batches of {EMBEDDING_BATCH_SIZE}")
+            all_embeddings = []
+            for i in range(0, len(texts), EMBEDDING_BATCH_SIZE):
+                chunk = texts[i:i + EMBEDDING_BATCH_SIZE]
+                chunk_embeddings = _generate_ollama_embeddings_chunk(
+                    model, chunk, url, key, prefix, user
+                )
+                if chunk_embeddings is None:
+                    log.error(f"Failed to generate embeddings for chunk {i//EMBEDDING_BATCH_SIZE + 1}")
+                    return None
+                all_embeddings.extend(chunk_embeddings)
+            return all_embeddings
         else:
-            raise "Something went wrong :/"
+            return _generate_ollama_embeddings_chunk(model, texts, url, key, prefix, user)
+            
     except Exception as e:
         log.exception(f"Error generating ollama batch embeddings: {e}")
         return None
+
+
+def _generate_ollama_embeddings_chunk(
+    model: str,
+    texts: list[str],
+    url: str,
+    key: str,
+    prefix: str,
+    user: UserModel,
+) -> Optional[list[list[float]]]:
+    """Helper function to generate Ollama embeddings for a single chunk with retry logic."""
+    json_data = {"input": texts, "model": model}
+    if isinstance(RAG_EMBEDDING_PREFIX_FIELD_NAME, str) and isinstance(prefix, str):
+        json_data[RAG_EMBEDDING_PREFIX_FIELD_NAME] = prefix
+
+    for attempt in range(EMBEDDING_MAX_RETRIES):
+        try:
+            r = requests.post(
+                f"{url}/api/embed",
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {key}",
+                    **(
+                        {
+                            "X-OpenWebUI-User-Name": user.name,
+                            "X-OpenWebUI-User-Id": user.id,
+                            "X-OpenWebUI-User-Email": user.email,
+                            "X-OpenWebUI-User-Role": user.role,
+                        }
+                        if ENABLE_FORWARD_USER_INFO_HEADERS
+                        else {}
+                    ),
+                },
+                json=json_data,
+                timeout=(EMBEDDING_CONNECT_TIMEOUT, EMBEDDING_REQUEST_TIMEOUT),
+            )
+            r.raise_for_status()
+            data = r.json()
+
+            if "embeddings" in data:
+                return data["embeddings"]
+            else:
+                raise Exception("Invalid response format from Ollama embedding API")
+                
+        except requests.exceptions.Timeout as e:
+            log.warning(f"Timeout on attempt {attempt + 1}/{EMBEDDING_MAX_RETRIES}: {e}")
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                # Exponential backoff: 2^attempt seconds
+                backoff_time = 2 ** attempt
+                log.info(f"Retrying in {backoff_time} seconds...")
+                time.sleep(backoff_time)
+            else:
+                log.error(f"All {EMBEDDING_MAX_RETRIES} attempts timed out")
+                return None
+                
+        except requests.exceptions.RequestException as e:
+            log.error(f"Ollama API request failed on attempt {attempt + 1}: {e}")
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                time.sleep(2 ** attempt)  # Exponential backoff
+            else:
+                return None
+                
+        except Exception as e:
+            log.error(f"Unexpected error on attempt {attempt + 1}: {e}")
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                time.sleep(2 ** attempt)
+            else:
+                return None
+    
+    return None
 
 
 def generate_embeddings(
