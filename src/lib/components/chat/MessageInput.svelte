@@ -919,7 +919,7 @@
 							{#if history.currentId && history.messages && attachFileEnabled && Object.values(history.messages).some((message) => message.files && message.files.length > 0)}<div
 									class="text-left rounded-tl-[12px] rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
 								>
-									{$i18n.t("Chat is limited to the '{{count}}' uploaded documents.", {
+									{$i18n.t("Chat is limited to the '{{count}}' uploaded KnowledgeDocuments.", {
 										count: Object.values(history.messages).reduce(
 											(total, message) => total + (message.files ? message.files.length : 0),
 											0

@@ -26,6 +26,7 @@
 		models
 	} from '$lib/stores';
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
+	import GovKno from '../icons/GovKno.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -1151,6 +1152,40 @@
 						</div>
 					{/if}
 				</div>
+			</div>
+		</div>
+		<div class="p-[8px] pb-[24px] sidebar__bottom">
+			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
+				<button
+							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
+								? ''
+								: 'justify-center'}"
+							on:click={() => {
+								goto('/knowledgeRepository');
+							}}
+						>
+							<div class="flex">
+								<div class=" self-center {$showSidebar ? 'me-[8px]' : ''}">
+									<GovKno />
+								</div>
+								<div
+									class="self-center link-style text-typography-titles {$showSidebar
+										? ''
+										: 'hidden'}"
+								>
+									{$i18n.t('Knowledge Repository')}
+								</div>
+							</div>
+							{#if $showSidebar}
+								<div>
+									{#if $isRTL}
+										<ChevronLeft />
+									{:else}
+										<ChevronRight />
+									{/if}
+								</div>
+							{/if}
+						</button>
 			</div>
 		</div>
 		<div class="p-[8px] pb-[24px] sidebar__bottom">
