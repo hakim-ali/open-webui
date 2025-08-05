@@ -5,7 +5,7 @@
 	import Collapsible from '$lib/components/common/Collapsible.svelte';
 
 	export let status = { urls: [], query: '' };
-	let state = false;
+	export let state = true;
 
 	function extractDomain(url: string): string {
 		try {
@@ -39,7 +39,7 @@
 		{/if}
 	</div>
 	<div
-		class="text-sm border border-gray-300/30 dark:border-gray-700/50 rounded-xl mb-1.5"
+		class="text-sm rounded-xl mb-1.5"
 		slot="content"
 	>
 		{#if status?.query}
@@ -76,7 +76,7 @@
 			</a>
 		{/if}
 
-		<div class="flex flex-wrap gap-2 p-3">
+		<div class="flex flex-wrap gap-2 py-3">
 			{#each status.urls as url}
 				<a
 					href={url}
