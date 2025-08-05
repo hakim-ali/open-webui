@@ -13,3 +13,9 @@ export enum TTS_RESPONSE_SPLIT {
 	PARAGRAPHS = 'paragraphs',
 	NONE = 'none'
 }
+
+export type DocumentValidationResult = {
+	isValid: boolean;
+	message?: string;
+	validFiles: Array<File>
+}
