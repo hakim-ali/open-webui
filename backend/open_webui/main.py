@@ -1720,6 +1720,18 @@ async def get_app_config_mobile():
     """Get mobile-specific configuration."""
     return JSONResponse(get_mobile_config(app.state))
 
+
+from open_webui.wog_documents import get_wog_documents_by_department
+
+
+@app.get("/api/wog/documents")
+async def get_wog_documents():
+    """Get Whole of Government (WOG) documents organized by department."""
+    return JSONResponse(get_wog_documents_by_department())
+
+
+
+
 @app.get("/manifest.json")
 async def get_manifest_json():
     if app.state.EXTERNAL_PWA_MANIFEST_URL:
