@@ -715,7 +715,7 @@ async def run_gov_gpt_web_search(user_query, user, session_id, user_message, eve
                         "type": "status",
                         "data": {
                             "action": "web_search",
-                            "description": f"Searched {len(website_results)} sites see top 3 sites",
+                            "description": f"Searched {len(website_results)} sites • Shortlisted 3 sites",
                             "urls": [result.get("url") for result in website_results if result.get("url")][:3],#limit 3
                             "done": True,
                         },

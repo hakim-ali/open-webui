@@ -568,7 +568,7 @@
 						</a>
 						<a
 							id="sidebar-new-chat-button"
-							class="pl-[10px] py-[8px] flex items-center rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+							class="ps-[10px] py-[8px] flex items-center rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
 							class:justify-center={!$showSidebar}
 							href="/"
 							draggable="false"
@@ -624,7 +624,7 @@
 						href="#"
 						on:click={onSidebarClick}
 					>
-						<MaterialIcon name="menu" size="1.25rem"  />
+						<MaterialIcon name="menu" size="1.25rem" />
 					</a>
 
 					<!-- Search icon only when sidebar is expanded, right aligned -->
@@ -888,79 +888,81 @@
 				{/if}
 
 				{#if $user?.role === 'admin'}
-				<Folder
-					className=""
-					name={$i18n.t('Folders')}
-					onAdd={() => {
-						createFolder();
-					}}
-					onAddLabel={$i18n.t('New Folder')}
-					showSidebar={$showSidebar}
-					on:import={(e) => {
-						importChatHandler(e.detail);
-					}}
-					on:drop={async (e) => {
-						const { type, id, item } = e.detail;
+					<Folder
+						className=""
+						name={$i18n.t('Folders')}
+						onAdd={() => {
+							createFolder();
+						}}
+						onAddLabel={$i18n.t('New Folder')}
+						showSidebar={$showSidebar}
+						on:import={(e) => {
+							importChatHandler(e.detail);
+						}}
+						on:drop={async (e) => {
+							const { type, id, item } = e.detail;
 
-						if (type === 'chat') {
-							let chat = await getChatById(localStorage.token, id).catch((error) => {
-								return null;
-							});
-							if (!chat && item) {
-								chat = await importChat(localStorage.token, item.chat, item?.meta ?? {});
-							}
+							if (type === 'chat') {
+								let chat = await getChatById(localStorage.token, id).catch((error) => {
+									return null;
+								});
+								if (!chat && item) {
+									chat = await importChat(localStorage.token, item.chat, item?.meta ?? {});
+								}
 
-							if (chat) {
-								console.log(chat);
-								if (chat.folder_id) {
-									const res = await updateChatFolderIdById(localStorage.token, chat.id, null).catch(
-										(error) => {
+								if (chat) {
+									console.log(chat);
+									if (chat.folder_id) {
+										const res = await updateChatFolderIdById(
+											localStorage.token,
+											chat.id,
+											null
+										).catch((error) => {
 											toast.error(`${error}`);
 											return null;
-										}
-									);
+										});
+									}
+
+									if (chat.pinned) {
+										const res = await toggleChatPinnedStatusById(localStorage.token, chat.id);
+									}
+
+									initChatList();
+								}
+							} else if (type === 'folder') {
+								if (folders[id].parent_id === null) {
+									return;
 								}
 
-								if (chat.pinned) {
-									const res = await toggleChatPinnedStatusById(localStorage.token, chat.id);
+								const res = await updateFolderParentIdById(localStorage.token, id, null).catch(
+									(error) => {
+										toast.error(`${error}`);
+										return null;
+									}
+								);
+
+								if (res) {
+									await initFolders();
 								}
-
-								initChatList();
 							}
-						} else if (type === 'folder') {
-							if (folders[id].parent_id === null) {
-								return;
-							}
-
-							const res = await updateFolderParentIdById(localStorage.token, id, null).catch(
-								(error) => {
-									toast.error(`${error}`);
-									return null;
-								}
-							);
-
-							if (res) {
-								await initFolders();
-							}
-						}
-					}}
-				>
-					{#if folders}
-						<Folders
-							{folders}
-							on:import={(e) => {
-								const { folderId, items } = e.detail;
-								importChatHandler(items, false, folderId);
-							}}
-							on:update={async (e) => {
-								initChatList();
-							}}
-							on:change={async () => {
-								initChatList();
-							}}
-						/>
-					{/if}
-				</Folder>
+						}}
+					>
+						{#if folders}
+							<Folders
+								{folders}
+								on:import={(e) => {
+									const { folderId, items } = e.detail;
+									importChatHandler(items, false, folderId);
+								}}
+								on:update={async (e) => {
+									initChatList();
+								}}
+								on:change={async () => {
+									initChatList();
+								}}
+							/>
+						{/if}
+					</Folder>
 				{/if}
 
 				{#if false && $pinnedChats.length > 0}
@@ -1049,17 +1051,15 @@
 						<div class="flex flex-col space-y-1 rounded-xl">
 							{#each $pinnedChats as chat, idx (`pinned-chat-${chat?.id ?? idx}`)}
 								<ChatItem
-											className=""
-											id={chat.id}
-											title={chat.title}
-											{shiftKey}
-											selected={selectedChatId === chat.id}
-											
-											on:change={async () => {
-												initChatList();
-											}}
-											
-										/>
+									className=""
+									id={chat.id}
+									title={chat.title}
+									{shiftKey}
+									selected={selectedChatId === chat.id}
+									on:change={async () => {
+										initChatList();
+									}}
+								/>
 							{/each}
 						</div>
 					</div>
@@ -1131,6 +1131,7 @@
 											}}
 										>
 											<div
+												dir={$isRTL ? 'rtl' : 'ltr'}
 												class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 											>
 												<Spinner className=" size-4" />
