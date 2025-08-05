@@ -1660,8 +1660,6 @@
 														bind:this={toggleContentElement}
 														class="absolute w-full max-w-[250px] bottom-[0] start-4 z-[40] p-2 mb-20 bg-white border-[#E5EBF3] dark:border-gray-800 dark:bg-[#010E1D] dark:border-gray-00 border rounded-[24px]"
 													>
-
-
 														{#if showFileUploadButton}
 															<button
 																on:click={() => {
@@ -1713,22 +1711,22 @@
 															</button>
 														{/if}
 														{#if showGovKnoButton}
-																<button
-																	on:click|preventDefault={() => saveGovKnoModel()}
-																	type="button"
-																	class="govkno-btn flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 gap-[4px] text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
-																		? ' bg-gradient-bg-2 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
-																		: 'text-gray-600 dark:text-gray-300 '}"
-																>
-																	<div class="flex items-center justify-center gap-[8px]">
-																		<GovKno />
-																		<span
-																			class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5"
-																			>{$i18n.t('Gov Knowledge')}</span
-																		>
-																	</div>
-																	{#if govBtnEnable}<CheckFilter />{/if}
-																</button>
+															<button
+																on:click|preventDefault={() => saveGovKnoModel()}
+																type="button"
+																class="govkno-btn flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 gap-[4px] text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
+																	? ' bg-gradient-bg-2 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
+																	: 'text-gray-600 dark:text-gray-300 '}"
+															>
+																<div class="flex items-center justify-center gap-[8px]">
+																	<GovKno />
+																	<span
+																		class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5"
+																		>{$i18n.t('Gov Knowledge')}</span
+																	>
+																</div>
+																{#if govBtnEnable}<CheckFilter />{/if}
+															</button>
 														{/if}
 														{#if showImageGenerationButton}
 															<Tooltip content={$i18n.t('Generate an image')} placement="top">
@@ -2123,11 +2121,15 @@
 												<Tooltip content={$i18n.t('Send message')}>
 													<button
 														id="send-message-button"
-														class="{!(prompt === '' && files.length === 0) && !isUploading
+														class="{!(files.length > 0
+															? prompt.length === 0 || files.length === 0
+															: prompt.length === 0)
 															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 															: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-[#1F2531] disabled'} transition rounded-full p-1.5 self-center"
 														type="submit"
-														disabled={(prompt === '' && files.length === 0) || isUploading}
+														disabled={files.length > 0
+															? prompt.length === 0 || files.length === 0
+															: prompt.length === 0}
 													>
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
