@@ -534,7 +534,7 @@
 	class=" h-screen max-h-[100dvh] min-h-screen select-none shadown-none border-0 {$showSidebar
 		? `md:relative w-[300px] max-w-[300px] ${$mobile ? `fixed absolute top-0 start-0` : ''}`
 		: $mobile
-			? 'w-[0px] absolute'
+			? 'w-[0px] absolute start-0'
 			: ''} {$isApp
 		? `ml-[4.5rem] md:ml-0`
 		: 'transition-width duration-200 ease-in-out'} shadow-md shrink-0 text-sm z-50 top-0 start-0'
