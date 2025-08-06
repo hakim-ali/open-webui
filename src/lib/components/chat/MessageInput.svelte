@@ -71,6 +71,8 @@
 	import { KokoroWorker } from '$lib/workers/KokoroWorker';
 	import { isRTL } from '$lib/i18n';
 	import Attachment from '../icons/Attachment.svelte';
+	import { validateDocuments } from '$lib/utils/documents';
+	import { DOCUMENT_TYPES } from '$lib/constants/documents';
 
 	const i18n = getContext('i18n');
 
@@ -555,8 +557,20 @@
 		}
 	};
 
-	const inputFilesHandler = async (inputFiles) => {
+	const inputFilesHandler = async (inputFiles: File[]) => {
 		console.log('Input files handler called with:', inputFiles);
+
+		const document = validateDocuments(inputFiles, $i18n);
+
+		inputFiles = document.validFiles;
+
+		if (!document.isValid) {
+			toast.error(document.message || 'Error');
+		}
+
+		if (inputFiles.length === 0) {
+			return;
+		}
 
 		if (
 			($config?.file?.max_count ?? null) !== null &&
@@ -680,23 +694,12 @@
 	// 	dragged = false;
 	// };
 
-	const onDrop = async (e) => {
+	const onDrop = async (e: DragEvent) => {
 		e.preventDefault();
-		console.log(e);
 
 		if (e.dataTransfer?.files) {
 			const inputFiles = Array.from(e.dataTransfer.files);
-			// Filter only PDF files
-			const pdfFiles = inputFiles.filter(
-				(file) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
-			);
-
-			if (pdfFiles.length > 0) {
-				console.log(pdfFiles);
-				inputFilesHandler(pdfFiles);
-			} else {
-				toast.error('Only PDF files are allowed.');
-			}
+			inputFilesHandler(inputFiles);
 		}
 
 		dragged = false;
@@ -870,7 +873,7 @@
 						bind:this={filesInputElement}
 						bind:files={inputFiles}
 						type="file"
-						accept="application/pdf"
+						accept={`${DOCUMENT_TYPES.join(', ')}`}
 						hidden
 						multiple
 						on:change={async () => {
@@ -1670,7 +1673,7 @@
 																	webSearchEnabled = false;
 																}}
 																type="button"
-																class="flex items-center flex justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {attachFileEnabled
+																class="flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {attachFileEnabled
 																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
 																	: 'text-gray-600 dark:text-white '}"
 															>

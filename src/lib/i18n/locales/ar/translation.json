@@ -1508,5 +1508,11 @@
 		"description": "أشياء كبيرة قادمة. سنقوم بفتح الوصول قريبًا، وأنت بالفعل على القائمة!"
 	},
 	"Chat is limited to Web Search.": "الدردشة تقتصر على بحث الويب.",
-	"Chat is limited to the Gov Knowledge Base.": "تقتصر الدردشة على قاعدة المعرفة الحكومية."
+	"Chat is limited to the Gov Knowledge Base.": "تقتصر الدردشة على قاعدة المعرفة الحكومية.",
+	"file": {
+		"upload": {
+			"invalidType": "نوع الملف {{ FILE_NAME }} غير مسموح. الأنواع المسموح بها: {{ ALLOWED_FILES }}.",
+			"onlyAllowed": "فقط ملفات {{ ALLOWED_FILES }} مسموح بها."
+		}
+	}
 }
