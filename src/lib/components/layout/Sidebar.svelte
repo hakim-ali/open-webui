@@ -1158,9 +1158,6 @@
 								{/if}
 							</div>
 						</div>
-							
-<div class="scroll-to-top-box fixed bottom-[76px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"><button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}><ScrollUp/></button></div>
-										
 					{/if}
 				</div>
 			</div>
