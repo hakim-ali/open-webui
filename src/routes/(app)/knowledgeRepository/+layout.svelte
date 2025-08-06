@@ -28,7 +28,7 @@
 			? 'md:max-w-[calc(100%-300px)]'
 			: 'md:max-w-[calc(100%-80px)]'} max-w-full"
 	>
-		<div class="h-[calc(100vh-2rem)] max-h-[100dvh] dark:bg-gray-900">
+		<div class="h-[calc(100vh-2rem)] max-h-[100dvh] dark:bg-transparent">
 			<div class="p-[16px] flex-1 max-h-full overflow-y-auto">
 				<slot />
 			</div>

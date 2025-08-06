@@ -1154,8 +1154,8 @@
 				</div>
 			</div>
 		</div>
-		<div class="p-[8px] pb-[24px] sidebar__bottom">
-			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
+		<div class="p-[8px] pb-[10px] sidebar__bottom ">
+			<div class="w-full flex flex-col left-[20px] bottom-[10px] dark:border-gray-900">
 				<button
 							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
 								? ''

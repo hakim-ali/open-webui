@@ -1517,5 +1517,11 @@
 	"Chat is limited to Web Search.": "Chat is limited to Web Search.",
 	"Chat is limited to the Gov Knowledge Base.": "Chat is limited to the Gov Knowledge Base.",
 	"Knowledge Repository": "Knowledge Repository",
-	"Whole of Knowledge Repository": "Whole of Knowledge Repository"
+	"Whole of Government Repository": "Whole of Government Repository",
+	"Browse Knowledge Base": "Browse Knowledge Base",
+	"Access Government Knowledge Repository to find out what is available": "Access Government Knowledge Repository to find out what is available",
+	"Access repository": "Access repository",
+	"Government Entities": "Government Entities",
+	"Total Files": "Total Files",
+	"Items":"Items"
 }

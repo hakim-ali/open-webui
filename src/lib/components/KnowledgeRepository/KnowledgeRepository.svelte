@@ -10,12 +10,11 @@
 
 	import ChevronUp from '$lib/components/icons/ChevronUp.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
-	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import GovKno from '$lib/components/icons/GovKno.svelte';
 	import { getKnowledgeRepos } from '$lib/apis/gov-repository';
-	import FolderIcon from '$lib/components/icons/FolderIcon.svelte';
 	import { goto } from '$app/navigation';
 	import { documentsArray } from '$lib/stores';
+	import KnoFolder from '../icons/knoFolder.svelte';
 
 	// Types for the government departments data
 	type Document = {
@@ -51,8 +50,8 @@
 			if (data) {
 				// Parse the data and transform it for the table
 				departments = data;
-				repositories = departments.map(dept => ({
-					id: dept.name.replace(/\s+/g, ""), // Using name as ID for now
+				repositories = departments.map((dept, index) => ({
+					id: index, // Using name as ID for now
 					name: dept.name,
 					nameAr: dept.nameAr,
 					lastModified: Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000, // Random date within last 30 days
@@ -114,12 +113,12 @@
 	});
 </script>
 
-<div class="mt-0.5 mb-2 gap-2 flex flex-row py-6">
+<div class="mt-0.5 mb-2 gap-2 flex flex-row py-6 dark:bg-transparent">
 	<div class="flex md:self-center text-lg font-medium px-0.5">
 		<GovKno />
 	</div>
 	<div class="flex md:self-center text-lg font-medium px-0.5">
-		{$i18n?.t('Whole of Knowledge Repository') || 'Whole of Knowledge Repository'}
+		{$i18n?.t('Whole of Government Repository') || 'Whole of Government Repository'}
 	</div>
 </div>
 <div class="mb-3 gap-2 flex flex-row">
@@ -177,29 +176,6 @@
 
 						<th
 							scope="col"
-							class="px-3 py-1.5 text-right cursor-pointer select-none w-fit"
-							on:click={() => setSortKey('lastModified')}
-						>
-							<div class="flex gap-1.5 items-center justify-end">
-								{$i18n?.t('Last Modified') || 'Last Modified'}
-								{#if orderBy === 'lastModified'}
-									<span class="font-normal">
-										{#if direction === 'asc'}
-											<ChevronUp className="size-3" />
-										{:else}
-											<ChevronDown className="size-3" />
-										{/if}
-									</span>
-								{:else}
-									<span class="invisible">
-										<ChevronUp className="size-2" />
-									</span>
-								{/if}
-							</div>
-						</th>
-
-						<th
-							scope="col"
 							class="px-3 py-1.5 text-right cursor-pointer select-none w-0"
 							on:click={() => setSortKey('totalFiles')}
 						>
@@ -231,19 +207,16 @@
 							<td class="py-1 pl-3 flex flex-col">
 								<div class="flex flex-col items-start gap-0.5 h-full">
 									<div class="flex flex-col h-full">
-										<div class="font-semibold text-gray-600 dark:text-gray-400 flex-1">
+										<div class="tex-[14px] text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4">
+											<KnoFolder />
 											  {$isRTL ?repository.nameAr :repository.name}
 										</div>
 									</div>
 								</div>
 							</td>
 
-							<td class="px-3 py-1 text-right font-medium text-gray-900 dark:text-white w-max">
-								{dayjs(repository.lastModified).fromNow()}
-							</td>
-
 							<td class="px-3 py-1 text-right font-medium">
-								{repository.totalFiles} items
+								{repository.totalFiles} 	{$i18n?.t("Items")}
 							</td>
 						</tr>
 					{/each}

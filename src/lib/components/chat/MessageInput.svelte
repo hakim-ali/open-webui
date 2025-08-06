@@ -7,7 +7,7 @@
 	import { v4 as uuidv4 } from 'uuid';
 	import { createPicker, getAuthToken } from '$lib/utils/google-drive-picker';
 	import { pickAndDownloadFile } from '$lib/utils/onedrive-file-picker';
-
+	import { goto } from '$app/navigation';
 	import { onMount, tick, getContext, createEventDispatcher, onDestroy } from 'svelte';
 	const dispatch = createEventDispatcher();
 
@@ -56,7 +56,7 @@
 	import CommandLine from '../icons/CommandLine.svelte';
 	import Sparkles from '../icons/Sparkles.svelte';
 	import ArrowDown from '../icons/ArrowDown.svelte';
-	import MenuBook from '../icons/MenuBook.svelte';
+	import MenuBook from '../icons/MenuBookBlue.svelte';
 	import EditNotes from '../icons/EditNotes.svelte';
 	import CheckNew from '../icons/CheckNew.svelte';
 	import Language from '../icons/Language.svelte';
@@ -71,6 +71,7 @@
 	import { KokoroWorker } from '$lib/workers/KokoroWorker';
 	import { isRTL } from '$lib/i18n';
 	import Attachment from '../icons/Attachment.svelte';
+	import Info from '../icons/Info.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -764,6 +765,40 @@
 			dropzoneElement?.removeEventListener('dragleave', onDragLeave);
 		}
 	});
+
+	let showGovKnoInfoPopover = false;
+	let govKnoInfoIconEl;
+	let govKnoPopoverStyle = '';
+
+	async function openGovKnoInfoPopover(e) {
+		e.preventDefault();
+		showGovKnoInfoPopover = true;
+		await tick();
+		if (govKnoInfoIconEl) {
+			const rect = govKnoInfoIconEl.getBoundingClientRect();
+			const popoverWidth = 340; // px, matches min-w-[320px] + padding
+			const popoverHeight = 180; // px, estimate
+			let left, top;
+			if ($isRTL) {
+				left = rect.left - popoverWidth - 12; // 12px margin to the left
+				if (left < 12) left = 12;
+			} else {
+				left = rect.right + 12; // 12px margin to the right
+				if (left + popoverWidth > window.innerWidth) {
+					left = window.innerWidth - popoverWidth - 12;
+				}
+			}
+			top = rect.top + rect.height / 2 - popoverHeight / 2;
+			if (top + popoverHeight > window.innerHeight) {
+				top = window.innerHeight - popoverHeight - 12;
+			}
+			if (top < 12) top = 12;
+			govKnoPopoverStyle = `position:fixed;left:${left}px;top:${top}px;z-index:9999;min-width:320px;max-width:340px;`;
+		}
+	}
+	function closeGovKnoInfoPopover() {
+		showGovKnoInfoPopover = false;
+	}
 </script>
 
 <FilesOverlay show={dragged} />
@@ -1718,12 +1753,53 @@
 																	? ' bg-gradient-bg-2 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
 																	: 'text-gray-600 dark:text-gray-300 '}"
 															>
-																<div class="flex items-center justify-center gap-[8px]">
+																<div class="flex items-center justify-center gap-[8px] relative">
 																	<GovKno />
-																	<span
-																		class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5"
-																		>{$i18n.t('Gov Knowledge')}</span
+																	<span class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5">
+																		{$i18n.t('Gov Knowledge')}
+																	</span>
+																	<!-- Info icon at the end of the row -->
+																	<button
+																		bind:this={govKnoInfoIconEl}
+																		type="button"
+																		class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+																		on:click|stopPropagation={openGovKnoInfoPopover}
+																		aria-label="Info"
 																	>
+																		<Info className="size-4 text-gray dark:text-gray-300" />
+																	</button>
+																	{#if showGovKnoInfoPopover}
+																		<div
+																			class="bg-white dark:bg-sky-200/5 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-4 flex flex-col gap-3 animate-fade-in"
+																			style={govKnoPopoverStyle}
+																		>
+																			{#if $isRTL}
+																				<div class="flex items-start justify-between mb-2 flex-row-reverse">
+																					<button class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 mr-2" on:click={closeGovKnoInfoPopover} aria-label="Close">
+																						<XMark className="size-4 text-gray-400 dark:text-gray-300" />
+																					</button>
+																					<MenuBook className="size-6 ml-2 mt-0.5" />
+																				</div>
+																			{:else}
+																				<div class="flex items-start justify-between mb-2 flex-row">
+																					<MenuBook className="size-6 mr-2 mt-0.5" />
+																					<button class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-auto" on:click={closeGovKnoInfoPopover} aria-label="Close">
+																						<XMark className="size-4 text-gray-400 dark:text-gray-300" />
+																					</button>
+																				</div>
+																			{/if}
+																			<div class="font-semibold text-base dark:text-white text-left mb-1">{$i18n.t('Browse Knowledge Base')}</div>
+																			<div class="text-sm text-gray-700 dark:text-gray-300 text-left mb-2">
+																				{$i18n.t('Access Government Knowledge Repository to find out what is available')}
+																			</div>
+																			<button
+																				class="mt-2 w-full py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+																				on:click={() => { closeGovKnoInfoPopover(); goto('/knowledgeRepository'); }}
+																			>
+																				{$i18n.t('Access repository')}
+																			</button>
+																		</div>
+																	{/if}
 																</div>
 																{#if govBtnEnable}<CheckFilter />{/if}
 															</button>
