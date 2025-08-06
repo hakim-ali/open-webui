@@ -44,8 +44,9 @@
 
 	const handlePromptSelect = async (prompt: any, index: number) => {
 		if (selectedIndex === index) {
-			// If clicking on already selected item, deselect it
+			// If clicking on already selected item, deselect it and reset text input
 			selectedIndex = -1;
+			dispatch('select', '');
 		} else {
 			// Otherwise, select the new item
 			selectedIndex = index;
