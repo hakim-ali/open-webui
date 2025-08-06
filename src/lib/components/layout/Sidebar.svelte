@@ -597,6 +597,19 @@
 						id="sidebar-new-chat-button"
 						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
 						href="/"
+						on:click={async () => {
+							selectedChatId = null;
+
+							// Trigger clearing of message input
+							clearMessageInput.set(true);
+
+							temporaryChatEnabled.set(false);
+							setTimeout(() => {
+								if ($mobile) {
+									showSidebar.set(false);
+								}
+							}, 0);
+						}}
 					>
 						<div class="flex gap-[8px] items-center">
 							<!-- Icon -->
