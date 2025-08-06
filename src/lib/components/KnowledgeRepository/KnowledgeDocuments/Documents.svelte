@@ -8,11 +8,12 @@
 	import FolderIcon from '$lib/components/icons/FolderIcon.svelte';
 	import GovKno from '$lib/components/icons/GovKno.svelte';
 	import KnoDocs from '$lib/components/icons/KnoDocs.svelte';
+	import { goto } from '$app/navigation';
 
 	const i18n = getContext('i18n');
 
-	let receivedStoreData = [];
-	let documents = [];
+	let receivedStoreData: any = [];
+	let documents: any = [];
 	let loading = true;
 
 	// Subscribe to store data
@@ -64,9 +65,13 @@
 		{$i18n?.t('Whole of Knowledge Repository') || 'Whole of Knowledge Repository'}
 	</div>
 </div>
-<div class="mb-3 gap-2 flex flex-row">
-	<div class="flex md:self-center  font-normal px-0.5">
-		{$i18n?.t('Government Entities') || 'Government Entities'}
+<div class="mb-5 gap-2 flex flex-row">
+	<div class="flex md:self-center text-sm text-gray-500 font-normal px-0.5 cursor-pointer"
+			 on:click={()=>goto('/knowledgeRepository')}>
+		{$i18n?.t('Government Entities') || 'Government Entities'}  >
+	</div>
+	<div class="flex md:self-center text-sm text-gray-1000 font-normal px-0.5 dark:text-white">
+	{receivedStoreData?.name}
 	</div>
 </div>
 
@@ -139,7 +144,7 @@
 			<tbody class="">
 				{#each sortedDocuments as document (document.title)}
 					<tr
-						class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+						class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
 					>
 						<td class="py-3 pl-3 flex flex-col">
 							<div class="flex flex-col items-start gap-0.5 h-full">
@@ -154,7 +159,7 @@
 
 						<td class="px-3 py-3 text-left font-medium text-gray-900 dark:text-white ">
 							<Tooltip  content={$isRTL ? document.summaryAr : document.summaryEn}>
-								<div class="max-w-md truncate">
+								<div class="max-w-md truncate ">
 									{$isRTL ? document.summaryAr : document.summaryEn}
 								</div>
 							</Tooltip>

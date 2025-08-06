@@ -1,9 +1,9 @@
-import { WEBUI_API_BASE_URL_API } from '$lib/constants';
+import { WEBUI_BASE_URL } from '$lib/constants';
 
 export const getKnowledgeRepos = async (token: string, id: string) => {
 	let error = null;
 
-	const res = await fetch(`${WEBUI_API_BASE_URL_API}/wog/documents`, {
+	const res = await fetch(`${WEBUI_BASE_URL}/api/wog/documents`, {
 		method: 'GET',
 		headers: {
 			Accept: 'application/json',

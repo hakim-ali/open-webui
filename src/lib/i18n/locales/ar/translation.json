@@ -1516,5 +1516,8 @@
 	"Access repository": "مستودع الوصول",
 	"Government Entities": "الجهات الحكومية",
 	"Total Files": "إجمالي الملفات",
-	"Items": "أغراض"
+	"Items": "أغراض",
+	"Whole of Knowledge Repository":"مستودع المعرفة الكاملة",
+	"Loading documents...": "جارٍ تحميل المستندات...",
+	"No documents found": "لم يتم العثور على وثائق"
 }

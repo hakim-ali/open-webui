@@ -11,9 +11,9 @@
 	import ChevronUp from '$lib/components/icons/ChevronUp.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import GovKno from '$lib/components/icons/GovKno.svelte';
-	import { getKnowledgeRepos } from '$lib/apis/gov-repository';
+	import { getKnowledgeRepos } from '$lib/apis/govRepository';
 	import { goto } from '$app/navigation';
-	import { documentsArray } from '$lib/stores';
+	import { documentsArray, mobile } from '$lib/stores';
 	import KnoFolder from '../icons/knoFolder.svelte';
 
 	// Types for the government departments data
@@ -121,7 +121,7 @@
 		{$i18n?.t('Whole of Government Repository') || 'Whole of Government Repository'}
 	</div>
 </div>
-<div class="mb-3 gap-2 flex flex-row">
+<div class="mb-5 gap-2 flex flex-row">
 	<div class="flex md:self-center text-lg font-bold px-0.5">
 		{$i18n?.t('Government Entities') || 'Government Entities'}
 	</div>
@@ -153,13 +153,13 @@
 					<tr class="">
 						<th
 							scope="col"
-							class="px-3 py-1.5 cursor-pointer select-none"
+							class="px-3 py-1.5 cursor-pointer select-none w-1/3 p-2 text-left"
 							on:click={() => setSortKey('name')}
 						>
-							<div class="flex gap-1.5 items-center">
+							<div class="flex gap-1.5 items-center ml-2">
 								{$i18n?.t('Name') || 'Name'}
 								{#if orderBy === 'name'}
-									<span class="font-normal">
+									<span class="font-normal ">
 										{#if direction === 'asc'}
 											<ChevronUp className="size-3" />
 										{:else}
@@ -176,11 +176,11 @@
 
 						<th
 							scope="col"
-							class="px-3 py-1.5 text-right cursor-pointer select-none w-0"
+							class="px-3 py-1.5 cursor-pointer select-none w-2/3 p-2 text-left"
 							on:click={() => setSortKey('totalFiles')}
 						>
-							<div class="flex gap-1.5 items-center justify-end">
-								{$i18n?.t('Total Files') || 'Total Files'}
+							<div  class="flex gap-1.5 items-center justify-start">
+								{$mobile ? $i18n?.t('Files') || 'Total Files': $i18n?.t('Total Files') || 'Total Files'}
 								{#if orderBy === 'totalFiles'}
 									<span class="font-normal">
 										{#if direction === 'asc'}
@@ -201,7 +201,7 @@
 				<tbody class="">
 					{#each paginatedRepositories as repository (repository.id)}
 						<tr
-							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
 						on:click={(e)=>onClickDepartment(e, repository) }
 						>
 							<td class="py-1 pl-3 flex flex-col">
@@ -215,7 +215,7 @@
 								</div>
 							</td>
 
-							<td class="px-3 py-1 text-right font-medium">
+							<td class='px-3 py-1 {$isRTL ? "text-right" : "text-left" }  font-medium'>
 								{repository.totalFiles} 	{$i18n?.t("Items")}
 							</td>
 						</tr>

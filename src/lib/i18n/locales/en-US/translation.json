@@ -1523,5 +1523,8 @@
 	"Access repository": "Access repository",
 	"Government Entities": "Government Entities",
 	"Total Files": "Total Files",
-	"Items":"Items"
+	"Items":"Items",
+	"Whole of Knowledge Repository": "Whole of Knowledge Repository",
+	"Loading documents...": "Loading documents...",
+	"No documents found": "No documents found"
 }
