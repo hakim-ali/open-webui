@@ -531,10 +531,10 @@
 	bind:this={navElement}
 	id="sidebar"
 	role="navigation"
-	class=" h-screen max-h-[100dvh] min-h-screen select-none shadown-none border-0 {$showSidebar
+	class="h-screen max-h-[100dvh] min-h-screen select-none shadown-none border-0 {$showSidebar
 		? `md:relative w-[300px] max-w-[300px] ${$mobile ? `fixed absolute top-0 start-0` : ''}`
 		: $mobile
-			? 'w-[0px] absolute'
+			? 'w-[0px] absolute start-0'
 			: ''} {$isApp
 		? `ml-[4.5rem] md:ml-0`
 		: 'transition-width duration-200 ease-in-out'} shadow-md shrink-0 text-sm z-50 top-0 start-0'
@@ -578,7 +578,7 @@
 						</a>
 						<a
 							id="sidebar-new-chat-button"
-							class="ps-[10px] py-[8px] flex items-center rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+							class="ps-[10px] py-[8px] flex items-center rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
 							class:justify-center={!$showSidebar}
 							href="/"
 							draggable="false"
@@ -598,8 +598,21 @@
 					</div>
 					<a
 						id="sidebar-new-chat-button"
-						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
 						href="/"
+						on:click={async () => {
+							selectedChatId = null;
+
+							// Trigger clearing of message input
+							clearMessageInput.set(true);
+
+							temporaryChatEnabled.set(false);
+							setTimeout(() => {
+								if ($mobile) {
+									showSidebar.set(false);
+								}
+							}, 0);
+						}}
 					>
 						<div class="flex gap-[8px] items-center">
 							<!-- Icon -->
@@ -659,7 +672,7 @@
 			{#if false && $user?.role === 'admin'}
 				<div class="px-[16px] py-[8px] flex justify-center text-gray-800 dark:text-gray-200">
 					<a
-						class="grow flex items-center rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out"
+						class="grow flex items-center rounded-lg px-2 py-[7px] hover:bg-menu-hover transition-all duration-300 ease-in-out"
 						class:justify-center={!$showSidebar}
 						href="/home"
 						on:click={() => {
@@ -694,7 +707,7 @@
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
 						id="sidebar-new-chat-button"
-						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
 						class:justify-center={!$showSidebar}
 						href="/"
 						draggable="false"
@@ -723,7 +736,7 @@
 
 							<!-- Label -->
 							<div
-								class="self-center link-style text-typography-titles transition-all duration-300 ease-in-out"
+								class="self-center text-typography-titles transition-all duration-300 ease-in-out"
 								class:hidden={!$showSidebar}
 							>
 								{$i18n.t('New Chat')}
@@ -764,10 +777,30 @@
 				</div>
 			{/if}
 
+			<!-- Search icon only when sidebar is expanded, right aligned -->
+			{#if $showSidebar}
+				<div class="flex justify-center text-gray-800 dark:text-gray-200">
+					<button
+						class="px-[16px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
+						on:click={() => {
+							showSearch.set(true);
+						}}
+						draggable="false"
+					>
+						<MaterialIcon name="search" size="1.25rem" />
+						<span
+							class="text-[14px] text-typography-titles transition-all duration-300 ease-in-out"
+						>
+							Search Chat
+						</span>
+					</button>
+				</div>
+			{/if}
+
 			{#if $user?.role === 'admin' && ($config?.features?.enable_notes ?? false) && ($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true))}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
-						class="px-[16px] py-[8px] grow flex items-center rounded-lg hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out"
+						class="px-[16px] py-[8px] grow flex items-center rounded-lg hover:bg-menu-hover transition-all duration-300 ease-in-out"
 						class:justify-center={!$showSidebar}
 						href="/notes"
 						on:click={() => {
@@ -817,7 +850,7 @@
 							class="self-center translate-y-[0.5px] transition-all duration-300 ease-in-out"
 							class:hidden={!$showSidebar}
 						>
-							<div class="self-center link-style text-typography-titles">
+							<div class="self-center text-typography-titles">
 								{$i18n.t('Notes')}
 							</div>
 						</div>
@@ -828,7 +861,7 @@
 			{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
-						class="px-[16px] py-[8px] grow flex items-center rounded-lg hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out"
+						class="px-[16px] py-[8px] grow flex items-center rounded-lg hover:bg-menu-hover transition-all duration-300 ease-in-out"
 						class:justify-center={!$showSidebar}
 						href="/workspace"
 						on:click={() => {
@@ -854,7 +887,7 @@
 							class="self-center translate-y-[0.5px] transition-all duration-300 ease-in-out"
 							class:hidden={!$showSidebar}
 						>
-							<div class="self-center link-style text-typography-titles">
+							<div class="self-center text-typography-titles">
 								{$i18n.t('Workspace')}
 							</div>
 						</div>
@@ -870,7 +903,7 @@
 							{#if model}
 								<div class="p-[14px] flex justify-center text-gray-800 dark:text-gray-200">
 									<a
-										class="grow flex items-center space-x-2.5 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+										class="grow flex items-center space-x-2.5 rounded-lg px-2 py-[7px] hover:bg-menu-hover transition"
 										href="/?model={modelId}"
 										on:click={() => {
 											selectedChatId = null;
@@ -1117,7 +1150,7 @@
 									{#each $chats as chat, idx (`chat-${chat?.id ?? idx}`)}
 										{#if idx === 0 || (idx > 0 && chat.time_range !== $chats[idx - 1].time_range)}
 											<div
-												class="w-full px-[16px] py-[8px] pt-[20px] mt-[12px] text-[12px] sm:text-[14px] leading-[22px] text-typography-secondary-body-text font-medium {idx ===
+												class="w-full px-[16px] py-[8px] pt-[20px] mt-[12px] text-[12px] sm:text-[14px] leading-[22px] text-typography-secondary-body-text font-medium dark:border-gray-900 {idx ===
 												0
 													? ''
 													: 'pt-5'} pb-1.5"
@@ -1194,21 +1227,23 @@
 							</div>
 						</div>
 						<div
-							class="scroll-to-top-box fixed bottom-[120px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"
+							class="scroll-to-top-box fixed bottom-[130px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] shadow-bg"
 						>
 							<button
 								class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
-								on:click={scrollToTop}><ScrollUp /></button
+								on:click={scrollToTop}
 							>
+								<ScrollUp />
+							</button>
 						</div>
 					{/if}
 				</div>
 			</div>
 		</div>
-		<div class="py-[15px] px-[8px] pb-[10px] sidebar__bottom">
-			<div class="w-full flex flex-col left-[20px] bottom-[10px] dark:border-gray-900">
+		<div class="p-[8px] pb-[2px] sidebar__bottom">
+			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
 				<button
-					class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
+					class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-menu-hover {$showSidebar
 						? ''
 						: 'justify-center'}"
 					on:click={() => {
@@ -1249,7 +1284,7 @@
 						}}
 					>
 						<button
-							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
+							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-menu-hover {$showSidebar
 								? ''
 								: 'justify-center'}"
 							on:click={() => {

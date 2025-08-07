@@ -78,7 +78,7 @@
 >
 	{#if $mobile}
 		<button
-			class="flex items-center justify-center rounded-lg size-10 hover:bg-[#e5e7eb] transition"
+			class="flex items-center justify-center rounded-lg size-10 hover:bg-gray-100 dark:hover:bg-gray-850 transition"
 			aria-label="Toggle Sidebar"
 			on:click={() => showSidebar.set(!$showSidebar)}
 		>

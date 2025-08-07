@@ -1515,6 +1515,8 @@
 			"onlyAllowed": "فقط ملفات {{ ALLOWED_FILES }} مسموح بها."
 		}
 	},
+	"Switch to light mode": "التبديل إلى وضع الضوء",
+	"Switch to dark mode": "التبديل إلى الوضع المظلم",
 	"Knowledge Repository": "مستودع المعرفة",
 	"Whole of Government Repository": "مستودع الحكومة بأكملها",
 	"Browse Knowledge Base": "تصفح قاعدة المعرفة",
@@ -1525,5 +1527,6 @@
 	"Items": "أغراض",
 	"Whole of Knowledge Repository": "مستودع المعرفة الكاملة",
 	"Loading documents...": "جارٍ تحميل المستندات...",
-	"No documents found": "لم يتم العثور على وثائق"
+	"No documents found": "لم يتم العثور على وثائق",
+	"Press and hold a document to view a summary": "اضغط مع الاستمرار على مستند لعرض ملخص له"
 }

@@ -34,6 +34,7 @@
 	import SignOut from '$lib/components/icons/SignOut.svelte';
 	import MaterialIcon from '$lib/components/common/MaterialIcon.svelte';
 	import Support from '$lib/components/icons/Support.svelte';
+	import Theme from '$lib/components/icons/Theme.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -59,8 +60,6 @@
 	const currentTheme = localStorage.getItem('theme');
 	let isOnNotification = false;
 	let notificationEnabled = false;
-	let isOnThemeToggle = currentTheme == 'dark' ? false : true;
-	let themeEnabled = false;
 	// General
 	let themes = ['dark', 'light'];
 	const toggleNotification = async () => {
@@ -257,7 +256,7 @@
 			transition={(e) => fade(e, { duration: 100 })}
 		>
 			<button
-				class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+				class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition cursor-pointer hover:bg-menu-hover"
 				on:click={() => changeLanguage(document.documentElement.lang === 'en-US' ? 'ar' : 'en-US')}
 			>
 				<div class=" self-center truncate gap-[8px] text-[17px] leading-[22px]">
@@ -269,7 +268,7 @@
 			</button>
 			{#if role === 'admin'}
 				<div
-					class="flex px-[16px] py-[11px] w-full items-center justify-between border-b border-gray-100 dark:border-transparent hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+					class="flex px-[16px] py-[11px] w-full items-center justify-between border-b border-gray-100 dark:border-transparent hover:bg-menu-hover"
 				>
 					<label class="flex items-center gap-[8px] text-[17px] leading-[22px]">
 						{$i18n.t('Notifications')}</label
@@ -296,37 +295,22 @@
 				</div>
 			{/if}
 
-			<div
-				class="flex px-[16px] py-[11px] w-full items-center justify-between border-b border-gray-100 dark:border-transparent hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+			<button
+				class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition cursor-pointer hover:bg-menu-hover"
+				on:click={() => themeChangeHandler($theme === 'dark' ? 'light' : 'dark')}
 			>
-				<label for="theme-toggle" class="flex items-center gap-[8px] text-[17px] leading-[22px]">
-					{$i18n?.t?.('Theme') || 'Theme'}
-				</label>
-				<label class="relative inline-flex items-center cursor-pointer">
-					<input
-						id="theme-toggle"
-						type="checkbox"
-						bind:checked={isOnThemeToggle}
-						on:change={() => themeChangeHandler(isOnThemeToggle ? 'light' : 'dark')}
-						class="sr-only peer"
-					/>
-					<div
-						class="w-[40px] h-[20px] {isOnThemeToggle
-							? 'bg-neutrals-green'
-							: 'bg-neutrals-50 dark:bg-gray-500'} rounded-full peer duration-300"
-					>
-						<div
-							class="flex items-center justify-center absolute {isOnThemeToggle
-								? 'left-[1px]'
-								: 'right-[1px]'} top-[1px] bg-neutrals-white w-[18px] h-[18px] rounded-full transition-transform duration-300 peer-checked:translate-x-5"
-						></div>
-					</div>
-				</label>
-			</div>
+				<div class=" self-center truncate gap-[8px] text-[17px] leading-[22px]">
+					{$i18n.t($theme === 'dark' ? 'Switch to light mode': 'Switch to dark mode')}
+				</div>
+				<div class=" self-center {$mobile ? '' : 'mr-3'} ">
+					<Theme />
+				</div>
+			</button>
+
 
 			{#if role === 'admin'}
 				<button
-					class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+					class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-menu-hover"
 					on:click={async () => {
 						await showSettings.set(true);
 						show = false;
@@ -346,7 +330,7 @@
 			{/if}
 
 			<button
-				class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+				class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-menu-hover"
 				on:click={() => {
 					dispatch('show', 'archived-chat');
 					show = false;
@@ -366,7 +350,7 @@
 
 			{#if role === 'admin'}
 				<button
-					class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+					class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-menu-hover"
 					on:click={() => {
 						goto('/playground');
 						show = false;
@@ -385,7 +369,7 @@
 				</button>
 
 				<button
-					class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+					class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-menu-hover"
 					on:click={() => {
 						goto('/admin');
 						show = false;
@@ -408,7 +392,7 @@
 				<hr class="border-gray-100 dark:border-gray-800 my-1 p-0" />
 
 				<DropdownMenu.Item
-					class="flex gap-2 items-center py-1.5 px-3 text-sm select-none w-full cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 rounded-md transition"
+					class="flex gap-2 items-center py-1.5 px-3 text-sm select-none w-full cursor-pointer hover:bg-menu-hover rounded-md transition"
 					id="documentation-link"
 					on:click={() => {
 						window.open('https://docs.openwebui.com', '_blank');
@@ -422,7 +406,7 @@
 				</DropdownMenu.Item>
 
 				<DropdownMenu.Item
-					class="flex gap-2 items-center py-1.5 px-3 text-sm select-none w-full cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 rounded-md transition"
+					class="flex gap-2 items-center py-1.5 px-3 text-sm select-none w-full cursor-pointer hover:bg-menu-hover rounded-md transition"
 					id="releases-link"
 					on:click={() => {
 						window.open('https://github.com/open-webui/open-webui/releases', '_blank');
@@ -436,7 +420,7 @@
 				</DropdownMenu.Item>
 
 				<DropdownMenu.Item
-					class="flex gap-2 items-center py-1.5 px-3 text-sm select-none w-full cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 rounded-md transition"
+					class="flex gap-2 items-center py-1.5 px-3 text-sm select-none w-full cursor-pointer hover:bg-menu-hover rounded-md transition"
 					id="shortcuts-button"
 					on:click={() => {
 						showShortcuts = !showShortcuts;
@@ -452,7 +436,7 @@
 
 			{#if role === 'admin'}
 				<button
-					class="flex px-[16px] justify-between items-center border-b border-gray-100 dark:border-transparent py-[11px] w-full transition hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+					class="flex px-[16px] justify-between items-center border-b border-gray-100 dark:border-transparent py-[11px] w-full transition hover:bg-menu-hover"
 					on:click={() => {
 						goto('/playground');
 					}}
@@ -467,7 +451,7 @@
 			{/if}
 
 			<button
-				class="flex px-[16px] justify-between items-center border-b border-gray-100 dark:border-transparent py-[11px] w-full transition hover:bg-gradient-bg-2 dark:hover:bg-gray-850"
+				class="flex px-[16px] justify-between items-center border-b border-gray-100 dark:border-transparent py-[11px] w-full transition hover:bg-menu-hover"
 				on:click={async () => {
 					const res = await userSignOut();
 					user.set(null);
