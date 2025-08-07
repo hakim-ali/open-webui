@@ -10,6 +10,7 @@
 	--color-light-bg: #fbfcfc;
 	--color-label-primary: #000000;
 	--color-btn-text-secondary: #004280;
+	--color-menu-hover: rgba(204, 221, 252, 0.3);
 }
 
 .dark {
@@ -20,6 +21,7 @@
 	--color-light-bg: #010e1d;
 	--color-label-primary: #e0ebf6;
 	--color-btn-text-secondary: #e0ebf6;
+	--color-menu-hover: #072D5A4D;
 }
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
@@ -189,4 +191,8 @@ body.dark .decorative-image-bottom {
 
   .gradient-bg {
     background: linear-gradient(180deg, var(--Background-background-opacity, rgba(251, 252, 252, 0.00)) 0%, var(--Background-background, #FBFCFC) 100%);
+  }
+
+  .shadow-bg {
+    background: linear-gradient(180deg, transparent 0%, var(--color-light-bg) 100%);
   }

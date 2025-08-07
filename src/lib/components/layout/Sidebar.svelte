@@ -576,7 +576,7 @@
 						</a>
 						<a
 							id="sidebar-new-chat-button"
-							class="ps-[10px] py-[8px] flex items-center rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+							class="ps-[10px] py-[8px] flex items-center rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
 							class:justify-center={!$showSidebar}
 							href="/"
 							draggable="false"
@@ -596,7 +596,7 @@
 					</div>
 					<a
 						id="sidebar-new-chat-button"
-						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
 						href="/"
 						on:click={async () => {
 							selectedChatId = null;
@@ -652,7 +652,7 @@
 			{#if false && $user?.role === 'admin'}
 				<div class="px-[16px] py-[8px] flex justify-center text-gray-800 dark:text-gray-200">
 					<a
-						class="grow flex items-center rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out"
+						class="grow flex items-center rounded-lg px-2 py-[7px] hover:bg-menu-hover transition-all duration-300 ease-in-out"
 						class:justify-center={!$showSidebar}
 						href="/home"
 						on:click={() => {
@@ -687,7 +687,7 @@
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
 						id="sidebar-new-chat-button"
-						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
 						class:justify-center={!$showSidebar}
 						href="/"
 						draggable="false"
@@ -730,7 +730,7 @@
 			{#if $showSidebar}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<button
-						class="px-[16px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+						class="px-[16px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
 						on:click={() => {
 							showSearch.set(true);
 						}}
@@ -749,7 +749,7 @@
 			{#if $user?.role === 'admin' && ($config?.features?.enable_notes ?? false) && ($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true))}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
-						class="px-[16px] py-[8px] grow flex items-center rounded-lg hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out"
+						class="px-[16px] py-[8px] grow flex items-center rounded-lg hover:bg-menu-hover transition-all duration-300 ease-in-out"
 						class:justify-center={!$showSidebar}
 						href="/notes"
 						on:click={() => {
@@ -810,7 +810,7 @@
 			{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
-						class="px-[16px] py-[8px] grow flex items-center rounded-lg hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out"
+						class="px-[16px] py-[8px] grow flex items-center rounded-lg hover:bg-menu-hover transition-all duration-300 ease-in-out"
 						class:justify-center={!$showSidebar}
 						href="/workspace"
 						on:click={() => {
@@ -852,7 +852,7 @@
 							{#if model}
 								<div class="p-[14px] flex justify-center text-gray-800 dark:text-gray-200">
 									<a
-										class="grow flex items-center space-x-2.5 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+										class="grow flex items-center space-x-2.5 rounded-lg px-2 py-[7px] hover:bg-menu-hover transition"
 										href="/?model={modelId}"
 										on:click={() => {
 											selectedChatId = null;
@@ -1176,7 +1176,11 @@
 								{/if}
 							</div>
 						</div>
-						<div class="scroll-to-top-box fixed bottom-[130px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"><button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}><ScrollUp/></button></div>
+						<div class="scroll-to-top-box fixed bottom-[130px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] shadow-bg">
+							<button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}>
+								<ScrollUp/>
+							</button>
+						</div>
 					{/if}
 				</div>
 			</div>
@@ -1184,7 +1188,7 @@
 		<div class="p-[8px]  pb-[2px] sidebar__bottom">
 			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
 				<button
-							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
+							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-menu-hover {$showSidebar
 								? ''
 								: 'justify-center'}"
 							on:click={() => {
@@ -1227,7 +1231,7 @@
 						}}
 					>
 						<button
-							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
+							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-menu-hover {$showSidebar
 								? ''
 								: 'justify-center'}"
 							on:click={() => {
