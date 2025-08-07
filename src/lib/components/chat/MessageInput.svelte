@@ -74,6 +74,7 @@
 	import Info from '../icons/Info.svelte';
 	import { validateDocuments } from '$lib/utils/documents';
 	import { DOCUMENT_TYPES } from '$lib/constants/documents';
+	import MaterialIcon from '../common/MaterialIcon.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -258,16 +259,16 @@
 		// Check if web search is enabled (second priority)
 
 		// Check if files are attached (either in current files or in chat history)
-		if (
-			attachFileEnabled ||
-			files.length > 0 ||
-			(history?.messages &&
-				Object.values(history.messages).some(
-					(message: any) => message.files && message.files.length > 0
-				))
-		) {
-			return $i18n.t('Attach files');
-		}
+		// if (
+		// 	attachFileEnabled ||
+		// 	files.length > 0 ||
+		// 	(history?.messages &&
+		// 		Object.values(history.messages).some(
+		// 			(message: any) => message.files && message.files.length > 0
+		// 		))
+		// ) {
+		// 	return $i18n.t('Attach files');
+		// }
 
 		// Check if a specific model is selected (lowest priority)
 		// if (selectedModels && selectedModels.length > 0 && selectedModels[0] !== '') {
@@ -1669,6 +1670,23 @@
 													</Tooltip>
 												{/each}
 
+												{#if showFileUploadButton}
+													<button
+														on:click={() => {
+															filesInputElement.click();
+														}}
+														class="flex items-center px-[12px] gap-[4px] py-[8px] border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[16px] leading-[22px] rounded-full"
+													>
+														<MaterialIcon name="attach_file" />
+														{#if inputFiles}
+															<div
+																class="absolute bg-[#004280] rounded-full text-white text-[8px] h-5 w-5 translate-x-[20px] -translate-y-[10px] flex items-center justify-center"
+															>
+																{inputFiles.length > 0 ? inputFiles.length : ''}
+															</div>
+														{/if}
+													</button>
+												{/if}
 												<div
 													class="flex items-center justify-center rounded-[60px] {selectedModelName !==
 													''
@@ -1678,7 +1696,7 @@
 													<button
 														data-filter-toggle
 														on:click={handleFilterToggle}
-														class="flex items-center px-[12px] gap-[4px] py-[8px] shadow-custom3 border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[16px] leading-[22px] rounded-full"
+														class="flex items-center px-[12px] gap-[4px] py-[8px] border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[16px] leading-[22px] rounded-full"
 														><Filter />{$mobile ? '' : $i18n.t('Tools')}</button
 													>
 													{#if selectedModelName !== ''}<div
@@ -1696,63 +1714,8 @@
 												{#if showGovKnoWebSearchToggle}
 													<div
 														bind:this={toggleContentElement}
-														class="absolute w-full max-w-[250px] bottom-[0] start-4 z-[40] p-2 mb-20 bg-white border-[#E5EBF3] dark:border-gray-800 dark:bg-[#010E1D] dark:border-gray-00 border rounded-[24px]"
+														class="absolute w-full max-w-[250px] bottom-[0] ml-15 start-4 z-[40] p-2 mb-20 bg-white border-[#E5EBF3] dark:border-gray-800 dark:bg-[#010E1D] dark:border-gray-00 border rounded-[24px]"
 													>
-														{#if showFileUploadButton}
-															<button
-																on:click={() => {
-																	attachFileEnabled = !attachFileEnabled;
-																	showGovKnoWebSearchToggle = false;
-																	filesInputElement.click();
-																	govBtnEnable = false;
-																	webSearchEnabled = false;
-																}}
-																type="button"
-																class="flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {attachFileEnabled
-																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-white '}"
-															>
-																<div class="flex items-center justify-center gap-[8px]">
-																	<Attachment />
-																	<span
-																		class="font-heading font-medium text-[16px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
-																	>
-																		{$i18n.t('Attach files')}
-																	</span>
-																</div>
-																{#if attachFileEnabled && files.length > 0}<CheckFilter />{/if}
-															</button>
-														{/if}
-
-														{#if showWebSearchButton}
-															<button
-																disabled={attachFileEnabled && files.length !== 0}
-																on:click|preventDefault={() => {
-																	webSearchEnabled = !webSearchEnabled;
-																	showGovKnoWebSearchToggle = false;
-																	govBtnEnable = false;
-																	attachFileEnabled = false;
-																}}
-																type="button"
-																class="flex items-center flex justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {webSearchEnabled ||
-																($settings?.webSearch ?? false) === 'always'
-																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-white '} {govBtnDisable
-																	? 'bg-[#D5DBE6] disabled:cursor-not-allowed'
-																	: ''} {attachFileEnabled && files.length !== 0
-																	? 'disabled:opacity-50 disabled:cursor-not-allowed'
-																	: ''}"
-															>
-																<div class="flex items-center justify-center gap-[8px]">
-																	<GlobeAlt className="size-5" strokeWidth="1.75" />
-																	<span
-																		class="font-heading font-medium text-[16px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
-																		>{$i18n.t('Web Search')}</span
-																	>
-																</div>
-																{#if webSearchEnabled}<CheckFilter />{/if}
-															</button>
-														{/if}
 														{#if showGovKnoButton}
 															<button
 																disabled={attachFileEnabled && files.length !== 0}
@@ -1845,6 +1808,36 @@
 																{#if govBtnEnable}<CheckFilter />{/if}
 															</button>
 														{/if}
+														{#if showWebSearchButton}
+															<button
+																disabled={attachFileEnabled && files.length !== 0}
+																on:click|preventDefault={() => {
+																	webSearchEnabled = !webSearchEnabled;
+																	showGovKnoWebSearchToggle = false;
+																	govBtnEnable = false;
+																	attachFileEnabled = false;
+																}}
+																type="button"
+																class="flex items-center flex justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {webSearchEnabled ||
+																($settings?.webSearch ?? false) === 'always'
+																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
+																	: 'text-gray-600 dark:text-white '} {govBtnDisable
+																	? 'bg-[#D5DBE6] disabled:cursor-not-allowed'
+																	: ''} {attachFileEnabled && files.length !== 0
+																	? 'disabled:opacity-50 disabled:cursor-not-allowed'
+																	: ''}"
+															>
+																<div class="flex items-center justify-center gap-[8px]">
+																	<GlobeAlt className="size-5" strokeWidth="1.75" />
+																	<span
+																		class="font-heading font-medium text-[16px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
+																		>{$i18n.t('Web Search')}</span
+																	>
+																</div>
+																{#if webSearchEnabled}<CheckFilter />{/if}
+															</button>
+														{/if}
+
 														{#if showImageGenerationButton}
 															<Tooltip content={$i18n.t('Generate an image')} placement="top">
 																<button
