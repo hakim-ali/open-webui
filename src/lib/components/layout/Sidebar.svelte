@@ -778,24 +778,6 @@
 			{/if}
 
 			<!-- Search icon only when sidebar is expanded, right aligned -->
-			{#if $showSidebar}
-				<div class="flex justify-center text-gray-800 dark:text-gray-200">
-					<button
-						class="px-[16px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-menu-hover transition-all duration-300 ease-in-out no-drag-region"
-						on:click={() => {
-							showSearch.set(true);
-						}}
-						draggable="false"
-					>
-						<MaterialIcon name="search" size="1.25rem" />
-						<span
-							class="text-[14px] text-typography-titles transition-all duration-300 ease-in-out"
-						>
-							Search Chat
-						</span>
-					</button>
-				</div>
-			{/if}
 
 			{#if $user?.role === 'admin' && ($config?.features?.enable_notes ?? false) && ($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true))}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
