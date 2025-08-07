@@ -1240,6 +1240,8 @@
 						navigator.vibrate(5);
 					}
 
+					// No client-side delay for smooth streaming like document streaming
+
 					// Emit chat event for TTS
 					const messageContentParts = getMessageContentParts(
 						removeAllDetails(message.content),
