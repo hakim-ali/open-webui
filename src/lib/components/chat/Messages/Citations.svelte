@@ -53,7 +53,7 @@
 				const metadata = source.metadata?.[index];
 				const distance = source.distances?.[index];
 
-				// Within the same citation there could be multiple documents
+				// Within the same citation there could be multiple KnowledgeDocuments
 				const id = metadata?.source ?? source?.source?.id ?? 'N/A';
 				let _source = source?.source;
 

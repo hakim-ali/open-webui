@@ -86,7 +86,7 @@ export const clearMessageInput = writable(false);
 
 export const isLastActiveTab = writable(true);
 export const playingNotificationSound = writable(false);
-
+export const documentsArray = writable([]);
 export type Model = OpenAIModel | OllamaModel;
 
 type BaseModel = {
