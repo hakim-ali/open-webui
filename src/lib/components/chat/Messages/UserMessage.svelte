@@ -298,7 +298,7 @@
 					<div class="w-full">
 						<div class="flex {($settings?.chatBubble ?? true) ? 'justify-end pb-1' : 'w-full'}">
 							<div
-								class="rounded-[16px] text-[14px] text-typography-titles leading-[24px] {($settings?.chatBubble ??
+								class="rounded-[16px] text-[16px] text-typography-titles leading-[24px] {($settings?.chatBubble ??
 								true)
 									? `max-w-[90%] px-[24px] py-[17px] bg-light-bg shadow-custom4 ${
 											message.files ? 'rounded-tr-lg' : ''

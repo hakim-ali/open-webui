@@ -1678,7 +1678,7 @@
 													<button
 														data-filter-toggle
 														on:click={handleFilterToggle}
-														class="flex items-center px-[12px] gap-[4px] py-[8px] shadow-custom3 border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[14px] leading-[22px] rounded-full"
+														class="flex items-center px-[12px] gap-[4px] py-[8px] shadow-custom3 border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[16px] leading-[22px] rounded-full"
 														><Filter />{$mobile ? '' : $i18n.t('Tools')}</button
 													>
 													{#if selectedModelName !== ''}<div
@@ -1715,7 +1715,7 @@
 																<div class="flex items-center justify-center gap-[8px]">
 																	<Attachment />
 																	<span
-																		class="font-heading font-medium text-[14px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
+																		class="font-heading font-medium text-[16px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
 																	>
 																		{$i18n.t('Attach files')}
 																	</span>
@@ -1741,7 +1741,7 @@
 																<div class="flex items-center justify-center gap-[8px]">
 																	<GlobeAlt className="size-5" strokeWidth="1.75" />
 																	<span
-																		class="font-heading font-medium text-[14px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
+																		class="font-heading font-medium text-[16px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
 																		>{$i18n.t('Web Search')}</span
 																	>
 																</div>
@@ -1758,7 +1758,9 @@
 															>
 																<div class="flex items-center justify-center gap-[8px] relative">
 																	<GovKno />
-																	<span class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5">
+																	<span
+																		class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5"
+																	>
 																		{$i18n.t('Gov Knowledge')}
 																	</span>
 																	<!-- Info icon at the end of the row -->
@@ -1777,27 +1779,52 @@
 																			style={govKnoPopoverStyle}
 																		>
 																			{#if $isRTL}
-																				<div class="flex items-start justify-between mb-2 flex-row-reverse">
-																					<button class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 mr-2" on:click={closeGovKnoInfoPopover} aria-label="Close">
-																						<XMark className="size-4 text-gray-400 dark:text-gray-300" />
+																				<div
+																					class="flex items-start justify-between mb-2 flex-row-reverse"
+																				>
+																					<button
+																						class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 mr-2"
+																						on:click={closeGovKnoInfoPopover}
+																						aria-label="Close"
+																					>
+																						<XMark
+																							className="size-4 text-gray-400 dark:text-gray-300"
+																						/>
 																					</button>
 																					<MenuBook className="size-6 ml-2 mt-0.5" />
 																				</div>
 																			{:else}
 																				<div class="flex items-start justify-between mb-2 flex-row">
 																					<MenuBook className="size-6 mr-2 mt-0.5" />
-																					<button class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-auto" on:click={closeGovKnoInfoPopover} aria-label="Close">
-																						<XMark className="size-4 text-gray-400 dark:text-gray-300" />
+																					<button
+																						class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-auto"
+																						on:click={closeGovKnoInfoPopover}
+																						aria-label="Close"
+																					>
+																						<XMark
+																							className="size-4 text-gray-400 dark:text-gray-300"
+																						/>
 																					</button>
 																				</div>
 																			{/if}
-																			<div class="font-semibold text-base dark:text-white text-left mb-1">{$i18n.t('Browse Knowledge Base')}</div>
-																			<div class="text-sm text-gray-700 dark:text-gray-300 text-left mb-2">
-																				{$i18n.t('Access Government Knowledge Repository to find out what is available')}
+																			<div
+																				class="font-semibold text-base dark:text-white text-left mb-1"
+																			>
+																				{$i18n.t('Browse Knowledge Base')}
+																			</div>
+																			<div
+																				class="text-sm text-gray-700 dark:text-gray-300 text-left mb-2"
+																			>
+																				{$i18n.t(
+																					'Access Government Knowledge Repository to find out what is available'
+																				)}
 																			</div>
 																			<button
 																				class="mt-2 w-full py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-																				on:click={() => { closeGovKnoInfoPopover(); goto('/knowledgeRepository'); }}
+																				on:click={() => {
+																					closeGovKnoInfoPopover();
+																					goto('/knowledgeRepository');
+																				}}
 																			>
 																				{$i18n.t('Access repository')}
 																			</button>
