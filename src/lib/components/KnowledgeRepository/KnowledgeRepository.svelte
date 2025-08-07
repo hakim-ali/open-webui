@@ -51,7 +51,7 @@
 				// Parse the data and transform it for the table
 				departments = data;
 				repositories = departments.map((dept, index) => ({
-					id: index, // Using name as ID for now
+					id: index+1, // Using name as ID for now
 					name: dept.name,
 					nameAr: dept.nameAr,
 					lastModified: Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000, // Random date within last 30 days
@@ -137,7 +137,7 @@
 	</div>
 {:else}
 	<div
-		class="scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-sm pt-0.5"
+		class="h-[calc(100dvh-200px)] bg-white dark:bg-gray-900 scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-sm pt-0.5"
 	>
 		{#if (repositories ?? []).length === 0}
 			<div class="text-center text-xs text-gray-500 dark:text-gray-400 py-1">

@@ -1800,7 +1800,7 @@
 																			</div>
 																			<button
 																				class="mt-2 w-full py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-																				on:click={() => { closeGovKnoInfoPopover(); goto('/knowledgeRepository'); }}
+																				on:click={(e) => { closeGovKnoInfoPopover(e); goto('/knowledgeRepository'); }}
 																			>
 																				{$i18n.t('Access repository')}
 																			</button>
