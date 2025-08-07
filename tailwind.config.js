@@ -12,6 +12,7 @@ export default {
 				surface: '#F9F9FF',
 				'light-bg': 'var(--color-light-bg)',
 				'gradient-bg-2': 'rgba(204, 221, 252, 0.3)',
+				'menu-hover': 'var(--color-menu-hover)',
 				'label-primary': 'var(--color-label-primary)',
 				typography: {
 					titles: 'var(--color-titles)',
