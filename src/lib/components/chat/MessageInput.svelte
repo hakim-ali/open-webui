@@ -74,6 +74,7 @@
 	import Info from '../icons/Info.svelte';
 	import { validateDocuments } from '$lib/utils/documents';
 	import { DOCUMENT_TYPES } from '$lib/constants/documents';
+	import MaterialIcon from '../common/MaterialIcon.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -256,18 +257,6 @@
 		}
 
 		// Check if web search is enabled (second priority)
-
-		// Check if files are attached (either in current files or in chat history)
-		if (
-			attachFileEnabled ||
-			files.length > 0 ||
-			(history?.messages &&
-				Object.values(history.messages).some(
-					(message: any) => message.files && message.files.length > 0
-				))
-		) {
-			return $i18n.t('Attach files');
-		}
 
 		// Check if a specific model is selected (lowest priority)
 		// if (selectedModels && selectedModels.length > 0 && selectedModels[0] !== '') {
@@ -774,7 +763,7 @@
 	let govKnoPopoverStyle = '';
 
 	async function openGovKnoInfoPopover(e) {
-		e.stopPropagation()
+		e.stopPropagation();
 		e.preventDefault();
 		showGovKnoInfoPopover = true;
 		await tick();
@@ -793,12 +782,12 @@
 				}
 			}
 
-			bottom=150;
+			bottom = 150;
 			govKnoPopoverStyle = `position:fixed;left:${left}px;bottom:${bottom}px;z-index:9999;min-width:320px;max-width:340px;`;
 		}
 	}
 	function closeGovKnoInfoPopover(e) {
-		e.stopPropagation()
+		e.stopPropagation();
 		e.preventDefault();
 		showGovKnoInfoPopover = false;
 	}
@@ -1668,7 +1657,23 @@
 														</button>
 													</Tooltip>
 												{/each}
-
+												{#if showFileUploadButton}
+													<button
+														on:click={() => {
+															filesInputElement.click();
+														}}
+														class="flex items-center px-[12px] gap-[4px] py-[8px] border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[16px] leading-[22px] rounded-full"
+													>
+														<MaterialIcon name="attach_file" />
+														{#if inputFiles}
+															<div
+																class="absolute bg-[#004280] rounded-full text-white text-[8px] h-5 w-5 translate-x-[20px] -translate-y-[10px] flex items-center justify-center"
+															>
+																{inputFiles.length > 0 ? inputFiles.length : ''}
+															</div>
+														{/if}
+													</button>
+												{/if}
 												<div
 													class="flex items-center justify-center rounded-[60px] {selectedModelName !==
 													''
@@ -1678,7 +1683,7 @@
 													<button
 														data-filter-toggle
 														on:click={handleFilterToggle}
-														class="flex items-center px-[12px] gap-[4px] py-[8px] shadow-custom3 border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[14px] leading-[22px] rounded-full"
+														class="flex items-center px-[12px] gap-[4px] py-[8px] border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[16px] leading-[22px] rounded-full"
 														><Filter />{$mobile ? '' : $i18n.t('Tools')}</button
 													>
 													{#if selectedModelName !== ''}<div
@@ -1696,37 +1701,104 @@
 												{#if showGovKnoWebSearchToggle}
 													<div
 														bind:this={toggleContentElement}
-														class="absolute w-full max-w-[250px] bottom-[0] start-4 z-[40] p-2 mb-20 bg-white border-[#E5EBF3] dark:border-gray-800 dark:bg-[#010E1D] dark:border-gray-00 border rounded-[24px]"
+														class="absolute w-full max-w-[250px] {showFileUploadButton
+															? 'ml-15'
+															: ''}  bottom-[0] start-4 z-[40] p-2 mb-20 bg-white border-[#E5EBF3] dark:border-gray-800 dark:bg-[#010E1D] dark:border-gray-00 border rounded-[24px]"
 													>
-														{#if showFileUploadButton}
+														{#if showGovKnoButton}
 															<button
-																on:click={() => {
-																	attachFileEnabled = !attachFileEnabled;
-																	showGovKnoWebSearchToggle = false;
-																	filesInputElement.click();
-																	govBtnEnable = false;
-																	webSearchEnabled = false;
-																}}
+																disabled={attachFileEnabled && files.length !== 0}
+																on:click|preventDefault={() => saveGovKnoModel()}
 																type="button"
-																class="flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {attachFileEnabled
-																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-white '}"
+																class="govkno-btn flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 gap-[4px] text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
+																	? ' bg-gradient-bg-2 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
+																	: 'text-gray-600 dark:text-gray-300 '}{attachFileEnabled &&
+																files.length !== 0
+																	? 'disabled:opacity-50 disabled:cursor-not-allowed'
+																	: ''}"
 															>
-																<div class="flex items-center justify-center gap-[8px]">
-																	<Attachment />
+																<div
+																	class="flex items-center justify-center gap-[8px] relative flex-row"
+																>
+																	<GovKno />
 																	<span
-																		class="font-heading font-medium text-[14px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
+																		class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5"
 																	>
-																		{$i18n.t('Attach files')}
+																		{$i18n.t('Gov Knowledge')}
 																	</span>
+																	<!-- Info icon at the end of the row -->
+																	<button
+																		bind:this={govKnoInfoIconEl}
+																		type="button"
+																		class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+																		on:click|stopPropagation={(e) => openGovKnoInfoPopover(e)}
+																		aria-label="Info"
+																	>
+																		<Info className="size-4 text-gray dark:text-gray-300" />
+																	</button>
+																	{#if showGovKnoInfoPopover}
+																		<div
+																			class="bg-white dark:bg-[#010E1D] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-4 flex flex-col gap-3 animate-fade-in"
+																			style={govKnoPopoverStyle}
+																		>
+																			{#if $isRTL}
+																				<div
+																					class="flex items-start justify-between mb-2 flex-row-reverse"
+																				>
+																					<button
+																						class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 mr-2"
+																						on:click={(e) => closeGovKnoInfoPopover(e)}
+																						aria-label="Close"
+																					>
+																						<XMark
+																							className="size-4 text-gray-400 dark:text-gray-300"
+																						/>
+																					</button>
+																					<MenuBook className="size-6 ml-2 mt-0.5" />
+																				</div>
+																			{:else}
+																				<div class="flex items-start justify-between mb-2 flex-row">
+																					<MenuBook className="size-6 mr-2 mt-0.5" />
+																					<button
+																						class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-auto"
+																						on:click={(e) => closeGovKnoInfoPopover(e)}
+																						aria-label="Close"
+																					>
+																						<XMark
+																							className="size-4 text-gray-400 dark:text-gray-300"
+																						/>
+																					</button>
+																				</div>
+																			{/if}
+																			<div
+																				class="font-semibold text-base dark:text-white text-left mb-1"
+																			>
+																				{$i18n.t('Browse Knowledge Base')}
+																			</div>
+																			<div
+																				class="text-sm text-gray-700 dark:text-gray-300 text-left mb-2"
+																			>
+																				{$i18n.t(
+																					'Access Government Knowledge Repository to find out what is available'
+																				)}
+																			</div>
+																			<button
+																				class="mt-2 w-full py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+																				on:click={(e) => {
+																					closeGovKnoInfoPopover(e);
+																					goto('/knowledgeRepository');
+																				}}
+																			>
+																				{$i18n.t('Access repository')}
+																			</button>
+																		</div>
+																	{/if}
 																</div>
-																{#if attachFileEnabled && files.length > 0}<CheckFilter />{/if}
+																{#if govBtnEnable}<CheckFilter />{/if}
 															</button>
 														{/if}
-
 														{#if showWebSearchButton}
 															<button
-															disabled={attachFileEnabled && files.length!==0}
 																on:click|preventDefault={() => {
 																	webSearchEnabled = !webSearchEnabled;
 																	showGovKnoWebSearchToggle = false;
@@ -1737,77 +1809,16 @@
 																class="flex items-center flex justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {webSearchEnabled ||
 																($settings?.webSearch ?? false) === 'always'
 																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-white '} { govBtnDisable ? 'bg-[#D5DBE6] disabled:cursor-not-allowed':''} {attachFileEnabled && files.length!==0 ? "disabled:opacity-50 disabled:cursor-not-allowed" : ''}"
+																	: 'text-gray-600 dark:text-white '}"
 															>
 																<div class="flex items-center justify-center gap-[8px]">
 																	<GlobeAlt className="size-5" strokeWidth="1.75" />
 																	<span
-																		class="font-heading font-medium text-[14px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
+																		class="font-heading font-medium text-[16px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
 																		>{$i18n.t('Web Search')}</span
 																	>
 																</div>
 																{#if webSearchEnabled}<CheckFilter />{/if}
-															</button>
-														{/if}
-														{#if showGovKnoButton}
-															<button
-															disabled={attachFileEnabled && files.length!==0}
-																on:click|preventDefault={() => saveGovKnoModel()}
-																type="button"
-																class="govkno-btn flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 gap-[4px] text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
-																	? ' bg-gradient-bg-2 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-gray-300 '}{attachFileEnabled && files.length!==0 ? "disabled:opacity-50 disabled:cursor-not-allowed" : ''}"
-															>
-																<div class="flex items-center justify-center gap-[8px] relative flex-row ps-0.5">
-																	<GovKno />
-																	<span class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none ps-0.5">
-																		{$i18n.t('Gov Knowledge')}
-																	</span>
-																	<!-- Info icon at the end of the row -->
-																	<button
-																		bind:this={govKnoInfoIconEl}
-																		type="button"
-																		class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
-																		on:click|stopPropagation={(e)=>openGovKnoInfoPopover(e)}
-																		aria-label="Info"
-																	>
-																		<Info className="size-4 text-gray dark:text-gray-300" />
-																	</button>
-																	{#if showGovKnoInfoPopover}
-
-																		<div
-																			class="bg-white dark:bg-[#010E1D] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-4 flex flex-col gap-3 animate-fade-in"
-																			style={govKnoPopoverStyle}
-																		>
-																			{#if $isRTL}
-																				<div class="flex items-start justify-between mb-2 flex-row-reverse ">
-																					<button class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 mr-2" on:click={(e)=>closeGovKnoInfoPopover(e)} aria-label="Close">
-																						<XMark className="size-4 text-gray-400 dark:text-gray-300" />
-																					</button>
-																					<MenuBook className="size-6 ml-2 mt-0.5" />
-																				</div>
-																			{:else}
-																				<div class="flex items-start justify-between mb-2 flex-row">
-																					<MenuBook className="size-6 mr-2 mt-0.5" />
-																					<button class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-auto" on:click={(e)=>closeGovKnoInfoPopover(e)} aria-label="Close">
-																						<XMark className="size-4 text-gray-400 dark:text-gray-300" />
-																					</button>
-																				</div>
-																			{/if}
-																			<div class="font-semibold text-base dark:text-white text-left mb-1">{$i18n.t('Browse Knowledge Base')}</div>
-																			<div class="text-sm text-gray-700 dark:text-gray-300 text-left mb-2">
-																				{$i18n.t('Access Government Knowledge Repository to find out what is available')}
-																			</div>
-																			<button
-																				class="mt-2 w-full py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-																				on:click={(e) => { closeGovKnoInfoPopover(e); goto('/knowledgeRepository'); }}
-																			>
-																				{$i18n.t('Access repository')}
-																			</button>
-																		</div>
-																	{/if}
-																</div>
-																{#if govBtnEnable}<CheckFilter />{/if}
 															</button>
 														{/if}
 														{#if showImageGenerationButton}

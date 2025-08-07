@@ -155,6 +155,7 @@
 
 									textareaElement.style.height = textareaElement.scrollHeight + 'px';
 
+									// No client-side delay for smooth streaming like document streaming
 									await tick();
 								}
 							}

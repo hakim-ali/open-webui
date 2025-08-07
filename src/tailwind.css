@@ -23,6 +23,7 @@
 	--color-btn-text-secondary: #e0ebf6;
 	--color-menu-hover: #072D5A4D;
 }
+
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -32,6 +33,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
 	*,
 	::after,
 	::before,
@@ -42,6 +44,7 @@
 }
 
 @layer base {
+
 	html,
 	pre {
 		font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Vazirmatn', ui-sans-serif, system-ui,
@@ -131,16 +134,12 @@ body.dark .decorative-image-bottom {
 }
 
 .bg-surface {
-	background: radial-gradient(
-			93.48% 68.59% at 40.87% 70.12%,
+	background: radial-gradient(93.48% 68.59% at 40.87% 70.12%,
 			rgba(204, 221, 252, 0.04) 37.67%,
-			rgba(204, 221, 252, 0.4) 100%
-		),
-		radial-gradient(
-			70.94% 58.43% at 27.53% 86.82%,
+			rgba(204, 221, 252, 0.4) 100%),
+		radial-gradient(70.94% 58.43% at 27.53% 86.82%,
 			rgba(204, 221, 252, 0.25) 0%,
-			rgba(204, 221, 252, 0) 100%
-		),
+			rgba(204, 221, 252, 0) 100%),
 		linear-gradient(0deg, rgba(236, 238, 241, 0.2) 0%, rgba(236, 238, 241, 0.2) 100%), #fff;
 	/* fallback */
 	position: relative;
@@ -154,17 +153,7 @@ body.dark .decorative-image-bottom {
 }
 
 .dark .bg-surface {
-	background: radial-gradient(
-			93.48% 68.59% at 40.87% 70.12%,
-			rgba(7, 45, 90, 0.03) 37.67%,
-			rgba(7, 45, 90, 0.25) 100%
-		),
-		radial-gradient(
-			70.94% 58.43% at 27.53% 86.82%,
-			rgba(7, 45, 90, 0.2) 0%,
-			rgba(7, 45, 90, 0) 100%
-		),
-		linear-gradient(0deg, rgba(3, 25, 51, 0.2) 0%, rgba(3, 25, 51, 0.2) 100%), #010e1d;
+	background: #0F1924;
 }
 
 .btn-primary {
@@ -189,10 +178,10 @@ body.dark .decorative-image-bottom {
 	font-family: 'Inter_24pt-SemiBold';
 }
 
-  .gradient-bg {
-    background: linear-gradient(180deg, var(--Background-background-opacity, rgba(251, 252, 252, 0.00)) 0%, var(--Background-background, #FBFCFC) 100%);
-  }
+.gradient-bg {
+	background: linear-gradient(180deg, var(--Background-background-opacity, rgba(251, 252, 252, 0.00)) 0%, var(--Background-background, #FBFCFC) 100%);
+}
 
-  .shadow-bg {
-    background: linear-gradient(180deg, transparent 0%, var(--color-light-bg) 100%);
-  }
+.shadow-bg {
+	background: linear-gradient(180deg, transparent 0%, var(--color-light-bg) 100%);
+}

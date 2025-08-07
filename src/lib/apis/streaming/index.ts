@@ -92,11 +92,13 @@ async function* openAIStreamToIterator(
 	}
 }
 
-// streamLargeDeltasAsRandomChunks will chunk large deltas (length > 5) into random sized chunks between 1-3 characters
-// This is to simulate a more fluid streaming, even though some providers may send large chunks of text at once
+// streamLargeDeltasAsRandomChunks will chunk large deltas with adaptive sizing based on content type
+// This is to simulate a more fluid streaming, similar to ChatGPT's smooth experience
 async function* streamLargeDeltasAsRandomChunks(
 	iterator: AsyncGenerator<TextStreamUpdate>
 ): AsyncGenerator<TextStreamUpdate> {
+	let accumulatedContent = '';
+	
 	for await (const textStreamUpdate of iterator) {
 		if (textStreamUpdate.done) {
 			yield textStreamUpdate;
@@ -121,18 +123,54 @@ async function* streamLargeDeltasAsRandomChunks(
 		}
 
 		let content = textStreamUpdate.value;
-		if (content.length < 5) {
+		accumulatedContent += content;
+		
+		// Check if we're dealing with a heading or content under a heading
+		const isHeading = /^#+\s/.test(accumulatedContent);
+		
+		// Check if we're under a heading by looking for the last heading in accumulated content
+		let isUnderHeading = false;
+		const lines = accumulatedContent.split('\n');
+		for (let i = lines.length - 1; i >= 0; i--) {
+			const line = lines[i].trim();
+			if (line.startsWith('#')) {
+				isUnderHeading = true;
+				break;
+			} else if (line === '') {
+				continue;
+			} else {
+				break;
+			}
+		}
+		
+		if (content.length < 3) {
 			yield { done: false, value: content };
 			continue;
 		}
+		
 		while (content != '') {
-			const chunkSize = Math.min(Math.floor(Math.random() * 3) + 1, content.length);
+			// Adaptive chunk size based on content type
+			let chunkSize;
+			let delay;
+			
+			if (isHeading) {
+				chunkSize = Math.min(Math.floor(Math.random() * 3) + 3, content.length); // 3-5 chars for headings
+				delay = 25; // Slower speed for headings
+			} else if (isUnderHeading) {
+				chunkSize = Math.min(Math.floor(Math.random() * 4) + 5, content.length); // 5-8 chars for content under headings
+				delay = 15; // Slower for content under headings
+			} else {
+				chunkSize = Math.min(Math.floor(Math.random() * 3) + 3, content.length); // 3-5 chars for regular content
+				delay = 25; // Slower speed for regular content
+			}
+			
 			const chunk = content.slice(0, chunkSize);
 			yield { done: false, value: chunk };
+			
 			// Do not sleep if the tab is hidden
 			// Timers are throttled to 1s in hidden tabs
 			if (document?.visibilityState !== 'hidden') {
-				await sleep(5);
+				await sleep(delay);
 			}
 			content = content.slice(chunkSize);
 		}
