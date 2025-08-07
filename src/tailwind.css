@@ -192,3 +192,7 @@ body.dark .decorative-image-bottom {
   .gradient-bg {
     background: linear-gradient(180deg, var(--Background-background-opacity, rgba(251, 252, 252, 0.00)) 0%, var(--Background-background, #FBFCFC) 100%);
   }
+
+  .shadow-bg {
+    background: linear-gradient(180deg, transparent 0%, var(--color-light-bg) 100%);
+  }
