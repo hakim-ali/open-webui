@@ -1521,5 +1521,7 @@
 			"invalidType": "The file type of {{ FILE_NAME }} is not allowed. Allowed types: {{ ALLOWED_FILES }}.",
 			"onlyAllowed": "Only {{ ALLOWED_FILES }} files are allowed."
 		}
-	}
+	},
+	"Switch to light mode": "Switch to light mode",
+	"Switch to dark mode": "Switch to dark mode"
 }
