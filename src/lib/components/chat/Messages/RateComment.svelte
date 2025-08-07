@@ -251,7 +251,7 @@
 
 	<div class="mt-2 gap-1.5 flex justify-end">
 		<button
-			class="inline-flex items-center space-x-1 text-[#004280] text-sm leading-none hover:underline"
+			class="inline-flex items-center space-x-1 text-[#004280] text-sm leading-none hover:underline dark:text-gray-500"
 			on:click={() => {
 				saveHandler();
 			}}

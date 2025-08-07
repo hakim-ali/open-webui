@@ -532,10 +532,10 @@
 	bind:this={navElement}
 	id="sidebar"
 	role="navigation"
-	class=" h-screen max-h-[100dvh] min-h-screen select-none shadown-none border-0 {$showSidebar
+	class="h-screen max-h-[100dvh] min-h-screen select-none shadown-none border-0 {$showSidebar
 		? `md:relative w-[300px] max-w-[300px] ${$mobile ? `fixed absolute top-0 start-0` : ''}`
 		: $mobile
-			? 'w-[0px] absolute'
+			? 'w-[0px] absolute start-0'
 			: ''} {$isApp
 		? `ml-[4.5rem] md:ml-0`
 		: 'transition-width duration-200 ease-in-out'} shadow-md shrink-0 text-sm z-50 top-0 start-0'
@@ -598,6 +598,19 @@
 						id="sidebar-new-chat-button"
 						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
 						href="/"
+						on:click={async () => {
+							selectedChatId = null;
+
+							// Trigger clearing of message input
+							clearMessageInput.set(true);
+
+							temporaryChatEnabled.set(false);
+							setTimeout(() => {
+								if ($mobile) {
+									showSidebar.set(false);
+								}
+							}, 0);
+						}}
 					>
 						<div class="flex gap-[8px] items-center">
 							<!-- Icon -->
@@ -634,21 +647,6 @@
 					>
 						<MaterialIcon name="menu" size="1.25rem" />
 					</a>
-
-					<!-- Search icon only when sidebar is expanded, right aligned -->
-					{#if $showSidebar}
-						<div class="flex-1 flex justify-end transition-all duration-300 ease-in-out">
-							<button
-								class="flex items-center outline-none rounded-lg transition-all duration-300 ease-in-out"
-								on:click={() => {
-									showSearch.set(true);
-								}}
-								draggable="false"
-							>
-								<MaterialIcon name="search" size="1.25rem" />
-							</button>
-						</div>
-					{/if}
 				</div>
 			{/if}
 			{#if false && $user?.role === 'admin'}
@@ -718,13 +716,33 @@
 
 							<!-- Label -->
 							<div
-								class="self-center link-style text-typography-titles transition-all duration-300 ease-in-out"
+								class="self-center text-typography-titles transition-all duration-300 ease-in-out"
 								class:hidden={!$showSidebar}
 							>
 								{$i18n.t('New Chat')}
 							</div>
 						</div>
 					</a>
+				</div>
+			{/if}
+
+			<!-- Search icon only when sidebar is expanded, right aligned -->
+			{#if $showSidebar}
+				<div class="flex justify-center text-gray-800 dark:text-gray-200">
+					<button
+						class="px-[16px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+						on:click={() => {
+							showSearch.set(true);
+						}}
+						draggable="false"
+					>
+						<MaterialIcon name="search" size="1.25rem" />
+						<span
+							class="text-[14px] text-typography-titles transition-all duration-300 ease-in-out"
+						>
+							Search Chat
+						</span>
+					</button>
 				</div>
 			{/if}
 
@@ -781,7 +799,7 @@
 							class="self-center translate-y-[0.5px] transition-all duration-300 ease-in-out"
 							class:hidden={!$showSidebar}
 						>
-							<div class="self-center link-style text-typography-titles">
+							<div class="self-center text-typography-titles">
 								{$i18n.t('Notes')}
 							</div>
 						</div>
@@ -818,7 +836,7 @@
 							class="self-center translate-y-[0.5px] transition-all duration-300 ease-in-out"
 							class:hidden={!$showSidebar}
 						>
-							<div class="self-center link-style text-typography-titles">
+							<div class="self-center text-typography-titles">
 								{$i18n.t('Workspace')}
 							</div>
 						</div>
@@ -1081,7 +1099,7 @@
 									{#each $chats as chat, idx (`chat-${chat?.id ?? idx}`)}
 										{#if idx === 0 || (idx > 0 && chat.time_range !== $chats[idx - 1].time_range)}
 											<div
-												class="w-full px-[16px] py-[8px] pt-[20px] mt-[12px] text-[12px] sm:text-[14px] leading-[22px] text-typography-secondary-body-text font-medium border-t border-gray-100 dark:border-gray-900 {idx ===
+												class="w-full px-[16px] py-[8px] pt-[20px] mt-[12px] text-[12px] sm:text-[14px] leading-[22px] text-typography-secondary-body-text font-medium dark:border-gray-900 {idx ===
 												0
 													? ''
 													: 'pt-5'} pb-1.5"
@@ -1158,13 +1176,13 @@
 								{/if}
 							</div>
 						</div>
-						<div class="scroll-to-top-box fixed bottom-[120px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"><button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}><ScrollUp/></button></div>
+						<div class="scroll-to-top-box fixed bottom-[130px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"><button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}><ScrollUp/></button></div>
 					{/if}
 				</div>
 			</div>
 		</div>
-		<div class="py-[15px] px-[8px] pb-[10px] sidebar__bottom ">
-			<div class="w-full flex flex-col left-[20px] bottom-[10px] dark:border-gray-900">
+		<div class="p-[8px]  pb-[2px] sidebar__bottom">
+			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
 				<button
 							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
 								? ''

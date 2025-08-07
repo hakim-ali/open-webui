@@ -774,6 +774,7 @@
 	let govKnoPopoverStyle = '';
 
 	async function openGovKnoInfoPopover(e) {
+		e.stopPropagation();
 		e.preventDefault();
 		showGovKnoInfoPopover = true;
 		await tick();
@@ -781,25 +782,24 @@
 			const rect = govKnoInfoIconEl.getBoundingClientRect();
 			const popoverWidth = 340; // px, matches min-w-[320px] + padding
 			const popoverHeight = 180; // px, estimate
-			let left, top;
+			let left, bottom;
 			if ($isRTL) {
 				left = rect.left - popoverWidth - 12; // 12px margin to the left
 				if (left < 12) left = 12;
 			} else {
 				left = rect.right + 12; // 12px margin to the right
 				if (left + popoverWidth > window.innerWidth) {
-					left = window.innerWidth - popoverWidth - 12;
+					left = window.innerWidth - popoverWidth - 20;
 				}
 			}
-			top = rect.top + rect.height / 2 - popoverHeight / 2;
-			if (top + popoverHeight > window.innerHeight) {
-				top = window.innerHeight - popoverHeight - 12;
-			}
-			if (top < 12) top = 12;
-			govKnoPopoverStyle = `position:fixed;left:${left}px;top:${top}px;z-index:9999;min-width:320px;max-width:340px;`;
+
+			bottom = 150;
+			govKnoPopoverStyle = `position:fixed;left:${left}px;bottom:${bottom}px;z-index:9999;min-width:320px;max-width:340px;`;
 		}
 	}
-	function closeGovKnoInfoPopover() {
+	function closeGovKnoInfoPopover(e) {
+		e.stopPropagation();
+		e.preventDefault();
 		showGovKnoInfoPopover = false;
 	}
 </script>
@@ -976,7 +976,7 @@
 								</div>{/if}
 
 							<div
-								class="p-[24px] flex-1 flex flex-col bounded-[12px] shadow-custom5 relative w-full rounded-3xl transition bg-light-bg dark:text-gray-100"
+								class="p-[24px] flex-1 flex flex-col bounded-[12px] border border-[#E5EBF3] hover:border-[#90C9FF] dark:border-[#2D3642] dark:hover:border-[#004280] relative w-full rounded-3xl transition bg-light-bg dark:text-gray-100"
 								dir={$settings?.chatDirection ?? 'auto'}
 							>
 								{#if files.length > 0}
@@ -1726,6 +1726,7 @@
 
 														{#if showWebSearchButton}
 															<button
+																disabled={attachFileEnabled && files.length !== 0}
 																on:click|preventDefault={() => {
 																	webSearchEnabled = !webSearchEnabled;
 																	showGovKnoWebSearchToggle = false;
@@ -1736,7 +1737,11 @@
 																class="flex items-center flex justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {webSearchEnabled ||
 																($settings?.webSearch ?? false) === 'always'
 																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-white '}"
+																	: 'text-gray-600 dark:text-white '} {govBtnDisable
+																	? 'bg-[#D5DBE6] disabled:cursor-not-allowed'
+																	: ''} {attachFileEnabled && files.length !== 0
+																	? 'disabled:opacity-50 disabled:cursor-not-allowed'
+																	: ''}"
 															>
 																<div class="flex items-center justify-center gap-[8px]">
 																	<GlobeAlt className="size-5" strokeWidth="1.75" />
@@ -1750,13 +1755,19 @@
 														{/if}
 														{#if showGovKnoButton}
 															<button
+																disabled={attachFileEnabled && files.length !== 0}
 																on:click|preventDefault={() => saveGovKnoModel()}
 																type="button"
 																class="govkno-btn flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 gap-[4px] text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
 																	? ' bg-gradient-bg-2 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-gray-300 '}"
+																	: 'text-gray-600 dark:text-gray-300 '}{attachFileEnabled &&
+																files.length !== 0
+																	? 'disabled:opacity-50 disabled:cursor-not-allowed'
+																	: ''}"
 															>
-																<div class="flex items-center justify-center gap-[8px] relative">
+																<div
+																	class="flex items-center justify-center gap-[8px] relative flex-row"
+																>
 																	<GovKno />
 																	<span
 																		class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5"
@@ -1768,14 +1779,14 @@
 																		bind:this={govKnoInfoIconEl}
 																		type="button"
 																		class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
-																		on:click|stopPropagation={openGovKnoInfoPopover}
+																		on:click|stopPropagation={(e) => openGovKnoInfoPopover(e)}
 																		aria-label="Info"
 																	>
 																		<Info className="size-4 text-gray dark:text-gray-300" />
 																	</button>
 																	{#if showGovKnoInfoPopover}
 																		<div
-																			class="bg-white dark:bg-sky-200/5 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-4 flex flex-col gap-3 animate-fade-in"
+																			class="bg-white dark:bg-[#010E1D] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-4 flex flex-col gap-3 animate-fade-in"
 																			style={govKnoPopoverStyle}
 																		>
 																			{#if $isRTL}
@@ -1784,7 +1795,7 @@
 																				>
 																					<button
 																						class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 mr-2"
-																						on:click={closeGovKnoInfoPopover}
+																						on:click={(e) => closeGovKnoInfoPopover(e)}
 																						aria-label="Close"
 																					>
 																						<XMark
@@ -1798,7 +1809,7 @@
 																					<MenuBook className="size-6 mr-2 mt-0.5" />
 																					<button
 																						class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-auto"
-																						on:click={closeGovKnoInfoPopover}
+																						on:click={(e) => closeGovKnoInfoPopover(e)}
 																						aria-label="Close"
 																					>
 																						<XMark
@@ -2230,7 +2241,7 @@
 														class="{!(files.length > 0
 															? prompt.length === 0 || files.length === 0
 															: prompt.length === 0)
-															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
+															? 'bg-black text-white hover:bg-gray-900 dark:bg-[#1F2531] dark:text-white dark:hover:bg-gray-700 '
 															: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-[#1F2531] disabled'} transition rounded-full p-1.5 self-center"
 														type="submit"
 														disabled={files.length > 0
@@ -2244,7 +2255,7 @@
 															class="size-5"
 														>
 															<path
-																fill-rule="evenodd"
+																fill="currentColor"
 																d="M8 14a.75.75 0 0 1-.75-.75V4.56L4.03 7.78a.75.75 0 0 1-1.06-1.06l4.5-4.5a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.75 4.56v8.69A.75.75 0 0 1 8 14Z"
 																clip-rule="evenodd"
 															/>
