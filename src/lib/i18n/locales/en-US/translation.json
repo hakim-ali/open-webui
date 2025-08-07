@@ -1521,5 +1521,16 @@
 			"invalidType": "The file type of {{ FILE_NAME }} is not allowed. Allowed types: {{ ALLOWED_FILES }}.",
 			"onlyAllowed": "Only {{ ALLOWED_FILES }} files are allowed."
 		}
-	}
+	},
+	"Knowledge Repository": "Knowledge Repository",
+	"Whole of Government Repository": "Whole of Government Repository",
+	"Browse Knowledge Base": "Browse Knowledge Base",
+	"Access Government Knowledge Repository to find out what is available": "Access Government Knowledge Repository to find out what is available",
+	"Access repository": "Access repository",
+	"Government Entities": "Government Entities",
+	"Total Files": "Total Files",
+	"Items":"Items",
+	"Whole of Knowledge Repository": "Whole of Knowledge Repository",
+	"Loading documents...": "Loading documents...",
+	"No documents found": "No documents found"
 }
