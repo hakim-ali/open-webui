@@ -757,9 +757,7 @@
 						draggable="false"
 					>
 						<MaterialIcon name="search" size="1.25rem" />
-						<span
-							class="text-[14px] text-typography-titles transition-all duration-300 ease-in-out"
-						>
+						<span class="link-style text-typography-titles transition-all duration-300 ease-in-out">
 							{$i18n.t('Search Chats')}
 						</span>
 					</button>
