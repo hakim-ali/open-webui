@@ -168,7 +168,7 @@
 	class=" my-2.5 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-850 bg-white dark:bg-gray-900"
 	id="message-feedback-{message.id}"
 >
-	<div class="flex justify-between items-center">
+	<div class="flex justify-between items-start">
 		<div class="text-sm font-medium">
 			<div class="flex items-center gap-1">
 				{#if message?.annotation?.rating === 1}
