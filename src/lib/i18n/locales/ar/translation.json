@@ -1515,6 +1515,8 @@
 			"onlyAllowed": "فقط ملفات {{ ALLOWED_FILES }} مسموح بها."
 		}
 	},
+	"Switch to light mode": "التبديل إلى وضع الضوء",
+	"Switch to dark mode": "التبديل إلى الوضع المظلم",
 	"Knowledge Repository": "مستودع المعرفة",
 	"Whole of Government Repository": "مستودع الحكومة بأكملها",
 	"Browse Knowledge Base": "تصفح قاعدة المعرفة",

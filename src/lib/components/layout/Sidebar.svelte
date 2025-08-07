@@ -535,7 +535,7 @@
 	class="h-screen max-h-[100dvh] min-h-screen select-none shadown-none border-0 {$showSidebar
 		? `md:relative w-[300px] max-w-[300px] ${$mobile ? `fixed absolute top-0 start-0` : ''}`
 		: $mobile
-			? 'w-[0px] absolute'
+			? 'w-[0px] absolute start-0'
 			: ''} {$isApp
 		? `ml-[4.5rem] md:ml-0`
 		: 'transition-width duration-200 ease-in-out'} shadow-md shrink-0 text-sm z-50 top-0 start-0'
@@ -598,6 +598,19 @@
 						id="sidebar-new-chat-button"
 						class="px-[16px] py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
 						href="/"
+						on:click={async () => {
+							selectedChatId = null;
+
+							// Trigger clearing of message input
+							clearMessageInput.set(true);
+
+							temporaryChatEnabled.set(false);
+							setTimeout(() => {
+								if ($mobile) {
+									showSidebar.set(false);
+								}
+							}, 0);
+						}}
 					>
 						<div class="flex gap-[8px] items-center">
 							<!-- Icon -->
