@@ -100,12 +100,11 @@
 	let isHovered = false;
 	let wasOpenedByClick = false;
 	let hoverTimeout: number | null = null;
-	 let scrollContainer;
+	let scrollContainer;
 
-  function scrollToTop() {
-    scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
+	function scrollToTop() {
+		scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+	}
 
 	function openSidebarOnAction() {
 		if (!$showSidebar) {
@@ -546,7 +545,10 @@
 	<div
 		class="flex flex-col justify-between max-h-[100dvh] overflow-x-hidden z-50 bg-light-bg shadow-[0px_48px_96px_0px_rgba(0,0,0,0.08)] dark:shadow-none"
 	>
-		<div class="px-[8px] py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto" bind:this={scrollContainer}>
+		<div
+			class="px-[8px] py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto"
+			bind:this={scrollContainer}
+		>
 			{#if $mobile}
 				<div class="sidebar__mobile">
 					<div
@@ -638,15 +640,33 @@
 					class:justify-center={!$showSidebar}
 				>
 					<!-- Menu Icon behaves like other sidebar buttons -->
-
-					<a
-						class="hover:bg-gradient-bg-2 ml-[8px] flex items-center rounded-lg transition-all duration-300 ease-in-out"
+					<button
+						type="button"
+						class="ml-[8px] w-[28px] h-[28px] flex items-center rounded-lg transition-all duration-300 ease-in-out hover:bg-gradient-bg-2"
 						class:justify-center={!$showSidebar}
-						href="#"
-						on:click={onSidebarClick}
+						on:click={(e) => {
+							if (!$showSidebar) onSidebarClick(e);
+						}}
+						aria-label="Toggle sidebar"
 					>
-						<MaterialIcon name="menu" size="1.25rem" />
-					</a>
+						<img src="/GovGPT.gif" alt="GovGPT Logo" class="logo-image" />
+					</button>
+
+					{#if $showSidebar}
+						<button
+							type="button"
+							class="flex p-[5px] items-center rounded-lg transition-all duration-300 ease-in-out hover:bg-gradient-bg-2"
+							class:justify-center={!$showSidebar}
+							on:click={onSidebarClick}
+							aria-label={$isRTL ? 'Dock to left' : 'Dock to right'}
+						>
+							<MaterialIcon
+								iconClass="material-symbols-outlined"
+								name={$isRTL ? 'dock_to_left' : 'dock_to_right'}
+								size="1.25rem"
+							/>
+						</button>
+					{/if}
 				</div>
 			{/if}
 			{#if false && $user?.role === 'admin'}
@@ -724,6 +744,19 @@
 						</div>
 					</a>
 				</div>
+				{#if !$showSidebar}
+					<div class="flex justify-center text-gray-800 dark:text-gray-200">
+						<button
+							class="px-[16px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+							on:click={() => {
+								showSearch.set(true);
+							}}
+							draggable="false"
+						>
+							<MaterialIcon name="search" size="1.25rem" />
+						</button>
+					</div>
+				{/if}
 			{/if}
 
 			<!-- Search icon only when sidebar is expanded, right aligned -->
@@ -740,7 +773,7 @@
 						<span
 							class="text-[14px] text-typography-titles transition-all duration-300 ease-in-out"
 						>
-							Search Chat
+							{$i18n.t('Search Chats')}
 						</span>
 					</button>
 				</div>
@@ -1146,7 +1179,6 @@
 												tagEventHandler(type, name, chat.id);
 											}}
 										/>
-										
 									{/each}
 
 									{#if $scrollPaginationEnabled && !allChatsLoaded}
@@ -1176,43 +1208,48 @@
 								{/if}
 							</div>
 						</div>
-						<div class="scroll-to-top-box fixed bottom-[130px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"><button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}><ScrollUp/></button></div>
+						<div
+							class="scroll-to-top-box fixed bottom-[130px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"
+						>
+							<button
+								class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
+								on:click={scrollToTop}><ScrollUp /></button
+							>
+						</div>
 					{/if}
 				</div>
 			</div>
 		</div>
-		<div class="p-[8px]  pb-[2px] sidebar__bottom">
+		<div class="p-[8px] pb-[2px] sidebar__bottom">
 			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
 				<button
-							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
-								? ''
-								: 'justify-center'}"
-							on:click={() => {
-								goto('/knowledgeRepository');
-							}}
+					class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
+						? ''
+						: 'justify-center'}"
+					on:click={() => {
+						goto('/knowledgeRepository');
+					}}
+				>
+					<div class="flex">
+						<div class=" self-center {$showSidebar ? 'me-[8px]' : ''}">
+							<GovKno />
+						</div>
+						<div
+							class="self-center link-style text-typography-titles {$showSidebar ? '' : 'hidden'}"
 						>
-							<div class="flex">
-								<div class=" self-center {$showSidebar ? 'me-[8px]' : ''}">
-									<GovKno />
-								</div>
-								<div
-									class="self-center link-style text-typography-titles {$showSidebar
-										? ''
-										: 'hidden'}"
-								>
-									{$i18n.t('Knowledge Repository')}
-								</div>
-							</div>
-							{#if $showSidebar}
-								<div>
-									{#if $isRTL}
-										<ChevronLeft />
-									{:else}
-										<ChevronRight />
-									{/if}
-								</div>
+							{$i18n.t('Knowledge Repository')}
+						</div>
+					</div>
+					{#if $showSidebar}
+						<div>
+							{#if $isRTL}
+								<ChevronLeft />
+							{:else}
+								<ChevronRight />
 							{/if}
-						</button>
+						</div>
+					{/if}
+				</button>
 			</div>
 		</div>
 		<div class="p-[8px] pb-[24px] sidebar__bottom">

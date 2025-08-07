@@ -72,7 +72,7 @@
 />-->
 
 <nav
-	class=" flex items-center justify-between px-4 py-0 h-[56px] absolute z-30  {$mobile
+	class=" flex items-center justify-between px-4 py-0 h-[56px] absolute z-30 {$mobile
 		? ' w-full fixed dark:border-gray-800'
 		: 'bg-transparent'}"
 >
