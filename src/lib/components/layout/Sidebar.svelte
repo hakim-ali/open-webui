@@ -1158,13 +1158,13 @@
 								{/if}
 							</div>
 						</div>
-						<div class="scroll-to-top-box fixed bottom-[120px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"><button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}><ScrollUp/></button></div>
+						<div class="scroll-to-top-box fixed bottom-[130px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] gradient-bg"><button class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full" on:click={scrollToTop}><ScrollUp/></button></div>
 					{/if}
 				</div>
 			</div>
 		</div>
-		<div class="py-[15px] px-[8px] pb-[10px] sidebar__bottom ">
-			<div class="w-full flex flex-col left-[20px] bottom-[10px] dark:border-gray-900">
+		<div class="p-[8px]  pb-[2px] sidebar__bottom">
+			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
 				<button
 							class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-gradient-bg-2 dark:hover:bg-gray-900 {$showSidebar
 								? ''
