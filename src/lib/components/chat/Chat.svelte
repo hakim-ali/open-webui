@@ -2096,7 +2096,11 @@
 							shareEnabled={!!history.currentId}
 							{initNewChat}
 						/>
-
+						<p
+							class="absolute top-0 text-xl font-bold bg-gradient-to-r from-[#9ab5fb] to-[#4476f9] bg-clip-text text-transparent w-[120px] px-[20px] py-[18px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0"
+						>
+							GovGPT
+						</p>
 						<div class="m-auto h-full w-full flex-1 flex flex-col flex-auto z-10 @container">
 							{#if (false && $settings?.landingPageMode === 'chat') || createMessagesList(history, history.currentId).length > 0}
 								<div

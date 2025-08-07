@@ -976,7 +976,7 @@
 								</div>{/if}
 
 							<div
-								class="p-[24px] flex-1 flex flex-col bounded-[12px] shadow-custom5 relative w-full rounded-3xl transition bg-light-bg dark:text-gray-100"
+								class="p-[24px] flex-1 flex flex-col bounded-[12px] border border-[#E5EBF3] hover:border-[#90C9FF] dark:border-[#2D3642] dark:hover:border-[#004280] relative w-full rounded-3xl transition bg-light-bg dark:text-gray-100"
 								dir={$settings?.chatDirection ?? 'auto'}
 							>
 								{#if files.length > 0}
