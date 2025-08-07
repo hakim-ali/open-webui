@@ -10,6 +10,7 @@
 	--color-light-bg: #fbfcfc;
 	--color-label-primary: #000000;
 	--color-btn-text-secondary: #004280;
+	--color-menu-hover: rgba(204, 221, 252, 0.3);
 }
 
 .dark {
@@ -20,6 +21,7 @@
 	--color-light-bg: #010e1d;
 	--color-label-primary: #e0ebf6;
 	--color-btn-text-secondary: #e0ebf6;
+	--color-menu-hover: #072D5A4D;
 }
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
