@@ -1426,14 +1426,36 @@ async def chat_completion(
                     
                     log.info(f"govGpt-file-search-service: Starting stream with {len(custom_response)} characters")
                     
-                    # Split the response into chunks for streaming
-                    chunk_size = 50  # Characters per chunk
-                    total_chunks = (len(custom_response) + chunk_size - 1) // chunk_size
-                    log.info(f"govGpt-file-search-service: Will send {total_chunks} chunks")
+                    # Adaptive chunking based on content type
+                    def get_chunk_size(position, text):
+                        # Look ahead to see if we're near a heading
+                        look_ahead = text[position:position + 50] if position + 50 < len(text) else text[position:]
+                        
+                        # Check for markdown headings (# ## ### #### ##### ######)
+                        if any(look_ahead.startswith(prefix) for prefix in ['# ', '## ', '### ', '#### ', '##### ', '###### ']):
+                            return 5  # Normal chunks for headings
+                        
+                        # Check if we're in content under a heading (after any heading line)
+                        lines = text[:position].split('\n')
+                        for line in reversed(lines):
+                            line = line.strip()
+                            if line.startswith('#'):
+                                return 12  # Larger chunks for content under headings
+                            elif line == '':  # Empty line, continue checking
+                                continue
+                            else:
+                                break  # Found non-heading content, stop checking
+                        
+                        return 8  # Small chunks for regular content
                     
-                    for i in range(0, len(custom_response), chunk_size):
-                        chunk = custom_response[i:i + chunk_size]
-                        chunk_number = (i // chunk_size) + 1
+                    # Process text with adaptive chunking
+                    position = 0
+                    chunk_number = 0
+                    
+                    while position < len(custom_response):
+                        chunk_size = get_chunk_size(position, custom_response)
+                        chunk = custom_response[position:position + chunk_size]
+                        chunk_number += 1
                         
                         # Create streaming event
                         event_data = {
@@ -1447,15 +1469,18 @@ async def chat_completion(
                         }
                         
                         # Add metadata to the first chunk
-                        if i == 0 and custom_metadata:
+                        if position == 0 and custom_metadata:
                             event_data["choices"][0]["delta"]["metadata"] = custom_metadata
                             log.info(f"govGpt-file-search-service: Added metadata to first chunk")
                         
-                        log.debug(f"govGpt-file-search-service: Sending chunk {chunk_number}/{total_chunks} ({len(chunk)} chars)")
+                        log.debug(f"govGpt-file-search-service: Sending chunk {chunk_number} ({len(chunk)} chars) at position {position}")
                         yield f"data: {json.dumps(event_data)}\n\n"
                         
-                        # Small delay to simulate streaming
-                        await asyncio.sleep(0.05)
+                        # Adaptive delay based on chunk size - slower for more natural streaming
+                        delay = 0.05 if chunk_size > 5 else 0.08  # Slower delays for more natural streaming
+                        await asyncio.sleep(delay)
+                        
+                        position += chunk_size
                     
                     # Send completion event
                     log.info(f"govGpt-file-search-service: Sending completion event")

@@ -127,15 +127,85 @@ textarea::placeholder {
 }
 
 .markdown-prose {
-	@apply prose dark:prose-invert prose-blockquote:border-s-gray-100 prose-blockquote:dark:border-gray-800 prose-blockquote:border-s-2 prose-blockquote:not-italic prose-blockquote:font-normal  prose-headings:font-semibold prose-hr:my-4 prose-hr:border-gray-100 prose-hr:dark:border-gray-800 prose-p:my-0 prose-img:my-1 prose-headings:my-1 prose-pre:my-0 prose-table:my-0 prose-blockquote:my-0 prose-ul:-my-0 prose-ol:-my-0 prose-li:-my-0 whitespace-pre-line;
+	@apply prose dark:prose-invert 
+		prose-p:leading-relaxed prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:my-2
+		prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-headings:my-3 prose-headings:leading-tight
+		prose-h1:text-[20px] prose-h1:font-semibold prose-h1:mb-4 prose-h1:mt-6
+		prose-h2:text-[20px] prose-h2:font-semibold prose-h2:mb-3 prose-h2:mt-5
+		prose-h3:text-[20px] prose-h3:font-semibold prose-h3:mb-2 prose-h3:mt-4
+		prose-h4:text-[16px] prose-h4:font-semibold prose-h4:mb-1 prose-h4:mt-3
+		prose-h5:text-[16px] prose-h5:font-semibold prose-h5:mb-1 prose-h5:mt-3
+		prose-h6:text-[16px] prose-h6:font-semibold prose-h6:mb-1 prose-h6:mt-3
+		prose-p:text-[16px] prose-p:font-normal
+		prose-blockquote:border-l-4 prose-blockquote:border-gray-200 dark:prose-blockquote:border-gray-700 prose-blockquote:bg-gray-50 dark:prose-blockquote:bg-gray-900/50 prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:my-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:font-normal prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300
+		prose-hr:my-4 prose-hr:border-gray-200 dark:prose-hr:border-gray-700 prose-hr:border-t
+		prose-img:my-4 prose-img:rounded-lg prose-img:shadow-sm
+		prose-pre:my-4 prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800 prose-pre:rounded-lg prose-pre:p-4 prose-pre:overflow-x-auto
+		prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:text-gray-800 dark:prose-code:text-gray-200 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-[14px] prose-code:font-mono prose-code:font-normal
+		prose-pre:prose-code:bg-transparent prose-pre:prose-code:text-gray-100 prose-pre:prose-code:p-0
+		prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6 prose-ul:space-y-2
+		prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6 prose-ol:space-y-2
+		prose-li:my-1 prose-li:text-gray-700 dark:prose-li:text-gray-300
+		prose-strong:font-semibold prose-strong:text-gray-900 dark:prose-strong:text-gray-100
+		prose-em:italic prose-em:text-[16px] prose-em:font-normal prose-em:text-gray-700 dark:prose-em:text-gray-300
+		prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:underline prose-a:decoration-2 prose-a:underline-offset-2 prose-a:transition-colors prose-a:hover:text-blue-700 dark:prose-a:hover:text-blue-300 prose-a:text-[16px] prose-a:font-normal
+		prose-table:my-4 prose-table:w-full prose-table:border-collapse prose-table:rounded-lg prose-table:overflow-hidden
+		prose-tr:bg-transparent prose-tr:border-b prose-tr:border-gray-100 dark:prose-tr:border-gray-100 prose-tr:min-h-[40px]
+		prose-th:bg-transparent prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:font-bold prose-th:text-gray-900 dark:prose-th:text-gray-100 prose-th:text-sm prose-th:capitalize prose-th:normal-case
+		prose-td:bg-transparent prose-td:px-4 prose-td:py-3 prose-td:text-gray-700 dark:prose-td:text-gray-300 prose-td:text-sm prose-td:min-h-[40px]
+		whitespace-pre-line;
 }
 
 .markdown-prose-xs {
-	@apply text-xs prose dark:prose-invert prose-blockquote:border-s-gray-100 prose-blockquote:dark:border-gray-800 prose-blockquote:border-s-2 prose-blockquote:not-italic prose-blockquote:font-normal  prose-headings:font-semibold prose-hr:my-0  prose-hr:border-gray-100 prose-hr:dark:border-gray-800 prose-p:my-0 prose-img:my-1 prose-headings:my-1 prose-pre:my-0 prose-table:my-0 prose-blockquote:my-0 prose-ul:-my-0 prose-ol:-my-0 prose-li:-my-0 whitespace-pre-line;
+	@apply text-xs prose dark:prose-invert 
+		prose-p:leading-relaxed prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:my-1.5
+		prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-headings:my-2 prose-headings:leading-tight
+		prose-h1:text-[20px] prose-h1:font-semibold prose-h1:mb-3 prose-h1:mt-5
+		prose-h2:text-[20px] prose-h2:font-semibold prose-h2:mb-2 prose-h2:mt-4
+		prose-h3:text-[20px] prose-h3:font-semibold prose-h3:mb-1.5 prose-h3:mt-3
+		prose-h4:text-[16px] prose-h4:font-semibold prose-h4:mb-1 prose-h4:mt-2
+		prose-h5:text-[16px] prose-h5:font-semibold prose-h5:mb-1 prose-h5:mt-2
+		prose-h6:text-[16px] prose-h6:font-semibold prose-h6:mb-1 prose-h6:mt-2
+		prose-p:text-[16px] prose-p:font-normal
+		prose-blockquote:border-l-3 prose-blockquote:border-gray-200 dark:prose-blockquote:border-gray-700 prose-blockquote:bg-gray-50 dark:prose-blockquote:bg-gray-900/50 prose-blockquote:pl-3 prose-blockquote:py-1 prose-blockquote:my-3 prose-blockquote:rounded-r-md prose-blockquote:not-italic prose-blockquote:font-normal prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300
+		prose-hr:my-3 prose-hr:border-gray-200 dark:prose-hr:border-gray-700 prose-hr:border-t
+		prose-img:my-3 prose-img:rounded-md prose-img:shadow-sm
+		prose-pre:my-3 prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800 prose-pre:rounded-md prose-pre:p-3 prose-pre:overflow-x-auto
+		prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:text-gray-800 dark:prose-code:text-gray-200 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[14px] prose-code:font-mono prose-code:font-normal
+		prose-pre:prose-code:bg-transparent prose-pre:prose-code:text-gray-100 prose-pre:prose-code:p-0
+		prose-ul:my-3 prose-ul:list-disc prose-ul:pl-4 prose-ul:space-y-1
+		prose-ol:my-3 prose-ol:list-decimal prose-ol:pl-4 prose-ol:space-y-1
+		prose-li:my-0.5 prose-li:text-gray-700 dark:prose-li:text-gray-300
+		prose-strong:font-semibold prose-strong:text-gray-900 dark:prose-strong:text-gray-100
+		prose-em:italic prose-em:text-[16px] prose-em:font-normal prose-em:text-gray-700 dark:prose-em:text-gray-300
+		prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:underline prose-a:decoration-2 prose-a:underline-offset-2 prose-a:transition-colors prose-a:hover:text-blue-700 dark:prose-a:hover:text-blue-300 prose-a:text-[16px] prose-a:font-normal
+		prose-table:my-3 prose-table:w-full prose-table:border-collapse prose-table:rounded-md prose-table:overflow-hidden
+		prose-tr:bg-transparent prose-tr:border-b prose-tr:border-gray-100 dark:prose-tr:border-gray-100 prose-tr:min-h-[40px]
+		prose-th:bg-transparent prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:font-bold prose-th:text-gray-900 dark:prose-th:text-gray-100 prose-th:text-xs prose-th:capitalize prose-th:normal-case
+		prose-td:bg-transparent prose-td:px-3 prose-td:py-2 prose-td:text-gray-700 dark:prose-td:text-gray-300 prose-td:text-xs prose-td:min-h-[40px]
+		whitespace-pre-line;
 }
 
 .markdown a {
 	@apply underline;
+}
+
+/* Custom table styles for thead and tbody transparency */
+.markdown-prose thead,
+.markdown-prose-xs thead {
+	@apply bg-transparent;
+}
+
+.markdown-prose tbody,
+.markdown-prose-xs tbody {
+	@apply bg-transparent;
+}
+
+/* Custom table header styles for capitalization */
+.markdown-prose th,
+.markdown-prose-xs th,
+.tiptap th {
+	text-transform: none;
 }
 
 .font-primary {
@@ -511,30 +581,34 @@ input[type='number'] {
 	font-weight: 700;
 }
 
-/* Table styling for tiptap editors */
+/* Table styling for tiptap editors - ChatGPT-like design */
 .tiptap table {
-	@apply w-full text-sm text-left text-gray-500 dark:text-gray-400 max-w-full;
+	@apply w-full text-sm text-left text-gray-700 dark:text-gray-300 max-w-full border-collapse rounded-lg overflow-hidden;
 }
 
 .tiptap thead {
-	@apply text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 border-none;
+	@apply text-sm text-gray-900 dark:text-gray-100 border-none bg-transparent;
+}
+
+.tiptap tbody {
+	@apply bg-transparent;
 }
 
 .tiptap th,
 .tiptap td {
-	@apply px-3 py-1.5 border border-gray-100 dark:border-gray-850;
+	@apply px-4 py-3 bg-transparent min-h-[40px];
 }
 
 .tiptap th {
-	@apply cursor-pointer text-left text-xs text-gray-700 dark:text-gray-400 font-semibold uppercase bg-gray-50 dark:bg-gray-850;
+	@apply cursor-pointer text-left text-sm text-gray-900 dark:text-gray-100 font-bold bg-transparent capitalize normal-case;
 }
 
 .tiptap td {
-	@apply text-gray-900 dark:text-white w-max;
+	@apply text-gray-700 dark:text-gray-300 w-max bg-transparent min-h-[40px];
 }
 
 .tiptap tr {
-	@apply bg-white dark:bg-gray-900 dark:border-gray-850 text-xs;
+	@apply bg-transparent dark:bg-transparent text-sm border-b border-gray-100 dark:border-gray-100 min-h-[40px];
 }
 
 body {
@@ -593,8 +667,29 @@ body {
 
 /* === Global Bordered Table Styles === */
 
+thead {
+	@apply bg-transparent;
+	border: 0px;
+}
+
+tbody {
+	@apply bg-transparent;
+	border: 0px;
+}
+
+tr, th {
+	@apply bg-transparent border-b border-gray-100 dark:border-gray-100 min-h-[40px];
+	border: 0px;
+	
+}
+
 td {
-	@apply border-b-1 border-gray-100 dark:border-gray-700 px-4 py-3;
+	@apply px-4 py-3 bg-transparent min-h-[40px];
+	border: 0px;
+}
+
+tr,th,td .break-normal{
+	padding: 4px 0px;
 }
 
 @layer utilities {
@@ -643,23 +738,4 @@ body {
 .input-prose,
 .markdown-prose {
   font-family: 'Inter_24pt-Regular',  ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  font-size: 1rem; /* text-base */
-  line-height: 1.75rem; /* leading-relaxed */
-  color: #374151; /* text-gray-700 */
-  white-space: pre-line;
-}
-
-.input-prose h1,
-.markdown-prose h1 {
-  font-size: 1.75em; /* text-4xl */
-  line-height: 1.75em;
-  font-weight: 600;
-  margin: 0.25rem 0;
-}
-
-.input-prose h2,
-.markdown-prose h2 {
-  font-size: 1.4em; /* text-4xl */
-  line-height: 1.4em;
-  font-weight: 600;
 }

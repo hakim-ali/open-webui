@@ -105,6 +105,7 @@
 									if (data.choices && data.choices[0]?.delta?.content) {
 										responseContent += data.choices[0].delta.content;
 
+										// No client-side delay for smooth streaming like document streaming
 										autoScroll();
 									}
 								} catch (e) {
@@ -186,6 +187,7 @@
 									if (data.choices && data.choices[0]?.delta?.content) {
 										responseContent += data.choices[0].delta.content;
 
+										// No client-side delay for smooth streaming like document streaming
 										autoScroll();
 									}
 								} catch (e) {
