@@ -1691,6 +1691,7 @@
 
 														{#if showWebSearchButton}
 															<button
+															disabled={attachFileEnabled && files.length!==0}
 																on:click|preventDefault={() => {
 																	webSearchEnabled = !webSearchEnabled;
 																	showGovKnoWebSearchToggle = false;
@@ -1715,6 +1716,7 @@
 														{/if}
 														{#if showGovKnoButton}
 															<button
+															disabled={attachFileEnabled && files.length!==0}
 																on:click|preventDefault={() => saveGovKnoModel()}
 																type="button"
 																class="govkno-btn flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 gap-[4px] text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
@@ -2127,7 +2129,7 @@
 														class="{!(files.length > 0
 															? prompt.length === 0 || files.length === 0
 															: prompt.length === 0)
-															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
+															? 'bg-black text-white hover:bg-gray-900 dark:bg-[#1F2531] dark:text-white dark:hover:bg-gray-700 '
 															: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-[#1F2531] disabled'} transition rounded-full p-1.5 self-center"
 														type="submit"
 														disabled={files.length > 0
@@ -2141,7 +2143,7 @@
 															class="size-5"
 														>
 															<path
-																fill-rule="evenodd"
+																fill="currentColor"
 																d="M8 14a.75.75 0 0 1-.75-.75V4.56L4.03 7.78a.75.75 0 0 1-1.06-1.06l4.5-4.5a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.75 4.56v8.69A.75.75 0 0 1 8 14Z"
 																clip-rule="evenodd"
 															/>
