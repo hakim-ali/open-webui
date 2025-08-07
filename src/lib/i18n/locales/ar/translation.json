@@ -1514,8 +1514,7 @@
 			"invalidType": "نوع الملف {{ FILE_NAME }} غير مسموح. الأنواع المسموح بها: {{ ALLOWED_FILES }}.",
 			"onlyAllowed": "فقط ملفات {{ ALLOWED_FILES }} مسموح بها."
 		}
-	}
-	"Chat is limited to the Gov Knowledge Base.": "تقتصر الدردشة على قاعدة المعرفة الحكومية.",
+	},
 	"Knowledge Repository": "مستودع المعرفة",
 	"Whole of Government Repository": "مستودع الحكومة بأكملها",
 	"Browse Knowledge Base": "تصفح قاعدة المعرفة",
@@ -1524,7 +1523,7 @@
 	"Government Entities": "الجهات الحكومية",
 	"Total Files": "إجمالي الملفات",
 	"Items": "أغراض",
-	"Whole of Knowledge Repository":"مستودع المعرفة الكاملة",
+	"Whole of Knowledge Repository": "مستودع المعرفة الكاملة",
 	"Loading documents...": "جارٍ تحميل المستندات...",
 	"No documents found": "لم يتم العثور على وثائق"
 }

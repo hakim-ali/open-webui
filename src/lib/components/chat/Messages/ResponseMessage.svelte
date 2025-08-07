@@ -797,7 +797,7 @@
 							</div>
 						{:else}
 							<div
-								class="w-full text-[14px] text-typography-titles leading-[24px] flex flex-col relative"
+								class="w-full text-[16px] text-typography-titles leading-[24px] flex flex-col relative"
 								id="response-content-container"
 							>
 								{#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
@@ -1040,8 +1040,6 @@
 									</button>
 								</Tooltip>
 
-								
-
 								{#if $config?.features.enable_image_generation && ($user?.role === 'admin' || $user?.permissions?.features?.image_generation) && !readOnly}
 									<Tooltip content={$i18n.t('Generate Image')} placement="bottom">
 										<button
@@ -1260,43 +1258,43 @@
 									{/if}
 
 									{#if $user?.role === 'admin'}
-									<Tooltip content={$i18n.t('Regenerate')} placement="bottom">
-										<button
-											type="button"
-											aria-label={$i18n.t('Regenerate')}
-											class=" p-1.5 hover:bg-gradient-bg-2 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition regenerate-response-button"
-											on:click={() => {
-												showRateComment = false;
-												regenerateResponse(message);
+										<Tooltip content={$i18n.t('Regenerate')} placement="bottom">
+											<button
+												type="button"
+												aria-label={$i18n.t('Regenerate')}
+												class=" p-1.5 hover:bg-gradient-bg-2 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition regenerate-response-button"
+												on:click={() => {
+													showRateComment = false;
+													regenerateResponse(message);
 
-												(model?.actions ?? []).forEach((action) => {
-													dispatch('action', {
-														id: action.id,
-														event: {
-															id: 'regenerate-response',
-															data: {
-																messageId: message.id
+													(model?.actions ?? []).forEach((action) => {
+														dispatch('action', {
+															id: action.id,
+															event: {
+																id: 'regenerate-response',
+																data: {
+																	messageId: message.id
+																}
 															}
-														}
+														});
 													});
-												});
-											}}
-										>
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke-width="2.3"
-												aria-hidden="true"
-												stroke="currentColor"
-												class="w-4 h-4"
+												}}
 											>
-												<path
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-												/>
-											</svg>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke-width="2.3"
+													aria-hidden="true"
+													stroke="currentColor"
+													class="w-4 h-4"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+													/>
+												</svg>
 											</button>
 										</Tooltip>
 									{/if}
@@ -1363,7 +1361,7 @@
 										{/each}
 									{/if}
 								{/if}
-								{#if ($user?.role === 'admin' || ($user?.permissions?.chat?.tts ?? true))}
+								{#if $user?.role === 'admin' || ($user?.permissions?.chat?.tts ?? true)}
 									<Tooltip content={$i18n.t('Read Aloud')} placement="bottom">
 										<button
 											aria-label={$i18n.t('Read Aloud')}
@@ -1425,7 +1423,7 @@
 													/>
 												</svg>
 											{:else}
-												<VolumeUp/>
+												<VolumeUp />
 											{/if}
 										</button>
 									</Tooltip>
