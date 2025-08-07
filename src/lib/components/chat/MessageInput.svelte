@@ -1758,9 +1758,9 @@
 																	? ' bg-gradient-bg-2 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
 																	: 'text-gray-600 dark:text-gray-300 '}{attachFileEnabled && files.length!==0 ? "disabled:opacity-50 disabled:cursor-not-allowed" : ''}"
 															>
-																<div class="flex items-center justify-center gap-[8px] relative flex-row">
+																<div class="flex items-center justify-center gap-[8px] relative flex-row ps-0.5">
 																	<GovKno />
-																	<span class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5">
+																	<span class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none ps-0.5">
 																		{$i18n.t('Gov Knowledge')}
 																	</span>
 																	<!-- Info icon at the end of the row -->
