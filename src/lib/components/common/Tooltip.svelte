@@ -13,6 +13,7 @@
 	export let offset = [0, 4];
 	export let allowHTML = true;
 	export let tippyOptions = {};
+	export let testClass= 'bg-red';
 
 	let tooltipElement;
 	let tooltipInstance;
@@ -45,6 +46,6 @@
 	});
 </script>
 
-<div bind:this={tooltipElement} class={className}>
+<div bind:this={tooltipElement} class={`${className}`}>
 	<slot />
 </div>

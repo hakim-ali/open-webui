@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { documentsArray } from '$lib/stores';
+	import { documentsArray,mobile } from '$lib/stores';
 	import { onMount, getContext } from 'svelte';
 	import { isRTL } from '$lib/i18n';
 	import ChevronUp from '$lib/components/icons/ChevronUp.svelte';
@@ -9,6 +9,7 @@
 	import GovKno from '$lib/components/icons/GovKno.svelte';
 	import KnoDocs from '$lib/components/icons/KnoDocs.svelte';
 	import { goto } from '$app/navigation';
+	import Info from '$lib/components/icons/Info.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -85,9 +86,74 @@
 	</div>
 {:else}
 	<div
-		class="scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-sm pt-0.5"
+		class="h-[calc(100dvh-200px)]  bg-white dark:bg-gray-900 scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-sm pt-0.5 flex-col gap-10"
 	>
-		<table
+		{#if $mobile}
+			<table
+				class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
+			>
+				<thead
+					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 -translate-y-0.5"
+				>
+				<tr class="">
+					<th
+						scope="col"
+						class="px-3 py-1.5 cursor-pointer select-none"
+						on:click={() => setSortKey('title')}
+					>
+						<div class="flex gap-1.5 items-center">
+							{$i18n?.t('Name') || 'Name'}
+							{#if orderBy === 'title'}
+								<span class="font-normal">
+									{#if direction === 'asc'}
+										<ChevronUp className="size-3" />
+									{:else}
+										<ChevronDown className="size-3" />
+									{/if}
+								</span>
+							{:else}
+								<span class="invisible">
+									<ChevronUp className="size-3" />
+								</span>
+							{/if}
+						</div>
+					</th>
+				</tr>
+				</thead>
+				<tbody class="">
+				{#each sortedDocuments as document (document.title)}
+					<tr
+						class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
+					>
+						<td class="py-3 pl-3 flex flex-col">
+							<div class="flex flex-col items-start gap-0.5 h-full">
+								<div class="flex flex-col h-full">
+									<Tooltip  content={$isRTL ? document.summaryAr : document.summaryEn} placement="bottom">
+									<div class="font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4">
+										<KnoDocs />
+										<div class="truncate max-w-[300px]">
+										{document.title}
+										</div>
+									</div>
+									</Tooltip>
+								</div>
+							</div>
+						</td>
+
+					</tr>
+				{/each}
+				</tbody>
+				<tfoot class="w-full absolute bottom-0 pb-2">
+				<div class="flex flex-row gap-2 justify-start items-center pl-5">
+					<Info className="size-4 text-black dark:text-gray-300"  />
+					<span class="text-black dark:text-gray-300 text-xs">
+						{$i18n?.t("Press and hold a document to view a summary")}
+					</span>
+				</div>
+				</tfoot>
+			</table>
+			{:else}
+			<table
 			class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
 		>
 			<thead
@@ -158,7 +224,7 @@
 						</td>
 
 						<td class="px-3 py-3 text-left font-medium text-gray-900 dark:text-white ">
-							<Tooltip  content={$isRTL ? document.summaryAr : document.summaryEn}>
+							<Tooltip  content={$isRTL ? document.summaryAr : document.summaryEn} placement="bottom">
 								<div class="max-w-md truncate ">
 									{$isRTL ? document.summaryAr : document.summaryEn}
 								</div>
@@ -167,6 +233,17 @@
 					</tr>
 				{/each}
 			</tbody>
-		</table>
+				<tfoot class="w-full absolute bottom-0 pb-2">
+				<div class="flex flex-row gap-2 justify-start items-center pl-5">
+					<Info className="size-4 text-black dark:text-gray-300"  />
+					<span class="text-black dark:text-gray-300 text-xs">
+						{$i18n?.t("Press and hold a document to view a summary")}
+					</span>
+				</div>
+				</tfoot>
+
+			</table>
+			{/if}
+
 	</div>
 {/if}
