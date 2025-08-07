@@ -90,7 +90,7 @@
 		}}
 	>
 		<div
-			class="p-[16px] m-auto rounded-[16px] max-w-full w-[32rem] mx-2 bg-gray-50 dark:bg-gray-950 max-h-[100dvh] shadow-custom"
+			class="p-[16px] m-auto rounded-[16px] max-w-full w-[32rem] mx-2 bg-gray-50 dark:bg-[#0F1924] max-h-[100dvh] shadow-custom"
 			in:flyAndScale
 			on:mousedown={(e) => {
 				e.stopPropagation();
@@ -130,7 +130,7 @@
 
 				<div class="flex justify-end gap-[6px] mt-[20px]">
 					<button
-						class="px-[12px] py-[8px] bg-white border border-neutrals-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-white font-medium rounded-full transition"
+						class="px-[12px] py-[8px] bg-white border border-neutrals-100 hover:bg-gray-200 text-gray-800 dark:bg-transparent dark:hover:bg-gray-800 dark:text-white font-medium rounded-lg transition"
 						on:click={() => {
 							show = false;
 							dispatch('cancel');
@@ -140,7 +140,7 @@
 						{$i18n.t('Cancel')}
 					</button>
 					<button
-						class="px-[12px] py-[8px] bg-[#C2451E] hover:bg-gray-850 text-gray-100 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-800 font-medium rounded-full transition"
+						class="px-[12px] py-[8px] bg-[#C2451E] hover:bg-gray-850 text-gray-100 dark:bg-[#F1C9CF] dark:hover:bg-white dark:text-gray-800 font-medium rounded-lg transition"
 						on:click={() => {
 							confirmHandler();
 						}}

@@ -1528,5 +1528,7 @@
 	"Whole of Knowledge Repository": "مستودع المعرفة الكاملة",
 	"Loading documents...": "جارٍ تحميل المستندات...",
 	"No documents found": "لم يتم العثور على وثائق",
-	"Press and hold a document to view a summary": "اضغط مع الاستمرار على مستند لعرض ملخص له"
+	"Press and hold a document to view a summary": "اضغط مع الاستمرار على مستند لعرض ملخص له",
+	"You’re leaving GovGPT": "أنت تغادر GovGPT",
+	"Open link": "فتح الرابط"
 }
