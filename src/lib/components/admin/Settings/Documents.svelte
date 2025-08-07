@@ -859,7 +859,7 @@
 
 							<div class="mt-1 mb-1 text-xs text-gray-400 dark:text-gray-500">
 								{$i18n.t(
-									'Warning: If you update or change your embedding model, you will need to re-import all documents.'
+									'Warning: If you update or change your embedding model, you will need to re-import all KnowledgeDocuments.'
 								)}
 							</div>
 						</div>
@@ -1029,7 +1029,7 @@
 									</div>
 									<div class="mt-1 text-xs text-gray-400 dark:text-gray-500">
 										{$i18n.t(
-											'Note: If you set a minimum score, the search will only return documents with a score greater than or equal to the minimum score.'
+											'Note: If you set a minimum score, the search will only return KnowledgeDocuments with a score greater than or equal to the minimum score.'
 										)}
 									</div>
 								</div>

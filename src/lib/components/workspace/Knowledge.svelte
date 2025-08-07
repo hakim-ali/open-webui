@@ -152,7 +152,7 @@
 					if (item?.meta?.document) {
 						toast.error(
 							$i18n.t(
-								'Only collections can be edited, create a new knowledge base to edit/add documents.'
+								'Only collections can be edited, create a new knowledge base to edit/add KnowledgeDocuments.'
 							)
 						);
 					} else {

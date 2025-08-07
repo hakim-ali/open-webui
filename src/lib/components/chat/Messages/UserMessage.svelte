@@ -16,6 +16,7 @@
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 
 	import localizedFormat from 'dayjs/plugin/localizedFormat';
+	import { isRTL } from '$lib/i18n';
 
 	const i18n = getContext('i18n');
 	dayjs.extend(localizedFormat);
@@ -159,7 +160,7 @@
 			</div>
 		{/if}
 
-		<div class="chat-{message.role} w-full min-w-full markdown-prose">
+		<div class="chat-{message.role} w-full min-w-full markdown-prose" dir={$isRTL ? 'rtl' : 'ltr'}>
 			{#if edit !== true}
 				{#if message.files}
 					<div class="mt-2.5 mb-1 w-full flex flex-col justify-end overflow-x-auto gap-1 flex-wrap">

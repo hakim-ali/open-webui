@@ -468,6 +468,7 @@ from open_webui.env import ALLOW_CREDENTIALS_LOGIN
 
 from open_webui.mobile_config import get_mobile_config
 
+
 if SAFE_MODE:
     print("SAFE MODE ENABLED")
     Functions.deactivate_all_functions()
@@ -1720,6 +1721,135 @@ async def get_app_config_mobile():
     """Get mobile-specific configuration."""
     return JSONResponse(get_mobile_config(app.state))
 
+class UrlForm(BaseModel):
+    url: str
+
+
+@app.get("/api/webhook")
+async def get_webhook_url(user=Depends(get_admin_user)):
+    return {
+        "url": app.state.config.WEBHOOK_URL,
+    }
+
+
+@app.post("/api/webhook")
+async def update_webhook_url(form_data: UrlForm, user=Depends(get_admin_user)):
+    app.state.config.WEBHOOK_URL = form_data.url
+    app.state.WEBHOOK_URL = app.state.config.WEBHOOK_URL
+    return {"url": app.state.config.WEBHOOK_URL}
+
+
+@app.get("/api/version")
+async def get_app_version():
+    return {
+        "version": VERSION,
+    }
+
+
+@app.get("/api/version/updates")
+async def get_app_latest_release_version(user=Depends(get_verified_user)):
+    if OFFLINE_MODE:
+        log.debug(
+            f"Offline mode is enabled, returning current version as latest version"
+        )
+        return {"current": VERSION, "latest": VERSION}
+    try:
+        timeout = aiohttp.ClientTimeout(total=1)
+        async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
+            async with session.get(
+                "https://api.github.com/repos/open-webui/open-webui/releases/latest",
+                ssl=AIOHTTP_CLIENT_SESSION_SSL,
+            ) as response:
+                response.raise_for_status()
+                data = await response.json()
+                latest_version = data["tag_name"]
+
+                return {"current": VERSION, "latest": latest_version[1:]}
+    except Exception as e:
+        log.debug(e)
+        return {"current": VERSION, "latest": VERSION}
+
+
+@app.get("/api/changelog")
+async def get_app_changelog():
+    return {key: CHANGELOG[key] for idx, key in enumerate(CHANGELOG) if idx < 5}
+
+
+@app.get("/api/usage")
+async def get_current_usage(user=Depends(get_verified_user)):
+    """
+    Get current usage statistics for Open WebUI.
+    This is an experimental endpoint and subject to change.
+    """
+    try:
+        return {"model_ids": get_models_in_use(), "user_ids": get_active_user_ids()}
+    except Exception as e:
+        log.error(f"Error getting usage statistics: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+############################
+# OAuth Login & Callback
+############################
+
+# SessionMiddleware is used by authlib for oauth
+if len(OAUTH_PROVIDERS) > 0:
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=WEBUI_SECRET_KEY,
+        session_cookie="oui-session",
+        same_site=WEBUI_SESSION_COOKIE_SAME_SITE,
+        https_only=WEBUI_SESSION_COOKIE_SECURE,
+    )
+
+
+@app.get("/oauth/{provider}/login")
+async def oauth_login(provider: str, request: Request):
+    log.info(f"OAuth login initiated for provider: {provider}")
+    log.debug(f"OAuth login request details - Provider: {provider}, User-Agent: {request.headers.get('user-agent', 'Unknown')}, IP: {request.client.host if request.client else 'Unknown'}")
+    
+    try:
+        # Check if provider is configured
+        if provider not in OAUTH_PROVIDERS:
+            log.warning(f"OAuth login attempted with unconfigured provider: {provider}")
+            raise HTTPException(status_code=404, detail=f"OAuth provider '{provider}' not configured")
+        
+        log.info(f"OAuth provider '{provider}' is configured, proceeding with login")
+        result = await oauth_manager.handle_login(request, provider)
+        log.info(f"OAuth login successful for provider: {provider}")
+        return result
+    except HTTPException:
+        # Re-raise HTTP exceptions as they are already properly formatted
+        raise
+    except Exception as e:
+        log.error(f"OAuth login failed for provider '{provider}': {str(e)}")
+        log.exception(f"OAuth login exception for provider '{provider}'")
+        raise HTTPException(status_code=500, detail="Internal server error during OAuth login")
+
+
+# OAuth login logic is as follows:
+# 1. Attempt to find a user with matching subject ID, tied to the provider
+# 2. If OAUTH_MERGE_ACCOUNTS_BY_EMAIL is true, find a user with the email address provided via OAuth
+#    - This is considered insecure in general, as OAuth providers do not always verify email addresses
+# 3. If there is no user, and ENABLE_OAUTH_SIGNUP is true, create a user
+#    - Email addresses are considered unique, so we fail registration if the email address is already taken
+@app.get("/oauth/{provider}/callback")
+async def oauth_callback(provider: str, request: Request, response: Response):
+    return await oauth_manager.handle_callback(request, provider, response)
+
+
+# OAuth login
+# for mobile auth process
+# returns user info, token, auth_token
+@app.get("/oauth/{provider}/token")
+async def oauth_callback_mob(provider: str, request: Request, response: Response):
+    try:
+        log.info(f"Validating the token oauth_callback_mob")
+        return await oauth_manager.handle_mobile_callback(request, provider)
+    except Exception as e:
+        log.error(f"Error in oauth_callback_mob: {e}")
+        raise HTTPException(500, detail="Internal Server Error")
+
 
 from open_webui.wog_documents import get_wog_documents_by_department
 
@@ -1728,7 +1858,6 @@ from open_webui.wog_documents import get_wog_documents_by_department
 async def get_wog_documents():
     """Get Whole of Government (WOG) documents organized by department."""
     return JSONResponse(get_wog_documents_by_department())
-
 
 
 

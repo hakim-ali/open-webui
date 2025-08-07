@@ -1508,5 +1508,23 @@
 		"description": "أشياء كبيرة قادمة. سنقوم بفتح الوصول قريبًا، وأنت بالفعل على القائمة!"
 	},
 	"Chat is limited to Web Search.": "الدردشة تقتصر على بحث الويب.",
-	"Chat is limited to the Gov Knowledge Base.": "تقتصر الدردشة على قاعدة المعرفة الحكومية."
+	"Chat is limited to the Gov Knowledge Base.": "تقتصر الدردشة على قاعدة المعرفة الحكومية.",
+	"file": {
+		"upload": {
+			"invalidType": "نوع الملف {{ FILE_NAME }} غير مسموح. الأنواع المسموح بها: {{ ALLOWED_FILES }}.",
+			"onlyAllowed": "فقط ملفات {{ ALLOWED_FILES }} مسموح بها."
+		}
+	}
+	"Chat is limited to the Gov Knowledge Base.": "تقتصر الدردشة على قاعدة المعرفة الحكومية.",
+	"Knowledge Repository": "مستودع المعرفة",
+	"Whole of Government Repository": "مستودع الحكومة بأكملها",
+	"Browse Knowledge Base": "تصفح قاعدة المعرفة",
+	"Access Government Knowledge Repository to find out what is available": "قم بالوصول إلى مستودع المعرفة الحكومية لمعرفة ما هو متاح",
+	"Access repository": "مستودع الوصول",
+	"Government Entities": "الجهات الحكومية",
+	"Total Files": "إجمالي الملفات",
+	"Items": "أغراض",
+	"Whole of Knowledge Repository":"مستودع المعرفة الكاملة",
+	"Loading documents...": "جارٍ تحميل المستندات...",
+	"No documents found": "لم يتم العثور على وثائق"
 }

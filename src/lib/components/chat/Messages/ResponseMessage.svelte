@@ -53,6 +53,7 @@
 	import { flyAndScale } from '$lib/utils/transitions';
 	import Copy from '$lib/components/icons/Copy.svelte';
 	import VolumeUp from '$lib/components/icons/VolumeUp.svelte';
+	import { isRTL } from '$lib/i18n';
 
 	interface MessageType {
 		id: string;
@@ -601,9 +602,9 @@
 
 {#key message.id}
 	<div
-		class=" flex w-full message-{message.id}"
+		class=" flex w-full message-{message.id} {$isRTL ? 'text-right' : 'text-left'}"
 		id="message-{message.id}"
-		dir={$settings.chatDirection}
+		dir={$isRTL ? 'rtl' : 'ltr'}
 	>
 		{#if false}
 			<div class={`shrink-0 ltr:mr-3 rtl:ml-3 hidden @lg:flex `}>
@@ -635,7 +636,7 @@
 			</Name>
 
 			<div>
-				<div class="chat-{message.role} w-full min-w-full markdown-prose">
+				<div class="chat-{message.role} w-full min-w-full markdown-prose" dir="auto">
 					<div>
 						{#if (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length > 0}
 							{@const status = (

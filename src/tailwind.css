@@ -186,3 +186,7 @@ body.dark .decorative-image-bottom {
 	color: #004280;
 	font-family: 'Inter_24pt-SemiBold';
 }
+
+  .gradient-bg {
+    background: linear-gradient(180deg, var(--Background-background-opacity, rgba(251, 252, 252, 0.00)) 0%, var(--Background-background, #FBFCFC) 100%);
+  }
