@@ -633,33 +633,33 @@ body {
 
 /* === Global Bordered Table Styles === */
 
-thead {
-	@apply bg-transparent;
-	border: 0px;
-}
+/*thead {*/
+/*	@apply bg-transparent;*/
+/*	border: 0px;*/
+/*}*/
 
-tbody {
-	@apply bg-transparent;
-	border: 0px;
-}
+/*tbody {*/
+/*	@apply bg-transparent;*/
+/*	border: 0px;*/
+/*}*/
 
-tr,
-th {
-	@apply bg-transparent border-b border-gray-100 dark:border-gray-100 min-h-[40px];
-	border: 0px;
+/*tr,*/
+/*th {*/
+/*	@apply bg-transparent border-b border-gray-100 dark:border-gray-100 min-h-[40px];*/
+/*	border: 0px;*/
 
-}
+/*}*/
 
-td {
-	@apply px-4 py-3 bg-transparent min-h-[40px];
-	border: 0px;
-}
+/*td {*/
+/*	@apply px-4 py-3 bg-transparent min-h-[40px];*/
+/*	border: 0px;*/
+/*}*/
 
-tr,
-th,
-td .break-normal {
-	padding: 4px 0px;
-}
+/*tr,*/
+/*th,*/
+/*td .break-normal {*/
+/*	padding: 4px 0px;*/
+/*}*/
 
 @layer utilities {
 	.background-gradient-bg {

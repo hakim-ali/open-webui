@@ -969,7 +969,9 @@
 								dir={$settings?.chatDirection ?? 'auto'}
 							>
 								{#if files.length > 0}
-									<div class="mb-[24px] flex items-center flex-wrap gap-[8px]">
+									<div
+										dir={$isRTL ? 'rtl' : 'ltr'}
+										class="mb-[24px] flex items-center flex-wrap gap-[8px]">
 										{#each files as file, fileIdx}
 											{#if file.type === 'image'}
 												<div class=" relative group">
