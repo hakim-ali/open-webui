@@ -352,7 +352,7 @@
 		</div>
 	{:else}
 		<a
-			class="w-full flex items-center justify-between text-typography-titles link-style rounded-[8px] px-[16px] py-[15px] truncate whitespace-nowrap text-ellipsis"
+			class="w-full flex items-center justify-between text-typography-titles link-style rounded-[8px] px-[10px] py-[15px] {!$isRTL?'truncate whitespace-nowrap text-ellipsis':''} "
 			href="/c/{id}"
 			on:click={() => {
 				dispatch('select');
