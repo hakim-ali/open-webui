@@ -26,11 +26,11 @@
 		getChatPinnedStatusById,
 		toggleChatPinnedStatusById
 	} from '$lib/apis/chats';
-	import { chats, settings, theme, user } from '$lib/stores';
+	import { chats, settings, theme, user} from '$lib/stores';
 	import { createMessagesList } from '$lib/utils';
 	import { downloadChatAsPDF } from '$lib/apis/utils';
 	import Download from '$lib/components/icons/Download.svelte';
-
+	import { isRTL } from '$lib/i18n';
 	const i18n = getContext('i18n');
 
 	export let shareHandler: Function;
@@ -232,14 +232,14 @@
 
 	<div slot="content">
 		<DropdownMenu.Content
-			class="w-full max-w-[228px] rounded-xl z-50 bg-light-bg text-label-primary dark:text-white shadow-custom"
+			class="w-full max-w-[228px] rounded-xl z-50 bg-light-bg text-label-primary dark:text-white shadow-custom "
 			sideOffset={22}
-			side="right"
+			side={$isRTL ? "left":"right"}
 			align="start"
 			transition={flyAndScale}
 		>
 			<DropdownMenu.Item
-				class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] font-medium cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-800 rounded-md"
+				class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px]  cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-800 rounded-md"
 				on:click={() => {
 					pinHandler();
 				}}
@@ -298,7 +298,7 @@
 				>
 					{#if $user?.role === 'admin' || ($user.permissions?.chat?.export ?? true)}
 						<DropdownMenu.Item
-							class=" px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] font-medium  cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"
+							class=" px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"
 							on:click={() => {
 								downloadJSONExport();
 							}}
@@ -328,7 +328,7 @@
 			</DropdownMenu.Sub>
 			{#if $user?.role === 'admin' || ($user.permissions?.chat?.share ?? true)}
 				<DropdownMenu.Item
-					class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] font-medium cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800  rounded-md"
+					class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800  rounded-md"
 					on:click={() => {
 						shareHandler();
 					}}
@@ -338,7 +338,7 @@
 				</DropdownMenu.Item>
 			{/if}
 			<DropdownMenu.Item
-				class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] font-medium cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"
+				class="flex flex-row-reverse justify-between px-[16px] py-[11px] flex items-center  gap-[8px]  text-[17px] leading-[22px] cursor-pointer hover:bg-neutrals-hover dark:hover:bg-gray-800 rounded-md"
 				on:click={() => {
 					deleteHandler();
 				}}
