@@ -42,7 +42,7 @@
 	function getFaviconUrl(url: string): string {
 		try {
 			const urlObj = new URL(url);
-			return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
+			return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`;
 		} catch {
 			return '';
 		}
@@ -103,7 +103,7 @@
 			{#each status.urls as url}
 				<button
 					on:click={() => handleUrlClick(url)}
-					class="inline-flex items-center gap-2 px-3 py-1.5 bg-[#CCDDFC4D] hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors no-underline cursor-pointer"
+					class="max-h-10 inline-flex items-center gap-2 px-3 py-1.5 bg-[#CCDDFC4D] hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors no-underline cursor-pointer"
 				>
 					<img
 						src={getFaviconUrl(url)}

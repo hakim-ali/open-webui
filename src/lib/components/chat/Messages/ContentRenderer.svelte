@@ -32,8 +32,66 @@
 	export let onAddMessages = () => {};
 
 	let contentContainerElement;
-
 	let floatingButtonsElement;
+	let collectedLinks = [];
+
+	// Function to collect links from markdown content
+	function collectLinksFromContent(content) {
+		const links = [];
+		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+		const urlRegex = /https?:\/\/[^\s]+/g;
+		
+		// Collect markdown links
+		let match;
+		while ((match = linkRegex.exec(content)) !== null) {
+			links.push({
+				href: match[2],
+				text: match[1],
+				title: match[1]
+			});
+		}
+		
+		// Collect plain URLs
+		while ((match = urlRegex.exec(content)) !== null) {
+			const url = match[0];
+			// Skip if already collected as markdown link
+			if (!links.some(link => link.href === url)) {
+				links.push({
+					href: url,
+					text: url,
+					title: url
+				});
+			}
+		}
+		
+		return links;
+	}
+
+	// Function to get domain from URL
+	function getDomain(url) {
+		try {
+			const urlObj = new URL(url);
+			return urlObj.hostname.replace('www.', '');
+		} catch {
+			return url;
+		}
+	}
+
+	// Function to get favicon URL
+	function getFaviconUrl(url) {
+		try {
+			// Clean the URL by removing any trailing parentheses
+			const cleanUrl = url.replace(/\)+$/, '');
+			const urlObj = new URL(cleanUrl);
+			return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`;
+		} catch {
+			return '';
+		}
+	}
+
+	$: {
+		collectedLinks = collectLinksFromContent(content || '');
+	}
 
 	const updateButtonPosition = (event) => {
 		const buttonsContainerElement = document.getElementById(`floating-buttons-${id}`);
@@ -52,7 +110,7 @@
 
 			let selection = window.getSelection();
 
-			if (selection.toString().trim().length > 0) {
+			if (selection && selection.toString().trim().length > 0) {
 				const range = selection.getRangeAt(0);
 				const rect = range.getBoundingClientRect();
 
@@ -187,6 +245,40 @@
 		}}
 	/>
 </div>
+
+{#if collectedLinks.length > 0}
+	<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+		<div class="inline-flex items-center gap-2 px-3 py-2 max-h-10 rounded-full transition-colors bg-[#E5EBF3] text-[#23282E]">
+			<div class="flex -space-x-2">
+				{#each collectedLinks.slice(0, 5) as link, index}
+					{#if getFaviconUrl(link.href)}
+						<img
+							src={getFaviconUrl(link.href)}
+							alt=""
+							class="w-6 h-6 rounded-[16px] shadow-sm hover:scale-110 transition-transform cursor-pointer bg-transparent hover:bg-white object-cover"
+							style="border-radius:16px"
+							loading="lazy"
+							title={link.text || getDomain(link.href)}
+							on:click={(e) => {
+								e.stopPropagation();
+								window.open(link.href, '_blank', 'nofollow');
+							}}
+							on:error={(e) => {
+								const target = e?.target;
+								if (target) {
+									target.style.display = 'none';
+								}
+							}}
+						/>
+					{/if}
+				{/each}
+			</div>
+			<span class="text-sm font-medium">
+				Sources
+			</span>
+		</div>
+	</div>
+{/if}
 
 {#if floatingButtons && model}
 	<FloatingButtons
