@@ -6,7 +6,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 
 	const dispatch = createEventDispatcher();
-
+	import { isRTL } from '$lib/i18n';
 	export let onClick: Function = () => {};
 	export let title: string = 'HI';
 	export let content: string;
@@ -31,22 +31,22 @@
 </script>
 
 <button
-	class="flex gap-2.5 text-left min-w-[var(--width)] w-full dark:bg-gray-850 dark:text-white bg-white text-black border border-gray-100 dark:border-gray-850 rounded-xl px-3.5 py-3.5"
+	class="flex gap-2.5 text-left min-w-[var(--width)] w-full dark:bg-gray-850 dark:text-white bg-white text-black border border-gray-100 dark:border-gray-850 rounded-xl px-3.5 py-3.5 {$isRTL ? 'flex-row-reverse' : '' }"
 	on:click={() => {
 		onClick();
 		dispatch('closeToast');
 	}}
 >
-	<div class="shrink-0 self-top -translate-y-0.5">
+	<div class="flex shrink-0 self-top -translate-y-0.5">
 		<img src={'/static/favicon.png'} alt="favicon" class="size-7 rounded-full" />
 	</div>
 
 	<div>
 		{#if title}
-			<div class=" text-[13px] font-medium mb-0.5 line-clamp-1 capitalize">{title}</div>
+			<div class=" text-[13px] font-medium mb-0.5 line-clamp-1 capitalize {$isRTL ? 'text-right mr-2' : 'text-left' }">{title}</div>
 		{/if}
 
-		<div class=" line-clamp-2 text-xs self-center dark:text-gray-300 font-normal">
+		<div class=" line-clamp-2 text-xs self-center dark:text-gray-300 font-normal {$isRTL ? 'text-right' : '' }">
 			{@html DOMPurify.sanitize(marked(content))}
 		</div>
 	</div>
