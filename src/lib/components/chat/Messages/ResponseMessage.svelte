@@ -169,10 +169,14 @@
 	let webSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Handle initial loading progression: "Just a sec..." -> "Processing documents..."
-	$: if (message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0) {
+	$: if (
+		message.content === '' &&
+		!message.error &&
+		(message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0
+	) {
 		if (!showJustASecond && !initialLoadingTimer) {
 			showJustASecond = true;
-			
+
 			// After 2 seconds, hide "Just a sec..." and show document-specific message
 			initialLoadingTimer = setTimeout(() => {
 				showJustASecond = false;
@@ -189,17 +193,19 @@
 
 	// Track web search progression
 	$: if ((message?.statusHistory?.length ?? 0) > 0 || message?.status) {
-		const currentStatus = (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).at(-1);
+		const currentStatus = (
+			message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]
+		).at(-1);
 		if (currentStatus?.action === 'web_search') {
 			if (!webSearchStartTime) {
 				webSearchStartTime = Date.now();
 				webSearchStatus = 'Just a sec...';
-				
+
 				// Clear any existing timer
 				if (webSearchTimer) {
 					clearTimeout(webSearchTimer);
 				}
-				
+
 				// Set timer to transition to "Searching on web..." after 2 seconds
 				webSearchTimer = setTimeout(() => {
 					if (webSearchStatus === 'Just a sec...') {
@@ -207,13 +213,16 @@
 					}
 				}, 2000);
 			}
-			
+
 			// Update status based on description
 			if (currentStatus?.description === 'Just a sec...') {
 				webSearchStatus = 'Just a sec...';
 			} else if (currentStatus?.description === 'Searching on web...') {
 				webSearchStatus = 'Searching on web...';
-			} else if (currentStatus?.description?.includes('Searched') && currentStatus?.description?.includes('Shortlisted')) {
+			} else if (
+				currentStatus?.description?.includes('Searched') &&
+				currentStatus?.description?.includes('Shortlisted')
+			) {
 				webSearchStatus = currentStatus.description;
 				// Clear timer when search is complete
 				if (webSearchTimer) {
@@ -759,14 +768,14 @@
 											<div class="flex flex-col justify-center -space-y-0.5">
 												{#if webSearchStatus === 'Just a sec...' || status?.description === 'Just a sec...'}
 													<div
-														class="text-base line-clamp-1 text-wrap fade-in-animation bounce-animation"
+														class="text-base line-clamp-1 text-wrap fade-in-animation shimmer-animation"
 														style="color: #666D7A"
 													>
 														{$i18n.t('Just a sec...')}
 													</div>
 												{:else if webSearchStatus === 'Searching on web...' || status?.description === 'Searching on web...'}
 													<div
-														class="text-base line-clamp-1 text-wrap typing-animation"
+														class="text-base line-clamp-1 text-wrap typing-animation shimmer-animation"
 														style="color: #666D7A"
 													>
 														{$i18n.t('Searching on web...')}
@@ -776,17 +785,23 @@
 														class="text-base line-clamp-1 text-wrap fade-in-animation"
 														style="color: #23282E"
 													>
-														{$i18n.t('Searched {{count}} sites • Shortlisted {{shortlisted}} sites', {
-															count: status?.urls?.length || 0,
-															shortlisted: Math.min(status?.urls?.length || 0, 5)
-														})}
+														{$i18n.t(
+															'Searched {{count}} sites • Shortlisted {{shortlisted}} sites',
+															{
+																count: status?.urls?.length || 0,
+																shortlisted: Math.min(status?.urls?.length || 0, 5)
+															}
+														)}
 													</div>
 												{:else}
 													<div
 														class="{status?.done === false
 															? 'shimmer'
 															: ''} text-base line-clamp-1 text-wrap"
-														style="color: {webSearchStatus === 'Just a sec...' || webSearchStatus === 'Searching on web...' ? '#666D7A' : '#23282E'}"
+														style="color: {webSearchStatus === 'Just a sec...' ||
+														webSearchStatus === 'Searching on web...'
+															? '#666D7A'
+															: '#23282E'}"
 													>
 														{webSearchStatus || status?.description}
 													</div>
@@ -925,7 +940,7 @@
 								{#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
 									<div class="flex flex-col justify-center -space-y-0.5 py-4">
 										<div
-											class="text-base line-clamp-1 text-wrap fade-in-animation bounce-animation"
+											class="text-base line-clamp-1 text-wrap fade-in-animation shimmer-animation"
 											style="color: #666D7A"
 										>
 											{#if showJustASecond}
@@ -1612,30 +1627,50 @@
 	}
 
 	@keyframes typing {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.5; }
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
 	}
-	
+
 	@keyframes fadeIn {
-		0% { opacity: 0; transform: translateY(10px); }
-		100% { opacity: 1; transform: translateY(0); }
+		0% {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
-	
-	@keyframes bounce {
-		0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-		40% { transform: translateY(-3px); }
-		60% { transform: translateY(-2px); }
+
+	@keyframes shimmer {
+		0% {
+			background-position: -200% 0;
+		}
+		100% {
+			background-position: 200% 0;
+		}
 	}
-	
+
 	.typing-animation {
 		animation: typing 2s infinite ease-in-out;
 	}
-	
+
 	.fade-in-animation {
 		animation: fadeIn 0.5s ease-out;
 	}
-	
-	.bounce-animation {
-		animation: bounce 2s infinite;
+
+	.shimmer-animation {
+		background: linear-gradient(90deg, #666d7a 25%, #9333ea 50%, #666d7a 75%);
+		background-size: 200% 100%;
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		animation: shimmer 2s infinite;
 	}
 </style>
