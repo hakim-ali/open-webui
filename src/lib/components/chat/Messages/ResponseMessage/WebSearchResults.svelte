@@ -27,7 +27,7 @@
 		urlToOpen = '';
 	}
 
-	function extractDomain(url: string): string {
+	export function extractDomain(url: string): string {
 		try {
 			const urlObj = new URL(url);
 			return urlObj.hostname.replace('www.', '');
@@ -36,7 +36,7 @@
 		}
 	}
 
-	function getFaviconUrl(url: string): string {
+	export function getFaviconUrl(url: string): string {
 		try {
 			const urlObj = new URL(url);
 			return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
@@ -58,10 +58,7 @@
 			<ChevronDown strokeWidth="3.5" className="size-3.5 " />
 		{/if}
 	</div>
-	<div
-		class="text-sm rounded-xl mb-1.5"
-		slot="content"
-	>
+	<div class="text-sm rounded-xl mb-1.5" slot="content">
 		{#if status?.query}
 			<a
 				href="https://www.google.com/search?q={status.query}"
