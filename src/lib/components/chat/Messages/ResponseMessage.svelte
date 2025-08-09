@@ -636,9 +636,9 @@
 					
 					// Create styled span
 					const span = document.createElement('span');
-					span.className = 'citation-link inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors';
+					span.className = 'citation-link inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-lg cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors';
 					span.setAttribute('data-citation-index', citationIndex.toString());
-					span.textContent = `[${citationNumber}]`;
+					span.textContent = `${citationNumber}`;
 					span.addEventListener('click', () => handleCitationClick(citationIndex));
 					
 					// Replace the strong tag with our styled span
