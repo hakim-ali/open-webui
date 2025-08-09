@@ -1783,7 +1783,7 @@
 																<div class="flex items-center justify-center gap-[8px]">
 																	<GlobeAlt className="size-4" strokeWidth="1.75" />
 																	<span
-																		class="font-heading font-medium dark:text-white text-left whitespace-nowrap"
+																		class="font-heading dark:text-white text-left whitespace-nowrap"
 																		>{$i18n.t('Web Search')}</span
 																	>
 																</div>
