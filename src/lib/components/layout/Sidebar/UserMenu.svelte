@@ -35,6 +35,7 @@
 	import MaterialIcon from '$lib/components/common/MaterialIcon.svelte';
 	import Support from '$lib/components/icons/Support.svelte';
 	import Theme from '$lib/components/icons/Theme.svelte';
+	import ExternalLinkModal from '$lib/components/common/ExternalLinkModal.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -45,6 +46,14 @@
 
 	let showShortcuts = false;
 	let currentLanguage = 'en-US';
+	let showExternalModal = false;
+	let externalUrl = '';
+
+	function handleExternalLinkClick(url: string) {
+		externalUrl = url;
+		showExternalModal = true;
+		show = false;
+	}
 
 	const dispatch = createEventDispatcher();
 
@@ -394,10 +403,7 @@
 				<DropdownMenu.Item
 					class="flex gap-2 items-center py-1.5 px-3 text-sm select-none w-full cursor-pointer hover:bg-menu-hover rounded-md transition"
 					id="documentation-link"
-					on:click={() => {
-						window.open('https://docs.openwebui.com', '_blank');
-						show = false;
-					}}
+					on:click={() => handleExternalLinkClick('https://docs.openwebui.com')}
 				>
 					<QuestionMarkCircle className="size-5" />
 					<div class="flex items-center gap-[8px] text-[17px] leading-[22px]">
@@ -408,10 +414,7 @@
 				<DropdownMenu.Item
 					class="flex gap-2 items-center py-1.5 px-3 text-sm select-none w-full cursor-pointer hover:bg-menu-hover rounded-md transition"
 					id="releases-link"
-					on:click={() => {
-						window.open('https://github.com/open-webui/open-webui/releases', '_blank');
-						show = false;
-					}}
+					on:click={() => handleExternalLinkClick('https://github.com/open-webui/open-webui/releases')}
 				>
 					<Map className="size-5" />
 					<div class="flex items-center">
@@ -516,3 +519,6 @@
 		</DropdownMenu.Content>
 	</slot>
 </DropdownMenu.Root>
+
+<!-- External Link Modal -->
+<ExternalLinkModal bind:show={showExternalModal} url={externalUrl} />

@@ -45,6 +45,7 @@
 	import { getAllTags, getChatList } from '$lib/apis/chats';
 	import NotificationToast from '$lib/components/NotificationToast.svelte';
 	import AppSidebar from '$lib/components/app/AppSidebar.svelte';
+	import SourcesLinks from '$lib/components/layout/SourcesLinks.svelte';
 	import { chatCompletion } from '$lib/apis/openai';
 
 	import { beforeNavigate } from '$app/navigation';
@@ -687,6 +688,9 @@
 	{:else}
 		<slot />
 	{/if}
+
+	<!-- Global SourcesLinks Sidebar -->
+	<SourcesLinks />
 {/if}
 
 <Toaster

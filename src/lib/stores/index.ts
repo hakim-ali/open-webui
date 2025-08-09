@@ -74,6 +74,8 @@ export const showControls = writable(false);
 export const showOverview = writable(false);
 export const showArtifacts = writable(false);
 export const showCallOverlay = writable(false);
+export const showSourcesLinks = writable(false);
+export const sourcesLinksMessageId = writable(null);
 
 export const artifactCode = writable(null);
 

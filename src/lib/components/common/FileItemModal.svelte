@@ -10,6 +10,7 @@
 	import Info from '../icons/Info.svelte';
 	import Switch from './Switch.svelte';
 	import Tooltip from './Tooltip.svelte';
+	import ExternalLinkModal from './ExternalLinkModal.svelte';
 
 	export let item;
 	export let show = false;
@@ -18,6 +19,13 @@
 	let enableFullContent = false;
 
 	let isPdf = false;
+	let showExternalModal = false;
+	let externalUrl = '';
+
+	function handleExternalLinkClick(url: string) {
+		externalUrl = url;
+		showExternalModal = true;
+	}
 	let isAudio = false;
 
 	$: isPDF =
@@ -51,9 +59,8 @@
 							class="hover:underline line-clamp-1"
 							on:click|preventDefault={() => {
 								if (!isPDF && item.url) {
-									window.open(
-										item.type === 'file' ? `${item.url}/content` : `${item.url}`,
-										'_blank'
+									handleExternalLinkClick(
+										item.type === 'file' ? `${item.url}/content` : `${item.url}`
 									);
 								}
 							}}
@@ -151,3 +158,6 @@
 		</div>
 	</div>
 </Modal>
+
+<!-- External Link Modal -->
+<ExternalLinkModal bind:show={showExternalModal} url={externalUrl} />
