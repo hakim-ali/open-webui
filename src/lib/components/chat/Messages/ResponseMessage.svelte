@@ -32,7 +32,6 @@
 
 	import Name from './Name.svelte';
 	import ProfileImage from './ProfileImage.svelte';
-	import Skeleton from './Skeleton.svelte';
 	import Image from '$lib/components/common/Image.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import RateComment from './RateComment.svelte';
@@ -160,10 +159,33 @@
 
 	let showRateComment = false;
 
+	// Initial loading progression timing
+	let showJustASecond = false;
+	let initialLoadingTimer: ReturnType<typeof setTimeout> | null = null;
+
 	// Web search progression timing
 	let webSearchStartTime: number | null = null;
 	let webSearchStatus = '';
 	let webSearchTimer: ReturnType<typeof setTimeout> | null = null;
+
+	// Handle initial loading progression: "Just a sec..." -> "Processing documents..."
+	$: if (message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0) {
+		if (!showJustASecond && !initialLoadingTimer) {
+			showJustASecond = true;
+			
+			// After 2 seconds, hide "Just a sec..." and show document-specific message
+			initialLoadingTimer = setTimeout(() => {
+				showJustASecond = false;
+			}, 2000);
+		}
+	} else {
+		// Clear timer when content arrives or status appears
+		if (initialLoadingTimer) {
+			clearTimeout(initialLoadingTimer);
+			initialLoadingTimer = null;
+		}
+		showJustASecond = false;
+	}
 
 	// Track web search progression
 	$: if ((message?.statusHistory?.length ?? 0) > 0 || message?.status) {
@@ -210,10 +232,13 @@
 		}
 	}
 
-	// Cleanup timer on component destroy
+	// Cleanup timers on component destroy
 	onDestroy(() => {
 		if (webSearchTimer) {
 			clearTimeout(webSearchTimer);
+		}
+		if (initialLoadingTimer) {
+			clearTimeout(initialLoadingTimer);
 		}
 	});
 
@@ -722,10 +747,7 @@
 														{:else if status?.description === 'Searching the web'}
 															{$i18n.t('Searching the web')}
 														{:else if status?.description?.includes('Searched') && status?.description?.includes('Shortlisted')}
-															{$i18n.t('Searched {{count}} sites • Shortlisted {{shortlisted}} sites', {
-																count: status?.urls.length,
-																shortlisted: Math.min(status?.urls.length, 5)
-															})}
+															{status?.description}
 														{:else}
 															{status?.description}
 														{/if}
@@ -901,7 +923,20 @@
 								id="response-content-container"
 							>
 								{#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
-									<Skeleton />
+									<div class="flex flex-col justify-center -space-y-0.5 py-4">
+										<div
+											class="text-base line-clamp-1 text-wrap fade-in-animation bounce-animation"
+											style="color: #666D7A"
+										>
+											{#if showJustASecond}
+												{$i18n.t('Just a sec...')}
+											{:else if history?.messages && Object.values(history.messages).some((msg) => msg?.files && msg.files.length > 0)}
+												{$i18n.t('Processing documents...')}
+											{:else}
+												{$i18n.t('Just a sec...')}
+											{/if}
+										</div>
+									</div>
 								{:else if message.content && message.error !== true}
 									<!-- always show message contents even if there's an error -->
 									<!-- unless message.error === true which is legacy error handling, where the error message is stored in message.content -->

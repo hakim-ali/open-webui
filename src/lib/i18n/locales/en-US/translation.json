@@ -1563,5 +1563,6 @@
 	"Continue": "Continue",
 	"Verify the link before you choose to proceed.": "Verify the link before you choose to proceed.",
 	"Open link": "Open link",
-	"leavingGovGPT": "You're leaving GovGPT"
+	"leavingGovGPT": "You're leaving GovGPT",
+	"Processing documents...": "Processing documents..."
 }
