@@ -631,35 +631,6 @@ body {
 	@apply text-blue-600 dark:text-blue-400;
 }
 
-/* === Global Bordered Table Styles === */
-
-/*thead {*/
-/*	@apply bg-transparent;*/
-/*	border: 0px;*/
-/*}*/
-
-/*tbody {*/
-/*	@apply bg-transparent;*/
-/*	border: 0px;*/
-/*}*/
-
-/*tr,*/
-/*th {*/
-/*	@apply bg-transparent border-b border-gray-100 dark:border-gray-100 min-h-[40px];*/
-/*	border: 0px;*/
-
-/*}*/
-
-/*td {*/
-/*	@apply px-4 py-3 bg-transparent min-h-[40px];*/
-/*	border: 0px;*/
-/*}*/
-
-/*tr,*/
-/*th,*/
-/*td .break-normal {*/
-/*	padding: 4px 0px;*/
-/*}*/
 
 @layer utilities {
 	.background-gradient-bg {
@@ -703,4 +674,41 @@ body {
 .input-prose,
 .markdown-prose {
 	font-family: 'Inter_24pt-Regular', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+.input-prose thead,
+.markdown-prose  thead {
+	@apply bg-transparent;
+	border: 0px;
+}
+
+.input-prose tbody,
+.markdown-prose  thead,
+.input-prose tbody,
+.markdown-prose  thead {
+	@apply bg-transparent;
+	border: 0px;
+}
+
+.input-prose tr,
+.input-prose th, 
+.markdown-prose tr,
+.markdown-prose th {
+	@apply bg-transparent border-b border-gray-100 dark:border-gray-100 min-h-[40px];
+	border: 0px;
+}
+
+.input-prose td,
+.markdown-prose td {
+	@apply px-4 py-3 bg-transparent min-h-[40px];
+	border: 0px;
+}
+
+.input-prose tr,
+.input-prose th,
+.input-prose td .break-normal,
+.markdown-prose tr,
+.markdown-prose th,
+.markdown-prose td .break-normal {
+	padding: 4px 0px;
 }

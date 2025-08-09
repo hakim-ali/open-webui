@@ -28,8 +28,16 @@
 
 	import { deleteFileById } from '$lib/apis/files';
 	import MaterialIcon from './MaterialIcon.svelte';
+	import ExternalLinkModal from './ExternalLinkModal.svelte';
 
 	let showModal = false;
+	let showExternalModal = false;
+	let externalUrl = '';
+
+	function handleExternalLinkClick(url: string) {
+		externalUrl = url;
+		showExternalModal = true;
+	}
 
 	const decodeString = (str: string) => {
 		try {
@@ -55,9 +63,9 @@
 		} else {
 			if (url) {
 				if (type === 'file') {
-					window.open(`${url}/content`, '_blank').focus();
+					handleExternalLinkClick(`${url}/content`);
 				} else {
-					window.open(`${url}`, '_blank').focus();
+					handleExternalLinkClick(`${url}`);
 				}
 			}
 		}
@@ -160,3 +168,6 @@
 		</div>
 	{/if}
 </button>
+
+<!-- External Link Modal -->
+<ExternalLinkModal bind:show={showExternalModal} url={externalUrl} />
