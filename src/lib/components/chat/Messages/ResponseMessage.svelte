@@ -38,6 +38,7 @@
 	import RateComment from './RateComment.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import WebSearchResults from './ResponseMessage/WebSearchResults.svelte';
+	import CitationsList from './ResponseMessage/CitationsList.svelte';
 	import Sparkles from '$lib/components/icons/Sparkles.svelte';
 
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -181,14 +182,10 @@
 
 	// Process content whenever message content changes
 	$: if (message.content) {
-		console.log("Message OG: ", message.content);
 		const result = processContentForCitations(message.content);
 		processedContent = result.processedContent;
 		extractedUrls = result.urls;
 		citationsMap = result.citationsMap;
-		console.log("processedContent: ", processedContent);
-		console.log("extractedUrls: ", extractedUrls);
-		console.log("citationsMap: ", citationsMap);
 	}
 
 	let edit = false;
@@ -915,20 +912,7 @@
 									<CodeExecutions codeExecutions={message.code_executions} />
 								{/if}
 
-								{#if extractedUrls.length > 0}
-									<div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-										<div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-											{#each extractedUrls as url, index}
-												<div class="flex items-start gap-2">
-													<span class="font-medium">[{index + 1}]</span>
-													<a href="{url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline break-all">
-														{url}
-													</a>
-												</div>
-											{/each}
-										</div>
-									</div>
-								{/if}
+								<CitationsList urls={extractedUrls} />
 							</div>
 						{/if}
 					</div>
