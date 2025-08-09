@@ -147,6 +147,7 @@
 	let extractedUrls: string[] = [];
 	let citationsMap: Map<string, number> = new Map();
 	let processedContent: string = '';
+	let citationsListRef: any;
 
 	let model = null;
 	$: model = $models.find((m) => m.id === message.model);
@@ -164,7 +165,8 @@
 				urls.push(url);
 				citationCounter++;
 			}
-			return `[${citationsMap.get(url)}]`;
+			const citationNumber = citationsMap.get(url);
+			return `**[${citationNumber}]**`;
 		});
 
 		// Then handle standalone URLs
@@ -174,10 +176,18 @@
 				urls.push(match);
 				citationCounter++;
 			}
-			return `[${citationsMap.get(match)}]`;
+			const citationNumber = citationsMap.get(match);
+			return `**[${citationNumber}]**`;
 		});
 
 		return { processedContent, urls, citationsMap };
+	}
+
+	// Handle citation click - this will be called from the HTML
+	function handleCitationClick(index: number) {
+		if (citationsListRef) {
+			citationsListRef.highlightCitation(index);
+		}
 	}
 
 	// Process content whenever message content changes
@@ -611,6 +621,40 @@
 		})();
 	}
 
+	// Function to style citations after content is rendered
+	function styleCitations() {
+		const responseContainer = document.getElementById(`message-${message.id}`);
+		if (responseContainer && extractedUrls.length > 0) {
+			// Find all bold citations and replace them with styled spans
+			const strongTags = responseContainer.querySelectorAll('strong');
+			strongTags.forEach((strong) => {
+				const text = strong.textContent;
+				const citationMatch = text?.match(/\[(\d+)\]/);
+				if (citationMatch) {
+					const citationNumber = parseInt(citationMatch[1]);
+					const citationIndex = citationNumber - 1;
+					
+					// Create styled span
+					const span = document.createElement('span');
+					span.className = 'citation-link inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors';
+					span.setAttribute('data-citation-index', citationIndex.toString());
+					span.textContent = `[${citationNumber}]`;
+					span.addEventListener('click', () => handleCitationClick(citationIndex));
+					
+					// Replace the strong tag with our styled span
+					strong.parentNode?.replaceChild(span, strong);
+				}
+			});
+		}
+	}
+
+	// Watch for content changes and re-style citations
+	$: if (processedContent && message.done) {
+		setTimeout(() => {
+			styleCitations();
+		}, 100); // Small delay to ensure DOM is updated
+	}
+
 	onMount(async () => {
 		// console.log('ResponseMessage mounted');
 
@@ -632,6 +676,9 @@
 				}
 			});
 		}
+
+		// Style citations after mount
+		styleCitations();
 	});
 </script>
 
@@ -912,7 +959,7 @@
 									<CodeExecutions codeExecutions={message.code_executions} />
 								{/if}
 
-								<CitationsList urls={extractedUrls} />
+								<CitationsList bind:this={citationsListRef} urls={extractedUrls} />
 							</div>
 						{/if}
 					</div>
