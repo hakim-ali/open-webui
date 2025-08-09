@@ -39,6 +39,35 @@
 	let collectedLinks = [];
 	let showExternalModal = false;
 	let externalUrl = '';
+	
+	// Citation numbering system
+	let citationMap = new Map(); // URL -> citation number
+	let citationCounter = 0;
+	
+	// Function to get or assign citation number
+	function getCitationNumber(url) {
+		// Normalize URL for consistent numbering
+		function normalizeUrl(url) {
+			let normalized = url.toLowerCase().trim();
+			normalized = normalized.replace(/[\s.,;!?)\]}>]+$/, '');
+			normalized = normalized.replace(/\?.*$/, '');
+			normalized = normalized.replace(/#.*$/, '');
+			normalized = normalized.replace(/\/$/, '');
+			normalized = normalized.replace(/^https?:\/\/www\./, 'https://');
+			normalized = normalized.replace(/^http:\/\//, 'https://');
+			return normalized;
+		}
+		
+		const normalizedUrl = normalizeUrl(url);
+		
+		if (citationMap.has(normalizedUrl)) {
+			return citationMap.get(normalizedUrl);
+		} else {
+			citationCounter++;
+			citationMap.set(normalizedUrl, citationCounter);
+			return citationCounter;
+		}
+	}
 
 	function handleExternalLinkClick(e, url) {
 		e.preventDefault();
@@ -168,6 +197,9 @@
 	}
 
 	$: {
+		// Reset citation counter when content changes
+		citationMap.clear();
+		citationCounter = 0;
 		collectedLinks = collectLinksFromContent(content || '');
 	}
 
@@ -246,6 +278,7 @@
 			{model}
 			{save}
 			{preview}
+			getCitationNumber={getCitationNumber}
 			sourceIds={(sources ?? []).reduce((acc, s) => {
 				let ids = [];
 				s.document.forEach((document, index) => {

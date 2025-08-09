@@ -23,6 +23,7 @@
 
 	export let onSourceClick = () => {};
 	export let onTaskClick = () => {};
+	export let getCitationNumber = () => {};
 
 	let tokens = [];
 
@@ -53,5 +54,6 @@
 		{onSave}
 		{onUpdate}
 		{onPreview}
+		{getCitationNumber}
 	/>
 {/key}
