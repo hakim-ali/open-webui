@@ -72,10 +72,15 @@
 />-->
 
 <nav
-	class=" flex items-center justify-between px-4 py-0 h-[56px] absolute z-30 {$mobile
+	class=" flex items-center justify-between px-4 py-0 h-[56px] bg-[#ebf1fb] dark:bg-[#0F1924] absolute z-30 {$mobile
 		? ' w-full fixed dark:border-gray-800'
-		: 'bg-transparent'}"
+		: 'w-full'}"
 >
+	<p
+		class="text-xl font-bold bg-gradient-to-r from-[#9ab5fb] to-[#4476f9] bg-clip-text text-transparent px-[20px] py-[18px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0"
+	>
+		GovGPT
+	</p>
 	{#if $mobile}
 		<button
 			class="flex items-center justify-center rounded-lg size-10 hover:bg-gray-100 dark:hover:bg-gray-850 transition"

@@ -231,6 +231,12 @@
 		model.id.includes($config.govgpt.rag_wog_model_name)
 	);
 
+	const toolOption = {
+		govKnowledge: 'Gov Knowledge',
+		webSearch: 'Web Search',
+		attachFiles: 'Attach Files'
+	};
+
 	// Reactive statement to update selectedModelName based on current state
 	$: selectedModelName = (() => {
 		console.log('Reactive selectedModelName update:', {
@@ -248,12 +254,17 @@
 
 		if (webSearchEnabled) {
 			console.log('Returning: Web Search');
-			return 'Web Search';
+			return toolOption.webSearch;
 		}
 
 		if (govBtnEnable) {
 			console.log('Returning: Gov Knowledge');
-			return 'Gov Knowledge';
+			return toolOption.govKnowledge;
+		}
+
+		if (attachFileEnabled) {
+			console.log('Returning: Attach Files');
+			return toolOption.attachFiles;
 		}
 
 		// Check if web search is enabled (second priority)
@@ -786,11 +797,19 @@
 			govKnoPopoverStyle = `position:fixed;left:${left}px;bottom:${bottom}px;z-index:9999;min-width:320px;max-width:340px;`;
 		}
 	}
-	function closeGovKnoInfoPopover(e) {
-		e.stopPropagation();
-		e.preventDefault();
-		showGovKnoInfoPopover = false;
+
+	function getFilesCount(): number {
+		return Object.values(history.messages).reduce(
+			(total, message) => total + (message.files ? message.files.length : 0),
+			0
+		);
 	}
+
+	$: fileCount = getFilesCount();
+
+	$: isStreamingInProgress =
+		(taskIds && taskIds.length > 0) ||
+		(history.currentId && history.messages[history.currentId]?.done != true);
 </script>
 
 <FilesOverlay show={dragged} />
@@ -943,20 +962,22 @@
 								dispatch('submit', prompt);
 							}}
 						>
-							{#if history.currentId && history.messages && attachFileEnabled && Object.values(history.messages).some((message) => message.files && message.files.length > 0)}<div
-									class="text-left rounded-tl-[12px] rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
+							{#if history.currentId && history.messages && attachFileEnabled && Object.values(history.messages).some((message) => message.files && message.files.length > 0)}
+								<div
+									class="text-left rounded-tl-[12px] flex items-center justify-between rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
 								>
 									{$i18n.t("Chat is limited to the '{{count}}' uploaded KnowledgeDocuments.", {
-										count: Object.values(history.messages).reduce(
-											(total, message) => total + (message.files ? message.files.length : 0),
-											0
-										)
+										count: fileCount
 									})}
-								</div>{/if}
-							{#if webSearchEnabled}<div
-									class="text-left rounded-tl-[12px] rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
-								>
-									{$i18n.t('Chat is limited to Web Search.')}
+									<button
+										class="flex items-center text-[14px] text-[#004280]"
+										on:click={(e) => {
+											filesInputElement.click();
+										}}
+									>
+										<MaterialIcon name="add" size="1rem" />
+										{$i18n.t('Add Files')}
+									</button>
 								</div>{/if}
 							{#if govBtnEnable}<div
 									class="text-left rounded-tl-[12px] rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
@@ -1516,7 +1537,7 @@
 								</div>
 
 								<div
-									class=" flex justify-between mt-[48px] max-w-full"
+									class=" flex justify-between mt-[24px] max-w-full"
 									dir={$isRTL ? 'rtl' : 'ltr'}
 								>
 									<div class="ml-1 self-end flex items-center flex-1 max-w-[80%]">
@@ -1659,17 +1680,21 @@
 												{/each}
 												{#if showFileUploadButton}
 													<button
+														disabled={isStreamingInProgress}
 														on:click={() => {
 															filesInputElement.click();
 														}}
-														class="flex items-center px-[12px] gap-[4px] py-[8px] border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[16px] leading-[22px] rounded-full"
+														class="flex items-center px-[12px] gap-[4px] py-[8px] border
+															border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D]
+															text-typography-titles text-[16px] leading-[22px] rounded-full
+															disabled:opacity-50 disabled:cursor-not-allowed"
 													>
 														<MaterialIcon name="attach_file" />
-														{#if inputFiles}
+														{#if fileCount > 0}
 															<div
 																class="absolute bg-[#004280] rounded-full text-white text-[8px] h-5 w-5 translate-x-[20px] -translate-y-[10px] flex items-center justify-center"
 															>
-																{inputFiles.length > 0 ? inputFiles.length : ''}
+																{fileCount}
 															</div>
 														{/if}
 													</button>
@@ -1683,19 +1708,31 @@
 													<button
 														data-filter-toggle
 														on:click={handleFilterToggle}
-														class="flex items-center px-[12px] gap-[4px] py-[8px] border border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles text-[16px] leading-[22px] rounded-full"
-														><Filter />{$mobile ? '' : $i18n.t('Tools')}</button
+														disabled={isStreamingInProgress}
+														class="flex items-center px-[12px] gap-[4px] py-[8px] border border-[#E5EBF3]
+														 bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D] text-typography-titles
+														 text-[16px] leading-[22px] rounded-full
+														disabled:opacity-50 disabled:cursor-not-allowed"
 													>
-													{#if selectedModelName !== ''}<div
+														<Filter />
+														{$mobile ? '' : $i18n.t('Tools')}
+													</button>
+													{#if selectedModelName !== '' && selectedModelName !== toolOption.attachFiles}
+														<div
 															class="px-[8px] font-Inter_Medium flex items-center gap-[8px] text-[14px] leading-[22px] text-typography-titles"
 														>
 															{$i18n.t(selectedModelName)}
-															<button
-																data-filter-toggle
-																class="flex items-center"
-																on:click={(e) => clearFilterToggle(e)}><Cross /></button
-															>
-														</div>{/if}
+															{#if !isStreamingInProgress}
+																<button
+																	data-filter-toggle
+																	class="flex items-center"
+																	on:click={(e) => clearFilterToggle(e)}
+																>
+																	<Cross />
+																</button>
+															{/if}
+														</div>
+													{/if}
 												</div>
 
 												{#if showGovKnoWebSearchToggle}
@@ -1703,15 +1740,15 @@
 														bind:this={toggleContentElement}
 														class="absolute w-full max-w-[250px] {showFileUploadButton
 															? 'ml-15'
-															: ''}  bottom-[0] start-4 z-[40] p-2 mb-20 bg-white border-[#E5EBF3] dark:border-gray-800 dark:bg-[#010E1D] dark:border-gray-00 border rounded-[24px]"
+															: ''}  bottom-[0] start-4 z-[40] p-2 mb-18 bg-white border-[#E5EBF3] dark:border-gray-800 dark:bg-[#010E1D] dark:border-gray-00 border rounded-[16px]"
 													>
 														{#if showGovKnoButton}
 															<button
 																disabled={attachFileEnabled && files.length !== 0}
 																on:click|preventDefault={() => saveGovKnoModel()}
 																type="button"
-																class="govkno-btn flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 gap-[4px] text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
-																	? ' bg-gradient-bg-2 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
+																class="govkno-btn flex items-center justify-between w-full p-[8px] hover:bg-gradient-bg-2 text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
+																	? ' bg-gradient-bg-2 dark:text-sky-300 dark:bg-sky-200/5'
 																	: 'text-gray-600 dark:text-gray-300 '}{attachFileEnabled &&
 																files.length !== 0
 																	? 'disabled:opacity-50 disabled:cursor-not-allowed'
@@ -1726,75 +1763,7 @@
 																	>
 																		{$i18n.t('Gov Knowledge')}
 																	</span>
-																	<!-- Info icon at the end of the row -->
-																	<button
-																		bind:this={govKnoInfoIconEl}
-																		type="button"
-																		class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
-																		on:click|stopPropagation={(e) => openGovKnoInfoPopover(e)}
-																		aria-label="Info"
-																	>
-																		<Info className="size-4 text-gray dark:text-gray-300" />
-																	</button>
-																	{#if showGovKnoInfoPopover}
-																		<div
-																			class="bg-white dark:bg-[#010E1D] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-4 flex flex-col gap-3 animate-fade-in"
-																			style={govKnoPopoverStyle}
-																		>
-																			{#if $isRTL}
-																				<div
-																					class="flex items-start justify-between mb-2 flex-row-reverse"
-																				>
-																					<button
-																						class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 mr-2"
-																						on:click={(e) => closeGovKnoInfoPopover(e)}
-																						aria-label="Close"
-																					>
-																						<XMark
-																							className="size-4 text-gray-400 dark:text-gray-300"
-																						/>
-																					</button>
-																					<MenuBook className="size-6 ml-2 mt-0.5" />
-																				</div>
-																			{:else}
-																				<div class="flex items-start justify-between mb-2 flex-row">
-																					<MenuBook className="size-6 mr-2 mt-0.5" />
-																					<button
-																						class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ml-auto"
-																						on:click={(e) => closeGovKnoInfoPopover(e)}
-																						aria-label="Close"
-																					>
-																						<XMark
-																							className="size-4 text-gray-400 dark:text-gray-300"
-																						/>
-																					</button>
-																				</div>
-																			{/if}
-																			<div
-																				class="font-semibold text-base dark:text-white text-left mb-1"
-																			>
-																				{$i18n.t('Browse Knowledge Base')}
-																			</div>
-																			<div
-																				class="text-sm text-gray-700 dark:text-gray-300 text-left mb-2"
-																			>
-																				{$i18n.t(
-																					'Access Government Knowledge Repository to find out what is available'
-																				)}
-																			</div>
-																			<button
-																				class="mt-2 w-full py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-																				on:click={(e) => {
-																					closeGovKnoInfoPopover(e);
-																					goto('/knowledgeRepository');
-																				}}
-																			>
-																				{$i18n.t('Access repository')}
-																			</button>
-																		</div>
-																	{/if}
 																</div>
-																{#if govBtnEnable}<CheckFilter />{/if}
 															</button>
 														{/if}
 														{#if showWebSearchButton}
@@ -1806,19 +1775,18 @@
 																	attachFileEnabled = false;
 																}}
 																type="button"
-																class="flex items-center flex justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-700 {webSearchEnabled ||
+																class="flex items-center justify-between w-full p-[8px] hover:bg-gradient-bg-2 text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {webSearchEnabled ||
 																($settings?.webSearch ?? false) === 'always'
 																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
 																	: 'text-gray-600 dark:text-white '}"
 															>
 																<div class="flex items-center justify-center gap-[8px]">
-																	<GlobeAlt className="size-5" strokeWidth="1.75" />
+																	<GlobeAlt className="size-4" strokeWidth="1.75" />
 																	<span
-																		class="font-heading font-medium text-[16px] leading-[22px] text-[#36383b] dark:text-white text-left whitespace-nowrap"
+																		class="font-heading font-medium dark:text-white text-left whitespace-nowrap"
 																		>{$i18n.t('Web Search')}</span
 																	>
 																</div>
-																{#if webSearchEnabled}<CheckFilter />{/if}
 															</button>
 														{/if}
 														{#if showImageGenerationButton}
@@ -1827,8 +1795,8 @@
 																	on:click|preventDefault={() =>
 																		(imageGenerationEnabled = !imageGenerationEnabled)}
 																	type="button"
-																	class="flex items-center flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {imageGenerationEnabled
-																		? 'bg-gradient-bg-2 sm:bg-[#CCDDFC] dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
+																	class="flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {imageGenerationEnabled
+																		? ' sm:bg-[#CCDDFC] dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
 																		: 'bg-transparent text-gray-600 dark:text-gray-300 '}"
 																>
 																	<div class="flex items-center justify-center gap-[8px]">
@@ -1852,7 +1820,7 @@
 																	on:click|preventDefault={() =>
 																		(codeInterpreterEnabled = !codeInterpreterEnabled)}
 																	type="button"
-																	class="flex items-center flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 dark:hover:bg-gray-800 {codeInterpreterEnabled
+																	class="flex items-center justify-between w-full p-[16px] rounded-[12px] hover:bg-gradient-bg-2 dark:hover:bg-gray-800 {codeInterpreterEnabled
 																		? 'bg-gradient-bg-2 sm:bg-[#CCDDFC] dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
 																		: 'bg-transparent text-gray-600 dark:text-gray-300 '}"
 																>
@@ -2122,7 +2090,7 @@
 											</Tooltip>
 										{/if}
 
-										{#if (taskIds && taskIds.length > 0) || (history.currentId && history.messages[history.currentId]?.done != true)}
+										{#if isStreamingInProgress}
 											<div class=" flex items-center">
 												<Tooltip content={$i18n.t('Stop')}>
 													<button

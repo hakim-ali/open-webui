@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { documentsArray,mobile } from '$lib/stores';
+	import { documentsArray, mobile } from '$lib/stores';
 	import { onMount, getContext } from 'svelte';
 	import { isRTL } from '$lib/i18n';
 	import ChevronUp from '$lib/components/icons/ChevronUp.svelte';
@@ -18,7 +18,7 @@
 	let loading = true;
 
 	// Subscribe to store data
-	documentsArray.subscribe(value => {
+	documentsArray.subscribe((value) => {
 		receivedStoreData = value;
 		if (value && value.documents) {
 			documents = value.documents;
@@ -48,14 +48,13 @@
 				bVal = b.title || '';
 				return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
 			case 'summary':
-				aVal = $isRTL ? (a.summaryAr || '') : (a.summaryEn || '');
-				bVal = $isRTL ? (b.summaryAr || '') : (b.summaryEn || '');
+				aVal = $isRTL ? a.summaryAr || '' : a.summaryEn || '';
+				bVal = $isRTL ? b.summaryAr || '' : b.summaryEn || '';
 				return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
 			default:
 				return 0;
 		}
 	});
-
 </script>
 
 <div class="mt-0.5 mb-2 gap-2 flex flex-row py-6">
@@ -63,16 +62,18 @@
 		<GovKno />
 	</div>
 	<div class="flex md:self-center text-lg font-medium px-0.5">
-		{$i18n?.t('Whole of Knowledge Repository') || 'Whole of Knowledge Repository'}
+		{$i18n?.t('Gov Knowledge Repository') || 'Gov Knowledge Repository'}
 	</div>
 </div>
 <div class="mb-5 gap-2 flex flex-row">
-	<div class="flex md:self-center text-sm text-gray-500 font-normal px-0.5 cursor-pointer"
-			 on:click={()=>goto('/knowledgeRepository')}>
-		{$i18n?.t('Government Entities') || 'Government Entities'}  >
+	<div
+		class="flex md:self-center text-sm text-gray-500 font-normal px-0.5 cursor-pointer"
+		on:click={() => goto('/knowledgeRepository')}
+	>
+		{$i18n?.t('Government Entities') || 'Government Entities'} >
 	</div>
 	<div class="flex md:self-center text-sm text-gray-1000 font-normal px-0.5 dark:text-white">
-	{receivedStoreData?.name}
+		{receivedStoreData?.name}
 	</div>
 </div>
 
@@ -86,7 +87,7 @@
 	</div>
 {:else}
 	<div
-		class="h-[calc(100dvh-200px)]  bg-white dark:bg-gray-900 scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-sm pt-0.5 flex-col gap-10"
+		class="h-[calc(100dvh-200px)] bg-white dark:bg-gray-900 scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-sm pt-0.5 flex-col gap-10"
 	>
 		{#if $mobile}
 			<table
@@ -95,155 +96,146 @@
 				<thead
 					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 -translate-y-0.5"
 				>
-				<tr class="">
-					<th
-						scope="col"
-						class="px-3 py-1.5 cursor-pointer select-none"
-						on:click={() => setSortKey('title')}
-					>
-						<div class="flex gap-1.5 items-center">
-							{$i18n?.t('Name') || 'Name'}
-							{#if orderBy === 'title'}
-								<span class="font-normal">
-									{#if direction === 'asc'}
+					<tr class="">
+						<th
+							scope="col"
+							class="px-3 py-1.5 cursor-pointer select-none"
+							on:click={() => setSortKey('title')}
+						>
+							<div class="flex gap-1.5 items-center capitalize">
+								{$i18n?.t('Name') || 'Name'}
+								{#if orderBy === 'title'}
+									<span class="font-normal">
+										{#if direction === 'asc'}
+											<ChevronUp className="size-3" />
+										{:else}
+											<ChevronDown className="size-3" />
+										{/if}
+									</span>
+								{:else}
+									<span class="invisible">
 										<ChevronUp className="size-3" />
-									{:else}
-										<ChevronDown className="size-3" />
-									{/if}
-								</span>
-							{:else}
-								<span class="invisible">
-									<ChevronUp className="size-3" />
-								</span>
-							{/if}
-						</div>
-					</th>
-				</tr>
+									</span>
+								{/if}
+							</div>
+						</th>
+					</tr>
 				</thead>
 				<tbody class="">
-				{#each sortedDocuments as document (document.title)}
-					<tr
-						class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
-					>
-						<td class="py-3 pl-3 flex flex-col">
-							<div class="flex flex-col items-start gap-0.5 h-full">
-								<div class="flex flex-col h-full">
-									<Tooltip  content={$isRTL ? document.summaryAr : document.summaryEn} placement="bottom">
-									<div class="font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4">
-										<KnoDocs />
-										<div class="truncate max-w-[300px]">
-										{document.title}
+					{#each sortedDocuments as document (document.title)}
+						<tr
+							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
+						>
+							<td class="py-3 pl-3 flex flex-col">
+								<div class="flex flex-col items-start gap-0.5 h-full">
+									<div class="flex flex-col h-full">
+										<Tooltip
+											content={$isRTL ? document.summaryAr : document.summaryEn}
+											placement="bottom"
+										>
+											<div
+												class="font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4"
+											>
+												<KnoDocs />
+												<div class="truncate max-w-[300px]">
+													{document.title}
+												</div>
+											</div>
+										</Tooltip>
+									</div>
+								</div>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{:else}
+			<table
+				class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
+			>
+				<thead
+					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 -translate-y-0.5"
+				>
+					<tr class="">
+						<th
+							scope="col"
+							class="px-3 py-1.5 cursor-pointer select-none"
+							on:click={() => setSortKey('title')}
+						>
+							<div class="flex gap-1.5 items-center capitalize">
+								{$i18n?.t('Name') || 'Name'}
+								{#if orderBy === 'title'}
+									<span class="font-normal">
+										{#if direction === 'asc'}
+											<ChevronUp className="size-3" />
+										{:else}
+											<ChevronDown className="size-3" />
+										{/if}
+									</span>
+								{:else}
+									<span class="invisible">
+										<ChevronUp className="size-3" />
+									</span>
+								{/if}
+							</div>
+						</th>
+
+						<th
+							scope="col"
+							class="px-3 py-1.5 cursor-pointer select-none"
+							on:click={() => setSortKey('summary')}
+						>
+							<div class="flex gap-1.5 items-center capitalize">
+								{$i18n?.t('Description') || 'Description'}
+								{#if orderBy === 'summary'}
+									<span class="font-normal">
+										{#if direction === 'asc'}
+											<ChevronUp className="size-3" />
+										{:else}
+											<ChevronDown className="size-3" />
+										{/if}
+									</span>
+								{:else}
+									<span class="invisible">
+										<ChevronUp className="size-3" />
+									</span>
+								{/if}
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody class="">
+					{#each sortedDocuments as document (document.title)}
+						<tr
+							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
+						>
+							<td class="py-3 pl-3 flex flex-col">
+								<div class="flex flex-col items-start gap-0.5 h-full">
+									<div class="flex flex-col h-full">
+										<div
+											class="font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4"
+										>
+											<KnoDocs />
+											{document.title}
 										</div>
 									</div>
-									</Tooltip>
 								</div>
-							</div>
-						</td>
+							</td>
 
-					</tr>
-				{/each}
-				</tbody>
-				<tfoot class="w-full absolute bottom-0 pb-2">
-				<div class="flex flex-row gap-2 justify-start items-center pl-5">
-					<Info className="size-4 text-black dark:text-gray-300"  />
-					<span class="text-black dark:text-gray-300 text-xs">
-						{$i18n?.t("Press and hold a document to view a summary")}
-					</span>
-				</div>
-				</tfoot>
-			</table>
-			{:else}
-			<table
-			class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
-		>
-			<thead
-				class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 -translate-y-0.5"
-			>
-				<tr class="">
-					<th
-						scope="col"
-						class="px-3 py-1.5 cursor-pointer select-none"
-						on:click={() => setSortKey('title')}
-					>
-						<div class="flex gap-1.5 items-center">
-							{$i18n?.t('Name') || 'Name'}
-							{#if orderBy === 'title'}
-								<span class="font-normal">
-									{#if direction === 'asc'}
-										<ChevronUp className="size-3" />
-									{:else}
-										<ChevronDown className="size-3" />
-									{/if}
-								</span>
-							{:else}
-								<span class="invisible">
-									<ChevronUp className="size-3" />
-								</span>
-							{/if}
-						</div>
-					</th>
-
-					<th
-						scope="col"
-						class="px-3 py-1.5 cursor-pointer select-none"
-						on:click={() => setSortKey('summary')}
-					>
-						<div class="flex gap-1.5 items-center">
-							{$i18n?.t('Description') || 'Description'}
-							{#if orderBy === 'summary'}
-								<span class="font-normal">
-									{#if direction === 'asc'}
-										<ChevronUp className="size-3" />
-									{:else}
-										<ChevronDown className="size-3" />
-									{/if}
-								</span>
-							{:else}
-								<span class="invisible">
-									<ChevronUp className="size-3" />
-								</span>
-							{/if}
-						</div>
-					</th>
-				</tr>
-			</thead>
-			<tbody class="">
-				{#each sortedDocuments as document (document.title)}
-					<tr
-						class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
-					>
-						<td class="py-3 pl-3 flex flex-col">
-							<div class="flex flex-col items-start gap-0.5 h-full">
-								<div class="flex flex-col h-full">
-									<div class="font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4">
-										<KnoDocs />
-										{document.title}
+							<td class="px-3 py-3 text-left font-medium text-gray-900 dark:text-white">
+								<Tooltip
+									content={$isRTL ? document.summaryAr : document.summaryEn}
+									placement="bottom"
+								>
+									<div class="max-w-md truncate">
+										{$isRTL ? document.summaryAr : document.summaryEn}
 									</div>
-								</div>
-							</div>
-						</td>
-
-						<td class="px-3 py-3 text-left font-medium text-gray-900 dark:text-white ">
-							<Tooltip  content={$isRTL ? document.summaryAr : document.summaryEn} placement="bottom">
-								<div class="max-w-md truncate ">
-									{$isRTL ? document.summaryAr : document.summaryEn}
-								</div>
-							</Tooltip>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-				<tfoot class="w-full absolute bottom-0 pb-2">
-				<div class="flex flex-row gap-2 justify-start items-center pl-5">
-					<Info className="size-4 text-black dark:text-gray-300"  />
-					<span class="text-black dark:text-gray-300 text-xs">
-						{$i18n?.t("Press and hold a document to view a summary")}
-					</span>
-				</div>
-				</tfoot>
-
+								</Tooltip>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
 			</table>
-			{/if}
-
+		{/if}
 	</div>
 {/if}
