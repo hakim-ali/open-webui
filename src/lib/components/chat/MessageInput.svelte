@@ -233,14 +233,14 @@
 
 	// Reactive statement to update selectedModelName based on current state
 	$: selectedModelName = (() => {
-		console.log('Reactive selectedModelName update:', {
-			govBtnEnable,
-			webSearchEnabled,
-			attachFileEnabled,
-			filesLength: files.length,
-			selectedModels,
-			historyMessages: history?.messages ? Object.keys(history.messages).length : 0
-		});
+		// console.log('Reactive selectedModelName update:', {
+		// 	govBtnEnable,
+		// 	webSearchEnabled,
+		// 	attachFileEnabled,
+		// 	filesLength: files.length,
+		// 	selectedModels,
+		// 	historyMessages: history?.messages ? Object.keys(history.messages).length : 0
+		// });
 
 		// Priority order: Gov Knowledge > Web Search > Files > Specific Model
 

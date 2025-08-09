@@ -142,8 +142,54 @@
 	let buttonsContainerElement: HTMLDivElement;
 	let showDeleteConfirm = false;
 
+	// Citations state
+	let extractedUrls: string[] = [];
+	let citationsMap: Map<string, number> = new Map();
+	let processedContent: string = '';
+
 	let model = null;
 	$: model = $models.find((m) => m.id === message.model);
+
+	// Function to extract URLs from content and replace with citations
+	function processContentForCitations(content: string): { processedContent: string; urls: string[]; citationsMap: Map<string, number> } {
+		const urls: string[] = [];
+		const citationsMap = new Map<string, number>();
+		let citationCounter = 1;
+
+		// First, handle markdown-style links: [text](url)
+		let processedContent = content.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/gi, (match, text, url) => {
+			if (!citationsMap.has(url)) {
+				citationsMap.set(url, citationCounter);
+				urls.push(url);
+				citationCounter++;
+			}
+			return `[${citationsMap.get(url)}]`;
+		});
+
+		// Then handle standalone URLs
+		processedContent = processedContent.replace(/(https?:\/\/[^\s\)\]\}]+)/gi, (match) => {
+			if (!citationsMap.has(match)) {
+				citationsMap.set(match, citationCounter);
+				urls.push(match);
+				citationCounter++;
+			}
+			return `[${citationsMap.get(match)}]`;
+		});
+
+		return { processedContent, urls, citationsMap };
+	}
+
+	// Process content whenever message content changes
+	$: if (message.content) {
+		console.log("Message OG: ", message.content);
+		const result = processContentForCitations(message.content);
+		processedContent = result.processedContent;
+		extractedUrls = result.urls;
+		citationsMap = result.citationsMap;
+		console.log("processedContent: ", processedContent);
+		console.log("extractedUrls: ", extractedUrls);
+		console.log("citationsMap: ", citationsMap);
+	}
 
 	let edit = false;
 	let editedContent = '';
@@ -808,7 +854,7 @@
 									<ContentRenderer
 										id={message.id}
 										{history}
-										content={message.content}
+										content={processedContent || message.content}
 										sources={message.sources}
 										floatingButtons={message?.done && !readOnly}
 										save={!readOnly}
@@ -867,6 +913,21 @@
 
 								{#if message.code_executions}
 									<CodeExecutions codeExecutions={message.code_executions} />
+								{/if}
+
+								{#if extractedUrls.length > 0}
+									<div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+										<div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+											{#each extractedUrls as url, index}
+												<div class="flex items-start gap-2">
+													<span class="font-medium">[{index + 1}]</span>
+													<a href="{url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline break-all">
+														{url}
+													</a>
+												</div>
+											{/each}
+										</div>
+									</div>
 								{/if}
 							</div>
 						{/if}
