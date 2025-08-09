@@ -231,7 +231,7 @@
 							selectedReason = reason.key;
 						}}
 					>
-						<span class="font-semibold p-2">{reason.header}</span>
+						<span class="font-semibold p-2">{$i18n.t(reason.header)}</span>
 					</button>
 				{/each}
 			</div>
@@ -256,7 +256,7 @@
 				saveHandler();
 			}}
 		>
-			<span class="text-sm">Submit feedback</span>
+			<span class="text-sm">{$i18n.t('Submit feedback')}</span>
 			{#if $isRTL }
 				<ArrowLeftNew />
 			{:else}
