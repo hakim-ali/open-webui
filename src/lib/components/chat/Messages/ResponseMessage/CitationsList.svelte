@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ExternalLinkModal from '$lib/components/common/ExternalLinkModal.svelte';
 	import ArrowDigonal from '$lib/components/icons/ArrowDigonal.svelte';
+	import { extractDomain, getFaviconUrl } from './WebSearchResults.svelte';
 
 	export let urls: string[] = [];
 	export let onCitationClick: (index: number) => void = () => {};
@@ -8,24 +9,6 @@
 	let showConfirmModal = false;
 	let urlToOpen = '';
 	let highlightedIndex = -1;
-
-	function extractDomain(url: string): string {
-		try {
-			const urlObj = new URL(url);
-			return urlObj.hostname.replace('www.', '');
-		} catch {
-			return url;
-		}
-	}
-
-	function getFaviconUrl(url: string): string {
-		try {
-			const urlObj = new URL(url);
-			return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=16`;
-		} catch {
-			return '';
-		}
-	}
 
 	function handleUrlClick(url: string, index: number) {
 		urlToOpen = url;
