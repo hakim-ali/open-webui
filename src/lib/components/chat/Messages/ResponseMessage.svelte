@@ -3,7 +3,7 @@
 	import dayjs from 'dayjs';
 
 	import { createEventDispatcher } from 'svelte';
-	import { onMount, tick, getContext } from 'svelte';
+	import { onMount, tick, getContext, onDestroy } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import type { i18n as i18nType, t } from 'i18next';
 
@@ -159,6 +159,63 @@
 	let generatingImage = false;
 
 	let showRateComment = false;
+
+	// Web search progression timing
+	let webSearchStartTime: number | null = null;
+	let webSearchStatus = '';
+	let webSearchTimer: ReturnType<typeof setTimeout> | null = null;
+
+	// Track web search progression
+	$: if ((message?.statusHistory?.length ?? 0) > 0 || message?.status) {
+		const currentStatus = (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).at(-1);
+		if (currentStatus?.action === 'web_search') {
+			if (!webSearchStartTime) {
+				webSearchStartTime = Date.now();
+				webSearchStatus = 'Just a sec...';
+				
+				// Clear any existing timer
+				if (webSearchTimer) {
+					clearTimeout(webSearchTimer);
+				}
+				
+				// Set timer to transition to "Searching on web..." after 2 seconds
+				webSearchTimer = setTimeout(() => {
+					if (webSearchStatus === 'Just a sec...') {
+						webSearchStatus = 'Searching on web...';
+					}
+				}, 2000);
+			}
+			
+			// Update status based on description
+			if (currentStatus?.description === 'Just a sec...') {
+				webSearchStatus = 'Just a sec...';
+			} else if (currentStatus?.description === 'Searching on web...') {
+				webSearchStatus = 'Searching on web...';
+			} else if (currentStatus?.description?.includes('Searched') && currentStatus?.description?.includes('Shortlisted')) {
+				webSearchStatus = currentStatus.description;
+				// Clear timer when search is complete
+				if (webSearchTimer) {
+					clearTimeout(webSearchTimer);
+					webSearchTimer = null;
+				}
+			}
+		} else {
+			// Clear timer if not web search
+			if (webSearchTimer) {
+				clearTimeout(webSearchTimer);
+				webSearchTimer = null;
+			}
+			webSearchStartTime = null;
+			webSearchStatus = '';
+		}
+	}
+
+	// Cleanup timer on component destroy
+	onDestroy(() => {
+		if (webSearchTimer) {
+			clearTimeout(webSearchTimer);
+		}
+	});
 
 	const copyToClipboard = async (text) => {
 		text = removeAllDetails(text);
@@ -644,32 +701,76 @@
 							).at(-1)}
 							{#if !status?.hidden}
 								<div class="status-description flex items-center gap-2 py-0.5">
-									{#if status?.action === 'web_search' && status?.urls}
-										<WebSearchResults {status}>
-											<div class="flex flex-col justify-center -space-y-0.5">
-												<div
-													class="{status?.done === false
-														? 'shimmer'
-														: ''} text-base line-clamp-1 text-wrap"
-												>
-													<!-- $i18n.t("Generating search query") -->
-													<!-- $i18n.t("No search query generated") -->
-
-													<!-- $i18n.t('Searched {{count}} sites') -->
-													{#if status?.description.includes('{{count}}')}
-														{$i18n.t(status?.description, {
-															count: status?.urls.length
-														})}
-													{:else if status?.description === 'No search query generated'}
-														{$i18n.t('No search query generated')}
-													{:else if status?.description === 'Generating search query'}
-														{$i18n.t('Generating search query')}
-													{:else}
-														{status?.description}
-													{/if}
+									{#if status?.action === 'web_search'}
+										{#if status?.urls}
+											<WebSearchResults {status}>
+												<div class="flex flex-col justify-center -space-y-0.5">
+													<div
+														class="{status?.done === false
+															? 'shimmer'
+															: ''} text-base line-clamp-1 text-wrap"
+														style="color: #23282E"
+													>
+														{#if status?.description.includes('{{count}}')}
+															{$i18n.t(status?.description, {
+																count: status?.urls.length
+															})}
+														{:else if status?.description === 'No search query generated'}
+															{$i18n.t('No search query generated')}
+														{:else if status?.description === 'Generating search query'}
+															{$i18n.t('Generating search query')}
+														{:else if status?.description === 'Searching the web'}
+															{$i18n.t('Searching the web')}
+														{:else if status?.description?.includes('Searched') && status?.description?.includes('Shortlisted')}
+															{$i18n.t('Searched {{count}} sites • Shortlisted {{shortlisted}} sites', {
+																count: status?.urls.length,
+																shortlisted: Math.min(status?.urls.length, 5)
+															})}
+														{:else}
+															{status?.description}
+														{/if}
+													</div>
 												</div>
+											</WebSearchResults>
+										{:else}
+											<!-- Web search status without URLs - handle progression -->
+											<div class="flex flex-col justify-center -space-y-0.5">
+												{#if webSearchStatus === 'Just a sec...' || status?.description === 'Just a sec...'}
+													<div
+														class="text-base line-clamp-1 text-wrap fade-in-animation bounce-animation"
+														style="color: #666D7A"
+													>
+														{$i18n.t('Just a sec...')}
+													</div>
+												{:else if webSearchStatus === 'Searching on web...' || status?.description === 'Searching on web...'}
+													<div
+														class="text-base line-clamp-1 text-wrap typing-animation"
+														style="color: #666D7A"
+													>
+														{$i18n.t('Searching on web...')}
+													</div>
+												{:else if status?.description?.includes('Searched') && status?.description?.includes('Shortlisted')}
+													<div
+														class="text-base line-clamp-1 text-wrap fade-in-animation"
+														style="color: #23282E"
+													>
+														{$i18n.t('Searched {{count}} sites • Shortlisted {{shortlisted}} sites', {
+															count: status?.urls?.length || 0,
+															shortlisted: Math.min(status?.urls?.length || 0, 5)
+														})}
+													</div>
+												{:else}
+													<div
+														class="{status?.done === false
+															? 'shimmer'
+															: ''} text-base line-clamp-1 text-wrap"
+														style="color: {webSearchStatus === 'Just a sec...' || webSearchStatus === 'Searching on web...' ? '#666D7A' : '#23282E'}"
+													>
+														{webSearchStatus || status?.description}
+													</div>
+												{/if}
 											</div>
-										</WebSearchResults>
+										{/if}
 									{:else if status?.action === 'knowledge_search'}
 										<div class="flex flex-col justify-center -space-y-0.5">
 											<div
@@ -689,7 +790,6 @@
 													? 'shimmer'
 													: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 											>
-												<!-- $i18n.t(`Searching "{{searchQuery}}"`) -->
 												{#if status?.description.includes('{{searchQuery}}')}
 													{$i18n.t(status?.description, {
 														searchQuery: status?.query
@@ -699,7 +799,7 @@
 												{:else if status?.description === 'Generating search query'}
 													{$i18n.t('Generating search query')}
 												{:else if status?.description === 'Searching the web'}
-													{$i18n.t('Searching the web...')}
+													{$i18n.t('Searching the web')}
 												{:else}
 													{status?.description}
 												{/if}
@@ -1245,7 +1345,7 @@
 													<path
 														stroke-linecap="round"
 														stroke-linejoin="round"
-														d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+														d="M21 12a9 9 0 1 1-18 0 9 9 0 0118 0Z"
 													/>
 													<path
 														stroke-linecap="round"
@@ -1300,7 +1400,7 @@
 									{/if}
 
 									{#if siblings.length > 1}
-										<!----<Tooltip content={$i18n.t('Delete')} placement="bottom">
+										<!-- <Tooltip content={$i18n.t('Delete')} placement="bottom">
 											<button
 												type="button"
 												aria-label={$i18n.t('Delete')}
@@ -1326,7 +1426,7 @@
 													/>
 												</svg>
 											</button>
-										</Tooltip>-->
+										</Tooltip> -->
 									{/if}
 
 									{#if isLastMessage}
@@ -1474,5 +1574,33 @@
 	.buttons {
 		-ms-overflow-style: none; /* IE and Edge */
 		scrollbar-width: none; /* Firefox */
+	}
+
+	@keyframes typing {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.5; }
+	}
+	
+	@keyframes fadeIn {
+		0% { opacity: 0; transform: translateY(10px); }
+		100% { opacity: 1; transform: translateY(0); }
+	}
+	
+	@keyframes bounce {
+		0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+		40% { transform: translateY(-3px); }
+		60% { transform: translateY(-2px); }
+	}
+	
+	.typing-animation {
+		animation: typing 2s infinite ease-in-out;
+	}
+	
+	.fade-in-animation {
+		animation: fadeIn 0.5s ease-out;
+	}
+	
+	.bounce-animation {
+		animation: bounce 2s infinite;
 	}
 </style>
