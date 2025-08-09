@@ -3,7 +3,7 @@
 @config '../tailwind.config.js';
 
 :root {
-	--color-titles: #23282e;
+	--color-titles: #010E1D;
 	--color-subtext: #666d7a;
 	--color-disabled: #abb4c5;
 	--color-secondary-body-text: #979ead;

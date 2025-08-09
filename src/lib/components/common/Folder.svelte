@@ -131,7 +131,7 @@
 		>
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<div
-				class="px-[16px] py-[8px] w-full group rounded-md relative flex items-center justify-between hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out"
+				class="px-[12px] py-[8px] w-full group rounded-md relative flex items-center justify-between hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out"
 				class:justify-center={!showSidebar}
 				class:justify-between={showSidebar}
 			>
@@ -209,7 +209,9 @@
 				<!-- Plus button -->
 				{#if onAdd && showSidebar}
 					<button
-						class="absolute z-10 end-8 {$mobile ? 'visible' : 'invisible group-hover:visible'} self-center flex items-center dark:text-gray-300"
+						class="absolute z-10 end-8 {$mobile
+							? 'visible'
+							: 'invisible group-hover:visible'} self-center flex items-center dark:text-gray-300"
 						on:pointerup={(e) => e.stopPropagation()}
 						on:click={(e) => {
 							e.stopPropagation();

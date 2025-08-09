@@ -352,7 +352,9 @@
 		</div>
 	{:else}
 		<a
-			class="w-full flex items-center justify-between text-typography-titles link-style rounded-[8px] px-[10px] py-[15px] {!$isRTL?'truncate whitespace-nowrap text-ellipsis':''} "
+			class="flex items-center justify-between text-typography-titles link-style rounded-[8px] {$isRTL
+				? 'pr-[12px]'
+				: 'pl-[12px]'}  py-[8px] w-[92%]"
 			href="/c/{id}"
 			on:click={() => {
 				dispatch('select');
@@ -377,14 +379,15 @@
 			on:focus={(e) => {}}
 			draggable="false"
 		>
-			<div class=" flex items-center justify-between self-center flex-1 w-full">
-				<div
-					dir={$isRTL ? 'rtl' : 'ltr'}
-					class="text-left self-center overflow-hidden w-full h-[22px] mr-[8px] truncate flex flex-row"
-				>
+			<div
+				dir={$isRTL ? 'rtl' : 'ltr'}
+				class="text-left self-center h-[22px] flex flex-row w-full min-w-0"
+			>
+				<span class="truncate">
 					{title}
-				</div>
-				{#if className === 'pinned'}<div class="visible group-hover:invisible">
+				</span>
+				{#if className === 'pinned'}
+					<span class="visible group-hover:invisible">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="20"
@@ -397,7 +400,8 @@
 								fill="#23282E"
 							/>
 						</svg>
-					</div>{/if}
+					</span>
+				{/if}
 			</div>
 		</a>
 	{/if}
@@ -410,13 +414,7 @@
 			: selected
 				? 'from-gray-100 dark:from-gray-950'
 				: `${$mobile ? 'visible' : 'invisible group-hover:visible'} `}
-             {className === 'pr-2'
-			? $isRTL
-				? 'left-[8px]'
-				: 'right-[8px]'
-			: $isRTL
-				? 'left-1'
-				: 'right-1'} top-[10px] py-1 {$isRTL ? 'pl-0.5 ml-1.5 pr-5' : 'pr-0.5 mr-1.5 pl-5'}"
+            "
 		on:mouseenter={(e) => {
 			mouseOver = true;
 		}}

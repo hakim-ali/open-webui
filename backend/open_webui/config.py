@@ -1049,7 +1049,7 @@ if default_prompt_suggestions == []:
         }
     ]
 
-    default_prompt_suggestions = random.sample(all_suggestions, 4) if len(all_suggestions) > 3 else all_suggestions
+    default_prompt_suggestions = random.sample(all_suggestions, 5) if len(all_suggestions) > 5 else all_suggestions
 
 DEFAULT_PROMPT_SUGGESTIONS = PersistentConfig(
     "DEFAULT_PROMPT_SUGGESTIONS",
