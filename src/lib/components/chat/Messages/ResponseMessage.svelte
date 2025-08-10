@@ -168,6 +168,12 @@
 	let webSearchStatus = '';
 	let webSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
+	const FADE_OUT_MS = 800;
+	const GAP_NEXT_MS = 120;
+	let webSearchDisplayText = '';
+	let webSearchFadeState: 'in' | 'out' = 'out';
+	let webSearchFadeHandle: ReturnType<typeof setTimeout> | null = null;
+
 	// Handle initial loading progression: "Just a sec..." -> "Processing documents..."
 	$: if (
 		message.content === '' &&
@@ -241,10 +247,43 @@
 		}
 	}
 
+	// Drive visual fade-out/fade-in around webSearchStatus changes
+	$: {
+		// When status text changes, transition out then in
+		if (webSearchStatus && webSearchStatus !== webSearchDisplayText) {
+			if (!webSearchDisplayText) {
+				// First-time show
+				webSearchDisplayText = webSearchStatus;
+				webSearchFadeState = 'in';
+			} else {
+				// Subsequent changes: fade out then swap text and fade in
+				webSearchFadeState = 'out';
+				if (webSearchFadeHandle) clearTimeout(webSearchFadeHandle);
+				const nextText = webSearchStatus;
+				webSearchFadeHandle = setTimeout(() => {
+					webSearchDisplayText = nextText;
+					webSearchFadeState = 'in';
+				}, FADE_OUT_MS + GAP_NEXT_MS);
+			}
+		}
+		// When web search clears, fade out
+		if (!webSearchStatus && webSearchDisplayText) {
+			webSearchFadeState = 'out';
+			if (webSearchFadeHandle) {
+				clearTimeout(webSearchFadeHandle);
+				webSearchFadeHandle = null;
+			}
+			webSearchDisplayText = '';
+		}
+	}
+
 	// Cleanup timers on component destroy
 	onDestroy(() => {
 		if (webSearchTimer) {
 			clearTimeout(webSearchTimer);
+		}
+		if (webSearchFadeHandle) {
+			clearTimeout(webSearchFadeHandle);
 		}
 		if (initialLoadingTimer) {
 			clearTimeout(initialLoadingTimer);
@@ -764,46 +803,37 @@
 												</div>
 											</WebSearchResults>
 										{:else}
-											<!-- Web search status without URLs - handle progression -->
+											<!-- Web search status without URLs - shimmer + fade like reference -->
 											<div class="flex flex-col justify-center -space-y-0.5">
-												{#if webSearchStatus === 'Just a sec...' || status?.description === 'Just a sec...'}
+												{#if webSearchDisplayText}
 													<div
-														class="text-base line-clamp-1 text-wrap fade-in-animation shimmer-animation"
-														style="color: #666D7A"
+														class="status {webSearchFadeState}"
+														aria-live="polite"
+														aria-atomic="true"
 													>
-														{$i18n.t('Just a sec...')}
-													</div>
-												{:else if webSearchStatus === 'Searching on web...' || status?.description === 'Searching on web...'}
-													<div
-														class="text-base line-clamp-1 text-wrap typing-animation shimmer-animation"
-														style="color: #666D7A"
-													>
-														{$i18n.t('Searching on web...')}
-													</div>
-												{:else if status?.description?.includes('Searched') && status?.description?.includes('Shortlisted')}
-													<div
-														class="text-base line-clamp-1 text-wrap fade-in-animation"
-														style="color: #23282E"
-													>
-														{$i18n.t(
-															'Searched {{count}} sites • Shortlisted {{shortlisted}} sites',
-															{
-																count: status?.urls?.length || 0,
-																shortlisted: Math.min(status?.urls?.length || 0, 5)
-															}
-														)}
-													</div>
-												{:else}
-													<div
-														class="{status?.done === false
-															? 'shimmer'
-															: ''} text-base line-clamp-1 text-wrap"
-														style="color: {webSearchStatus === 'Just a sec...' ||
-														webSearchStatus === 'Searching on web...'
-															? '#666D7A'
-															: '#23282E'}"
-													>
-														{webSearchStatus || status?.description}
+														<span
+															class="shimmer-text"
+															style="color: {status?.description?.includes('Searched') &&
+															status?.description?.includes('Shortlisted')
+																? '#23282E'
+																: '#666D7A'}"
+														>
+															{#if webSearchDisplayText === 'Just a sec...'}
+																{$i18n.t('Just a sec...')}
+															{:else if webSearchDisplayText === 'Searching on web...'}
+																{$i18n.t('Searching on web...')}
+															{:else if status?.description?.includes('Searched') && status?.description?.includes('Shortlisted')}
+																{$i18n.t(
+																	'Searched {{count}} sites • Shortlisted {{shortlisted}} sites',
+																	{
+																		count: status?.urls?.length || 0,
+																		shortlisted: Math.min(status?.urls?.length || 0, 5)
+																	}
+																)}
+															{:else}
+																{webSearchDisplayText}
+															{/if}
+														</span>
 													</div>
 												{/if}
 											</div>
@@ -937,25 +967,25 @@
 								class="w-full text-[16px] text-typography-titles leading-[24px] flex flex-col relative"
 								id="response-content-container"
 							>
-                                {#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
-                                    <div class="flex flex-col justify-center -space-y-0.5 py-4">
-                                        {#key showJustASecond}
-                                            <div
-                                                class="text-base line-clamp-1 text-wrap shimmer-animation"
-                                                style="color: #666D7A"
-                                                in:fade={{ duration: 150 }}
-                                                out:fade={{ duration: 300 }}
-                                            >
-                                                {#if showJustASecond}
-                                                    {$i18n.t('Just a sec...')}
-                                                {:else if history?.messages && Object.values(history.messages).some((msg) => msg?.files && msg.files.length > 0)}
-                                                    {$i18n.t('Processing documents...')}
-                                                {:else}
-                                                    {$i18n.t('Just a sec...')}
-                                                {/if}
-                                            </div>
-                                        {/key}
-                                    </div>
+								{#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
+									<div class="flex flex-col justify-center -space-y-0.5 py-4">
+										{#key showJustASecond}
+											<div
+												class="text-base line-clamp-1 text-wrap shimmer-text"
+												style="color: #666D7A"
+												in:fade={{ duration: 150 }}
+												out:fade={{ duration: 300 }}
+											>
+												{#if showJustASecond}
+													{$i18n.t('Just a sec...')}
+												{:else if history?.messages && Object.values(history.messages).some((msg) => msg?.files && msg.files.length > 0)}
+													{$i18n.t('Processing documents...')}
+												{:else}
+													{$i18n.t('Just a sec...')}
+												{/if}
+											</div>
+										{/key}
+									</div>
 								{:else if message.content && message.error !== true}
 									<!-- always show message contents even if there's an error -->
 									<!-- unless message.error === true which is legacy error handling, where the error message is stored in message.content -->
@@ -1621,6 +1651,10 @@
 {/key}
 
 <style>
+	:root {
+		--fade-in-ms: 180ms;
+		--fade-out-ms: 800ms;
+	}
 	.buttons::-webkit-scrollbar {
 		display: none; /* for Chrome, Safari and Opera */
 	}
@@ -1652,10 +1686,10 @@
 	}
 
 	@keyframes shimmer {
-		0% {
+		from {
 			background-position: -200% 0;
 		}
-		100% {
+		to {
 			background-position: 200% 0;
 		}
 	}
@@ -1668,14 +1702,41 @@
 		animation: fadeIn 0.5s ease-out;
 	}
 
-	.shimmer-animation {
-		/* Dark gray shimmer */
-		background: linear-gradient(90deg, #6b7280 25%, #374151 50%, #6b7280 75%);
+	/* Reference-like shimmer only on text */
+	.shimmer-text {
+		position: relative;
+		background: linear-gradient(90deg, #8e96ab 0%, #cbd2e3 50%, #8e96ab 100%);
 		background-size: 200% 100%;
+		-webkit-background-clip: text; /* Safari */
 		background-clip: text;
-		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
-		color: transparent;
-		animation: shimmer 2s infinite;
+		animation: shimmer 2.2s linear infinite;
+	}
+
+	/* Back-compat: keep existing shimmer-animation class but align visuals with reference */
+	.shimmer-animation {
+		position: relative;
+		background: linear-gradient(90deg, #8e96ab 0%, #cbd2e3 50%, #8e96ab 100%);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		animation: shimmer 2.2s linear infinite;
+	}
+
+	/* Status fade container */
+	.status {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		opacity: 0;
+	}
+	.status.in {
+		opacity: 1;
+		transition: opacity var(--fade-in-ms) ease;
+	}
+	.status.out {
+		opacity: 0;
+		transition: opacity var(--fade-out-ms) ease;
 	}
 </style>
