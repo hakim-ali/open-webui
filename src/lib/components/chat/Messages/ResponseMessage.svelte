@@ -164,9 +164,8 @@
 	let initialLoadingTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Web search progression timing
-	let webSearchStartTime: number | null = null;
 	let webSearchStatus = '';
-	let webSearchTimer: ReturnType<typeof setTimeout> | null = null;
+	let webSearchStage = 0; // 0: none, 1: just a sec, 2: searching, 3: results
 
 	const FADE_OUT_MS = 800;
 	const GAP_NEXT_MS = 120;
@@ -203,47 +202,28 @@
 			message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]
 		).at(-1);
 		if (currentStatus?.action === 'web_search') {
-			if (!webSearchStartTime) {
-				webSearchStartTime = Date.now();
-				webSearchStatus = 'Just a sec...';
+			// Monotonic stage progression to avoid duplicates/regressions
+			const desc = currentStatus?.description ?? '';
+			const nextStage =
+				desc.includes('Searched') && desc.includes('Shortlisted')
+					? 3
+					: desc === 'Searching on web...'
+						? 2
+						: desc === 'Just a sec...'
+							? 1
+							: 2; // default mid stage for other strings
 
-				// Clear any existing timer
-				if (webSearchTimer) {
-					clearTimeout(webSearchTimer);
+			if (nextStage > webSearchStage) {
+				webSearchStage = nextStage;
+				webSearchStatus = desc;
+			} else if (nextStage === webSearchStage) {
+				// Allow updates within the same stage only for final results to refresh counts
+				if (nextStage === 3 && desc && desc !== webSearchStatus) {
+					webSearchStatus = desc;
 				}
-
-				// Set timer to transition to "Searching on web..." after 2 seconds
-				webSearchTimer = setTimeout(() => {
-					if (webSearchStatus === 'Just a sec...') {
-						webSearchStatus = 'Searching on web...';
-					}
-				}, 2000);
-			}
-
-			// Update status based on description
-			if (currentStatus?.description === 'Just a sec...') {
-				webSearchStatus = 'Just a sec...';
-			} else if (currentStatus?.description === 'Searching on web...') {
-				webSearchStatus = 'Searching on web...';
-			} else if (
-				currentStatus?.description?.includes('Searched') &&
-				currentStatus?.description?.includes('Shortlisted')
-			) {
-				webSearchStatus = currentStatus.description;
-				// Clear timer when search is complete
-				if (webSearchTimer) {
-					clearTimeout(webSearchTimer);
-					webSearchTimer = null;
-				}
-			}
+			} // ignore regressions
 		} else {
-			// Clear timer if not web search
-			if (webSearchTimer) {
-				clearTimeout(webSearchTimer);
-				webSearchTimer = null;
-			}
-			webSearchStartTime = null;
-			webSearchStatus = '';
+			// Do not forcibly reset to avoid flicker; rendering is scoped by action above
 		}
 	}
 
@@ -279,9 +259,6 @@
 
 	// Cleanup timers on component destroy
 	onDestroy(() => {
-		if (webSearchTimer) {
-			clearTimeout(webSearchTimer);
-		}
 		if (webSearchFadeHandle) {
 			clearTimeout(webSearchFadeHandle);
 		}
