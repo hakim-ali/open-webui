@@ -1735,6 +1735,8 @@
 																showNewChatPopup = true;
 																return;
 															}
+															selectedModelName = toolOption.attachFiles;
+															attachFileEnabled = true;
 															filesInputElement.click();
 														}}
 														class="flex items-center px-[12px] gap-[4px] py-[8px] border
@@ -1771,21 +1773,25 @@
 														<Filter />
 														{$mobile ? '' : $i18n.t('Tools')}
 													</button>
-													{#if selectedModelName !== '' && selectedModelName !== toolOption.attachFiles}
-														<div
-															class="px-[8px] font-Inter_Medium flex items-center gap-[8px] text-[14px] leading-[22px] text-typography-titles"
-														>
-															{$i18n.t(selectedModelName)}
-															{#if !isStreamingInProgress && activatedChatMode !== toolOption.attachFiles && activatedChatMode !== toolOption.govKnowledge}
-																<button
-																	data-filter-toggle
-																	class="flex items-center"
-																	on:click={(e) => clearFilterToggle(e)}
-																>
-																	<Cross />
-																</button>
-															{/if}
-														</div>
+													{#if selectedModelName !== ''}
+														{#if selectedModelName === toolOption.attachFiles || activatedChatMode === toolOption.attachFiles}
+															<span />
+														{:else}
+															<div
+																class="px-[8px] font-Inter_Medium flex items-center gap-[8px] text-[14px] leading-[22px] text-typography-titles"
+															>
+																{$i18n.t(selectedModelName)}
+																{#if !isStreamingInProgress && activatedChatMode !== toolOption.attachFiles && activatedChatMode !== toolOption.govKnowledge}
+																	<button
+																		data-filter-toggle
+																		class="flex items-center"
+																		on:click={(e) => clearFilterToggle(e)}
+																	>
+																		<Cross />
+																	</button>
+																{/if}
+															</div>
+														{/if}
 													{/if}
 												</div>
 
