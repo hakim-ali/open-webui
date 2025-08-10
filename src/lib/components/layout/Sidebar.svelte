@@ -1209,7 +1209,9 @@
 							</div>
 						</div>
 						<div
-							class="scroll-to-top-box fixed hidden bottom-[130px] left-[0] pt-[36px] flex justify-center w-[300px] h-[108px] shadow-bg"
+							class="scroll-to-top-box fixed bottom-[130px] {$isRTL
+								? 'right-[0]'
+								: 'left-[0]'} pt-[36px] flex justify-center w-[300px] h-[108px] shadow-bg"
 						>
 							<button
 								class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
@@ -1232,7 +1234,7 @@
 						goto('/knowledgeRepository');
 					}}
 				>
-					<div class="flex">
+					<div class="flex pl-2 gap-2">
 						<div class=" self-center {$showSidebar ? 'me-[8px]' : ''}">
 							<GovKno />
 						</div>

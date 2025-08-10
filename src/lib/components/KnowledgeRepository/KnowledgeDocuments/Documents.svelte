@@ -5,11 +5,12 @@
 	import ChevronUp from '$lib/components/icons/ChevronUp.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
-	import FolderIcon from '$lib/components/icons/FolderIcon.svelte';
 	import GovKno from '$lib/components/icons/GovKno.svelte';
 	import KnoDocs from '$lib/components/icons/KnoDocs.svelte';
 	import { goto } from '$app/navigation';
 	import Info from '$lib/components/icons/Info.svelte';
+	import Paper from '$lib/components/icons/Paper.svelte';
+	import Collapsible from '$lib/components/common/Collapsible.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -25,7 +26,10 @@
 			loading = false;
 		}
 	});
-
+	let openStates = Array(documents.length).fill(false);
+	function toggle(index) {
+		openStates = openStates.map((_, i) => (i === index ? !openStates[i] : false));
+	}
 	// Sorting state
 	let orderBy: string = 'title';
 	let direction: 'asc' | 'desc' = 'asc';
@@ -65,7 +69,7 @@
 		{$i18n?.t('Gov Knowledge Repository') || 'Gov Knowledge Repository'}
 	</div>
 </div>
-<div class="mb-5 gap-2 flex flex-row">
+<div class="mb-5 flex flex-row">
 	<div
 		class="flex md:self-center text-sm text-gray-500 font-normal px-0.5 cursor-pointer"
 		on:click={() => goto('/knowledgeRepository')}
@@ -91,7 +95,7 @@
 	>
 		{#if $mobile}
 			<table
-				class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
+				class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
 			>
 				<thead
 					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 -translate-y-0.5"
@@ -102,7 +106,8 @@
 							class="px-3 py-1.5 cursor-pointer select-none"
 							on:click={() => setSortKey('title')}
 						>
-							<div class="flex gap-1.5 items-center capitalize">
+							<div class="flex gap-1.5 items-center ml-2 gap-3 capitalize">
+								<Paper />
 								{$i18n?.t('Name') || 'Name'}
 								{#if orderBy === 'title'}
 									<span class="font-normal">
@@ -121,29 +126,46 @@
 						</th>
 					</tr>
 				</thead>
-				<tbody class="">
-					{#each sortedDocuments as document (document.title)}
+				<tbody class="w-full">
+					{#each sortedDocuments as document, i (document.title)}
 						<tr
 							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
 						>
-							<td class="py-3 pl-3 flex flex-col">
-								<div class="flex flex-col items-start gap-0.5 h-full">
-									<div class="flex flex-col h-full">
-										<Tooltip
-											content={$isRTL ? document.summaryAr : document.summaryEn}
-											placement="bottom"
-										>
-											<div
-												class="font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4"
-											>
-												<KnoDocs />
-												<div class="truncate max-w-[300px]">
-													{document.title}
-												</div>
+							<td class="py-3 pl-3">
+								<!--							<div class="flex flex-col gap-0.5 h-full w-full">-->
+								<Collapsible bind:open={openStates[i]} className="w-full space-y-1 gap-4">
+									<!-- Header: Flex row for title + chevron -->
+									<div
+										class="flex items-center justify-between w-full font-semibold text-gray-600 dark:text-gray-400 gap-1"
+									>
+										<!-- Left: Icon + Title -->
+										<div class="flex items-center space-x-2 truncate">
+											<KnoDocs />
+											<div class="truncate max-w-[250px]">
+												{document.title}
 											</div>
-										</Tooltip>
+										</div>
+
+										<!-- Right: Chevron -->
+										<div class="flex items-center">
+											{#if openStates[i]}
+												<ChevronUp strokeWidth="3.5" className="size-3.5" />
+											{:else}
+												<ChevronDown strokeWidth="3.5" className="size-3.5" />
+											{/if}
+										</div>
 									</div>
-								</div>
+
+									<!-- Collapsible content -->
+									<div slot="content">
+										<div
+											class="mt-2 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center dark:bg-gray-900 rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
+										>
+											{$isRTL ? document.summaryAr : document.summaryEn}
+										</div>
+									</div>
+								</Collapsible>
+								<!--							</div>-->
 							</td>
 						</tr>
 					{/each}
@@ -162,7 +184,8 @@
 							class="px-3 py-1.5 cursor-pointer select-none"
 							on:click={() => setSortKey('title')}
 						>
-							<div class="flex gap-1.5 items-center capitalize">
+							<div class="flex gap-1.5 items-center ml-2.5 gap-5 capitalize">
+								<Paper />
 								{$i18n?.t('Name') || 'Name'}
 								{#if orderBy === 'title'}
 									<span class="font-normal">

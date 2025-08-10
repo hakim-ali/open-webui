@@ -15,6 +15,7 @@
 	import { goto } from '$app/navigation';
 	import { documentsArray, mobile } from '$lib/stores';
 	import KnoFolder from '../icons/knoFolder.svelte';
+	import Paper from '$lib/components/icons/Paper.svelte';
 
 	// Types for the government departments data
 	type Document = {
@@ -74,7 +75,7 @@
 		goto(`/knowledgeRepository/${repository.id}`);
 	};
 	let page = 1;
-	$: paginatedRepositories = sortedRepositories.slice((page - 1) * 10, page * 10);
+	$: paginatedRepositories = repositories.slice((page - 1) * 10, page * 10);
 
 	let orderBy: string = 'lastModified';
 	let direction: 'asc' | 'desc' = 'desc';
@@ -134,7 +135,7 @@
 	</div>
 {:else if error}
 	<div class="text-center text-sm text-red-500 dark:text-red-400 py-8">
-		{error}
+		{$i18n?.t(error)}
 	</div>
 {:else}
 	<div
@@ -157,7 +158,8 @@
 							class="px-3 py-1.5 cursor-pointer select-none w-1/3 p-2 text-left"
 							on:click={() => setSortKey('name')}
 						>
-							<div class="flex gap-1.5 items-center ml-2 capitalize">
+							<div class="flex gap-1.5 items-center ml-3 capitalize {$mobile ? 'gap-2' : 'gap-6'}">
+								<Paper />
 								{$i18n?.t('Name') || 'Name'}
 								{#if orderBy === 'name'}
 									<span class="font-normal">
@@ -211,7 +213,9 @@
 								<div class="flex flex-col items-start gap-0.5 h-full">
 									<div class="flex flex-col h-full">
 										<div
-											class="tex-[14px] text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4"
+											class="tex-[14px] text-gray-600 dark:text-gray-400 flex-1 flex items-center {$mobile
+												? 'gap-2'
+												: 'gap-4'}"
 										>
 											<KnoFolder />
 											{$isRTL ? repository.nameAr : repository.name}
