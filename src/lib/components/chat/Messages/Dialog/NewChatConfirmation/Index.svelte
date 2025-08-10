@@ -10,8 +10,10 @@
 	import { fade } from 'svelte/transition';
 	import { flyAndScale } from '$lib/utils/transitions';
 	import { marked } from 'marked';
+	import GlobeAlt from '$lib/components/icons/GlobeAlt.svelte';
+	import MaterialIcon from '$lib/components/common/MaterialIcon.svelte';
+	import GovKno from '$lib/components/icons/GovKno.svelte';
 
-	export let title = '';
 	export let message = '';
 
 	export let onConfirm = () => {};
@@ -19,6 +21,8 @@
 	export let input = false;
 	export let inputPlaceholder = '';
 	export let inputValue = '';
+	export let option = '';
+	export let options = {};
 
 	export let show = false;
 
@@ -98,13 +102,18 @@
 		>
 			<div class="flex flex-col">
 				<div
-					class="pb-[20px] text-neutrals-800 text-[18px] leading-[26px] font-bold dark:text-gray-200"
+					class="flex gap-[10px] items-center pb-[20px] text-neutrals-800 text-[18px] leading-[26px] font-bold dark:text-gray-200"
 				>
-					{#if title !== ''}
-						{title}
-					{:else}
-						{$i18n.t('Confirm your action')}
+					{#if option === options.webSearch}
+						<GlobeAlt className="size-6" strokeWidth="1.75" />
 					{/if}
+					{#if option === options.attachFiles}
+						<MaterialIcon name="attach_file" />
+					{/if}
+					{#if option === options.govKnowledge}
+						<GovKno />
+					{/if}
+					{`Want to switch to ${option}?`}
 				</div>
 
 				<slot>

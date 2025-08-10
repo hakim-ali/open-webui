@@ -143,6 +143,8 @@
 	let files = [];
 	let params = {};
 
+	let activatedChatMode = '';
+
 	$: if (chatIdProp) {
 		(async () => {
 			loading = true;
@@ -2024,6 +2026,10 @@
 			}
 		}
 	};
+
+	const activateChatMode = (chatMode: string): void => {
+		activatedChatMode = chatMode;
+	};
 </script>
 
 <svelte:head>
@@ -2147,6 +2153,7 @@
 											bind:codeInterpreterEnabled
 											bind:webSearchEnabled
 											bind:atSelectedModel
+											bind:activatedChatMode
 											toolServers={$toolServers}
 											transparentBackground={$settings?.backgroundImageUrl ?? false}
 											{stopResponse}
@@ -2175,14 +2182,24 @@
 													await uploadGoogleDriveFile(data);
 												}
 											}}
+											on:activateChatMode={(e) => {
+												activateChatMode(e.detail);
+											}}
 											on:submit={async (e) => {
-												if (e.detail || files.length > 0) {
+												// TODO: Refactoring required
+												const isObject = typeof e.detail === 'object' && e.detail !== null;
+												const prompt = isObject ? (e.detail.prompt ?? '') : (e.detail ?? '');
+												const chatMode = isObject ? (e.detail.chatMode ?? '') : '';
+
+												if (prompt || files.length > 0) {
 													await tick();
 													submitPrompt(
 														($settings?.richTextInput ?? true)
-															? e.detail.replaceAll('\n\n', '\n')
-															: e.detail
+															? prompt.replaceAll('\n\n', '\n')
+															: prompt
 													);
+
+													activateChatMode(chatMode);
 												}
 											}}
 										/>
@@ -2202,6 +2219,7 @@
 										bind:codeInterpreterEnabled
 										bind:webSearchEnabled
 										bind:atSelectedModel
+										bind:activatedChatMode
 										transparentBackground={$settings?.backgroundImageUrl ?? false}
 										toolServers={$toolServers}
 										{stopResponse}
@@ -2215,14 +2233,24 @@
 												await uploadYoutubeTranscription(data);
 											}
 										}}
+										on:activateChatMode={(e) => {
+											activateChatMode(e.detail);
+										}}
 										on:submit={async (e) => {
-											if (e.detail || files.length > 0) {
+											// TODO: Refactoring required
+											const isObject = typeof e.detail === 'object' && e.detail !== null;
+											const prompt = isObject ? (e.detail.prompt ?? '') : (e.detail ?? '');
+											const chatMode = isObject ? (e.detail.chatMode ?? '') : '';
+
+											if (prompt || files.length > 0) {
 												await tick();
 												submitPrompt(
 													($settings?.richTextInput ?? true)
-														? e.detail.replaceAll('\n\n', '\n')
-														: e.detail
+														? prompt.replaceAll('\n\n', '\n')
+														: prompt
 												);
+
+												activateChatMode(chatMode);
 											}
 										}}
 									/>

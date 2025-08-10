@@ -77,7 +77,11 @@
 		: 'w-full'}"
 >
 	<p
-		class="text-xl font-bold bg-gradient-to-r from-[#9ab5fb] to-[#4476f9] bg-clip-text text-transparent px-[20px] py-[18px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0"
+		class="text-xl {$mobile
+			? ''
+			: 'ml-[40px]'} font-bold bg-gradient-to-r from-[#9ab5fb] to-[#4476f9] bg-clip-text text-transparent
+				px-[20px] py-[18px] absolute left-1/2 -translate-x-1/2
+				md:static md:transform-none"
 	>
 		GovGPT
 	</p>

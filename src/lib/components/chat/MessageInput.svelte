@@ -74,6 +74,7 @@
 	import Info from '../icons/Info.svelte';
 	import { validateDocuments } from '$lib/utils/documents';
 	import { DOCUMENT_TYPES } from '$lib/constants/documents';
+	import NewChatConfirmation from '$lib/components/chat/Messages/Dialog/NewChatConfirmation/Index.svelte';
 	import MaterialIcon from '../common/MaterialIcon.svelte';
 
 	const i18n = getContext('i18n');
@@ -91,6 +92,7 @@
 
 	let selectedModelIds = [];
 	$: selectedModelIds = atSelectedModel !== undefined ? [atSelectedModel.id] : selectedModels;
+	$: showNewChatPopup = false;
 	export let history;
 	export let taskIds = null;
 
@@ -262,8 +264,14 @@
 			return toolOption.govKnowledge;
 		}
 
-		if (attachFileEnabled) {
-			console.log('Returning: Attach Files');
+		if (
+			attachFileEnabled ||
+			files.length > 0 ||
+			(history?.messages &&
+				Object.values(history.messages).some(
+					(message: any) => message.files && message.files.length > 0
+				))
+		) {
 			return toolOption.attachFiles;
 		}
 
@@ -810,10 +818,42 @@
 	$: isStreamingInProgress =
 		(taskIds && taskIds.length > 0) ||
 		(history.currentId && history.messages[history.currentId]?.done != true);
+
+	export let activatedChatMode = '';
+	let chatOptionClicked = '';
+
+	$: hasFilesInHistory =
+		history.currentId &&
+		history.messages &&
+		attachFileEnabled &&
+		Object.values(history.messages).some((message) => message.files && message.files.length > 0);
+
+	$: if (hasFilesInHistory) {
+		dispatch('activateChatMode', toolOption.attachFiles);
+	}
 </script>
 
 <FilesOverlay show={dragged} />
 <ToolServersModal bind:show={showTools} {selectedToolIds} />
+<NewChatConfirmation
+	option={chatOptionClicked}
+	options={toolOption}
+	bind:show={showNewChatPopup}
+	on:confirm={() => {
+		// go to new chat
+		selectedModelName = '';
+		webSearchEnabled = false;
+		govBtnEnable = false;
+		attachFileEnabled = false;
+		dispatch('activateChatMode', '');
+		goto('/');
+	}}
+>
+	<div class="text-sm text-gray-500">
+		{chatOptionClicked} is disabled when {activatedChatMode} is activated. Start a new chat to use this
+		feature.
+	</div>
+</NewChatConfirmation>
 
 {#if loaded}
 	<div class="w-full font-primary">
@@ -920,6 +960,9 @@
 						hidden
 						multiple
 						on:change={async () => {
+							if (activatedChatMode === toolOption.govKnowledge) {
+								return;
+							}
 							if (inputFiles && inputFiles.length > 0) {
 								const _inputFiles = Array.from(inputFiles);
 								inputFilesHandler(_inputFiles);
@@ -957,12 +1000,12 @@
 					{:else}
 						<form
 							class="w-full flex flex-col"
-							on:submit|preventDefault={() => {
+							on:submit|preventDefault={async () => {
 								// check if selectedModels support image input
-								dispatch('submit', prompt);
+								dispatch('submit', { prompt, chatMode: selectedModelName });
 							}}
 						>
-							{#if history.currentId && history.messages && attachFileEnabled && Object.values(history.messages).some((message) => message.files && message.files.length > 0)}
+							{#if hasFilesInHistory}
 								<div
 									class="text-left rounded-tl-[12px] flex items-center justify-between rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
 								>
@@ -978,7 +1021,8 @@
 										<MaterialIcon name="add" size="1rem" />
 										{$i18n.t('Add Files')}
 									</button>
-								</div>{/if}
+								</div>
+							{/if}
 							{#if govBtnEnable}<div
 									class="text-left rounded-tl-[12px] rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
 								>
@@ -992,7 +1036,8 @@
 								{#if files.length > 0}
 									<div
 										dir={$isRTL ? 'rtl' : 'ltr'}
-										class="mb-[24px] flex items-center flex-wrap gap-[8px]">
+										class="mb-[24px] flex items-center flex-wrap gap-[8px]"
+									>
 										{#each files as file, fileIdx}
 											{#if file.type === 'image'}
 												<div class=" relative group">
@@ -1683,13 +1728,20 @@
 												{#if showFileUploadButton}
 													<button
 														disabled={isStreamingInProgress}
-														on:click={() => {
+														on:click={(e) => {
+															e.preventDefault();
+															chatOptionClicked = toolOption.attachFiles;
+															if (activatedChatMode === toolOption.govKnowledge) {
+																showNewChatPopup = true;
+																return;
+															}
 															filesInputElement.click();
 														}}
 														class="flex items-center px-[12px] gap-[4px] py-[8px] border
 															border-[#E5EBF3] bg-[#FBFCFC] dark:border-[#2D3642] dark:bg-[#010E1D]
 															text-typography-titles text-[16px] leading-[22px] rounded-full
-															disabled:opacity-50 disabled:cursor-not-allowed"
+															disabled:opacity-50 disabled:cursor-not-allowed
+															{activatedChatMode === toolOption.govKnowledge ? 'opacity-50' : ''}"
 													>
 														<MaterialIcon name="attach_file" />
 														{#if fileCount > 0}
@@ -1724,7 +1776,7 @@
 															class="px-[8px] font-Inter_Medium flex items-center gap-[8px] text-[14px] leading-[22px] text-typography-titles"
 														>
 															{$i18n.t(selectedModelName)}
-															{#if !isStreamingInProgress}
+															{#if !isStreamingInProgress && activatedChatMode !== toolOption.attachFiles && activatedChatMode !== toolOption.govKnowledge}
 																<button
 																	data-filter-toggle
 																	class="flex items-center"
@@ -1746,14 +1798,25 @@
 													>
 														{#if showGovKnoButton}
 															<button
-																disabled={attachFileEnabled && files.length !== 0}
-																on:click|preventDefault={() => saveGovKnoModel()}
+																on:click|preventDefault={() => {
+																	chatOptionClicked = toolOption.govKnowledge;
+																	if (activatedChatMode === toolOption.govKnowledge) {
+																		return;
+																	}
+
+																	if (activatedChatMode === toolOption.attachFiles) {
+																		showNewChatPopup = true;
+																		return;
+																	}
+
+																	saveGovKnoModel();
+																}}
 																type="button"
 																class="govkno-btn flex items-center justify-between w-full p-[8px] hover:bg-gradient-bg-2 text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {govBtnEnable
 																	? ' bg-gradient-bg-2 dark:text-sky-300 dark:bg-sky-200/5'
-																	: 'text-gray-600 dark:text-gray-300 '}{attachFileEnabled &&
-																files.length !== 0
-																	? 'disabled:opacity-50 disabled:cursor-not-allowed'
+																	: 'text-gray-600 dark:text-gray-300 '}{activatedChatMode ===
+																toolOption.attachFiles
+																	? 'opacity-50'
 																	: ''}"
 															>
 																<div
@@ -1771,22 +1834,36 @@
 														{#if showWebSearchButton}
 															<button
 																on:click|preventDefault={() => {
+																	chatOptionClicked = toolOption.webSearch;
+																	if (
+																		activatedChatMode === toolOption.attachFiles ||
+																		activatedChatMode === toolOption.govKnowledge
+																	) {
+																		showNewChatPopup = true;
+																		return;
+																	}
+
 																	webSearchEnabled = !webSearchEnabled;
 																	showGovKnoWebSearchToggle = false;
 																	govBtnEnable = false;
 																	attachFileEnabled = false;
 																}}
 																type="button"
-																class="flex items-center justify-between w-full p-[8px] hover:bg-gradient-bg-2 text-typography-titles text-[14px] leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800 {webSearchEnabled ||
-																($settings?.webSearch ?? false) === 'always'
+																class="flex items-center justify-between w-full p-[8px] hover:bg-gradient-bg-2 text-typography-titles text-[14px]
+																leading-[22px] transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden dark:hover:bg-gray-800
+																{activatedChatMode === toolOption.attachFiles || activatedChatMode === toolOption.govKnowledge
+																	? 'opacity-50'
+																	: ''}
+																{webSearchEnabled || ($settings?.webSearch ?? false) === 'always'
 																	? 'bg-gradient-bg-2 dark:text-sky-300  dark:bg-sky-200/5'
 																	: 'text-gray-600 dark:text-white '}"
 															>
 																<div class="flex items-center justify-center gap-[8px]">
-																	<GlobeAlt className="size-4" strokeWidth="1.75" />
+																	<GlobeAlt className="size-5" strokeWidth="1.75" />
 																	<span
 																		class="font-heading dark:text-white text-left whitespace-nowrap"
-																		>{$i18n.t('Web Search')}</span
+																	>
+																		{$i18n.t('Web Search')}</span
 																	>
 																</div>
 															</button>
