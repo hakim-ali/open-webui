@@ -937,21 +937,25 @@
 								class="w-full text-[16px] text-typography-titles leading-[24px] flex flex-col relative"
 								id="response-content-container"
 							>
-								{#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
-									<div class="flex flex-col justify-center -space-y-0.5 py-4">
-										<div
-											class="text-base line-clamp-1 text-wrap fade-in-animation shimmer-animation"
-											style="color: #666D7A"
-										>
-											{#if showJustASecond}
-												{$i18n.t('Just a sec...')}
-											{:else if history?.messages && Object.values(history.messages).some((msg) => msg?.files && msg.files.length > 0)}
-												{$i18n.t('Processing documents...')}
-											{:else}
-												{$i18n.t('Just a sec...')}
-											{/if}
-										</div>
-									</div>
+                                {#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
+                                    <div class="flex flex-col justify-center -space-y-0.5 py-4">
+                                        {#key showJustASecond}
+                                            <div
+                                                class="text-base line-clamp-1 text-wrap shimmer-animation"
+                                                style="color: #666D7A"
+                                                in:fade={{ duration: 150 }}
+                                                out:fade={{ duration: 300 }}
+                                            >
+                                                {#if showJustASecond}
+                                                    {$i18n.t('Just a sec...')}
+                                                {:else if history?.messages && Object.values(history.messages).some((msg) => msg?.files && msg.files.length > 0)}
+                                                    {$i18n.t('Processing documents...')}
+                                                {:else}
+                                                    {$i18n.t('Just a sec...')}
+                                                {/if}
+                                            </div>
+                                        {/key}
+                                    </div>
 								{:else if message.content && message.error !== true}
 									<!-- always show message contents even if there's an error -->
 									<!-- unless message.error === true which is legacy error handling, where the error message is stored in message.content -->
@@ -1665,7 +1669,8 @@
 	}
 
 	.shimmer-animation {
-		background: linear-gradient(90deg, #666d7a 25%, #9333ea 50%, #666d7a 75%);
+		/* Dark gray shimmer */
+		background: linear-gradient(90deg, #6b7280 25%, #374151 50%, #6b7280 75%);
 		background-size: 200% 100%;
 		background-clip: text;
 		-webkit-background-clip: text;

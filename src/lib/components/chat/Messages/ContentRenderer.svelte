@@ -39,11 +39,11 @@
 	let collectedLinks = [];
 	let showExternalModal = false;
 	let externalUrl = '';
-	
+
 	// Citation numbering system
 	let citationMap = new Map(); // URL -> citation number
 	let citationCounter = 0;
-	
+
 	// Function to get or assign citation number
 	function getCitationNumber(url) {
 		// Normalize URL for consistent numbering
@@ -57,9 +57,9 @@
 			normalized = normalized.replace(/^http:\/\//, 'https://');
 			return normalized;
 		}
-		
+
 		const normalizedUrl = normalizeUrl(url);
-		
+
 		if (citationMap.has(normalizedUrl)) {
 			return citationMap.get(normalizedUrl);
 		} else {
@@ -82,46 +82,46 @@
 		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 		const urlRegex = /https?:\/\/[^\s]+/g;
 		const seenUrls = new Set();
-		
+
 		// Function to normalize URL for comparison
 		function normalizeUrl(url) {
 			let normalized = url.toLowerCase().trim();
-			
+
 			// Remove multiple trailing punctuation marks and whitespace
 			normalized = normalized.replace(/[\s.,;!?)\]}>]+$/, '');
-			
+
 			// Remove common URL parameters that don't affect the core URL
 			normalized = normalized.replace(/\?.*$/, '');
 			normalized = normalized.replace(/#.*$/, '');
-			
+
 			// Remove trailing slash after cleaning parameters
 			normalized = normalized.replace(/\/$/, '');
-			
+
 			// Remove www prefix for better deduplication
 			normalized = normalized.replace(/^https?:\/\/www\./, 'https://');
-			
+
 			// Ensure protocol consistency (prefer https)
 			normalized = normalized.replace(/^http:\/\//, 'https://');
-			
+
 			return normalized;
 		}
-		
+
 		// Collect markdown links first
 		let match;
 		while ((match = linkRegex.exec(content)) !== null) {
 			let href = match[2].trim();
 			const text = match[1].trim();
-			
+
 			// Clean the href from trailing punctuation and whitespace
 			href = href.replace(/[\s.,;!?)\]}>]+$/, '');
-			
+
 			// Skip invalid URLs
 			if (!href || !href.match(/^https?:\/\//)) {
 				continue;
 			}
-			
+
 			const normalizedUrl = normalizeUrl(href);
-			
+
 			if (!seenUrls.has(normalizedUrl)) {
 				seenUrls.add(normalizedUrl);
 				links.push({
@@ -131,21 +131,21 @@
 				});
 			}
 		}
-		
+
 		// Collect plain URLs (skip if already collected as markdown link)
 		while ((match = urlRegex.exec(content)) !== null) {
 			let url = match[0].trim();
-			
+
 			// Clean the URL from trailing punctuation and whitespace
 			url = url.replace(/[\s.,;!?)\]}>]+$/, '');
-			
+
 			// Skip invalid URLs
 			if (!url || !url.match(/^https?:\/\//)) {
 				continue;
 			}
-			
+
 			const normalizedUrl = normalizeUrl(url);
-			
+
 			// Skip if already collected as markdown link or plain URL
 			if (!seenUrls.has(normalizedUrl)) {
 				seenUrls.add(normalizedUrl);
@@ -156,11 +156,11 @@
 				});
 			}
 		}
-		
+
 		// Final deduplication pass to ensure absolute uniqueness
 		const finalUniqueLinks = [];
 		const finalSeenUrls = new Set();
-		
+
 		links.forEach((link) => {
 			const normalizedUrl = normalizeUrl(link.href);
 			if (!finalSeenUrls.has(normalizedUrl)) {
@@ -168,7 +168,7 @@
 				finalUniqueLinks.push(link);
 			}
 		});
-		
+
 		return finalUniqueLinks;
 	}
 
@@ -278,7 +278,7 @@
 			{model}
 			{save}
 			{preview}
-			getCitationNumber={getCitationNumber}
+			{getCitationNumber}
 			sourceIds={(sources ?? []).reduce((acc, s) => {
 				let ids = [];
 				s.document.forEach((document, index) => {
@@ -337,8 +337,8 @@
 
 	{#if collectedLinks.length > 0}
 		<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-			<button 
-				class="inline-flex items-center gap-2 px-3 py-2 max-h-10 rounded-full transition-colors bg-[#E5EBF3] text-[#23282E] hover:bg-[#D1D9E6] cursor-pointer"
+			<button
+				class="inline-flex items-center gap-2 px-2 py-0 max-h-10 rounded-full transition-colors bg-[#E5EBF3] text-[#23282E] hover:bg-[#D1D9E6] cursor-pointer"
 				on:click={() => {
 					sourcesLinksMessageId.set(id);
 					showSourcesLinks.set(true);
