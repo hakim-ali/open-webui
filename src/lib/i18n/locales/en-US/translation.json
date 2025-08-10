@@ -1557,7 +1557,7 @@
 	"Web Search Engine": "Web Search Engine",
 	"Web Search in Chat": "Web Search in Chat",
 	"Web Search Query Generation": "Web Search Query Generation",
-	"Just a sec...": "Just a sec...",
+	"Just a sec...": "⏳ Just a sec...",
 	"Searching on web...": "Searching on web...",
 	"Searched {{count}} sites • Shortlisted {{shortlisted}} sites": "Searched {{count}} sites • Shortlisted {{shortlisted}} sites",
 	"No search query generated": "No search query generated",

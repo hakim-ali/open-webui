@@ -386,7 +386,7 @@
 						</h3>
 					</div>
 					<button
-						class="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+						class="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-200"
 						on:click={() => {
 							showSourcesLinks.set(false);
 							sourcesLinksMessageId.set(null);
@@ -403,6 +403,15 @@
 							<!-- Citations -->
 							{#each extractedLinks as link, index}
 								<div class="flex items-start gap-3 group">
+									<!-- Citation Number -->
+									<div class="flex-shrink-0 ms-2">
+										<span
+											class="inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full border border-blue-200 dark:border-blue-700"
+										>
+											{link.citationNumber}
+										</span>
+									</div>
+
 									<!-- Favicon -->
 									<div
 										class="flex-shrink-0 w-6 h-6 rounded-full overflow-hidden bg-transparent flex items-center justify-center"
@@ -418,15 +427,6 @@
 												}
 											}}
 										/>
-									</div>
-
-									<!-- Citation Number -->
-									<div class="flex-shrink-0 ms-2">
-										<span
-											class="inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md border border-blue-200 dark:border-blue-700"
-										>
-											{link.citationNumber}
-										</span>
 									</div>
 
 									<!-- Link Content -->

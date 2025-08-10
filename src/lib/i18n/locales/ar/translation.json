@@ -1550,7 +1550,7 @@
 	"Web Search Engine": "محرك بحث الويب",
 	"Web Search in Chat": "بحث ويب داخل الدردشة",
 	"Web Search Query Generation": "توليد استعلام بحث ويب",
-	"Just a sec...": "لحظة واحدة...",
+	"Just a sec...": "⏳ لحظة واحدة...",
 	"Searching on web...": "جاري البحث في الويب...",
 	"Searched {{count}} sites • Shortlisted {{shortlisted}} sites": "تم البحث في {{count}} موقع • تم اختيار {{shortlisted}} مواقع",
 	"No search query generated": "لم يتم توليد استعلام بحث",
