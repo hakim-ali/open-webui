@@ -36,7 +36,8 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import RateComment from './RateComment.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
-	import WebSearchResults from './ResponseMessage/WebSearchResults.svelte';
+import WebSearchResults from './ResponseMessage/WebSearchResults.svelte';
+import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
 	import Sparkles from '$lib/components/icons/Sparkles.svelte';
 
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -167,11 +168,7 @@
 	let webSearchStatus = '';
 	let webSearchStage = 0; // 0: none, 1: just a sec, 2: searching, 3: results
 
-	const FADE_OUT_MS = 800;
-	const GAP_NEXT_MS = 120;
-	let webSearchDisplayText = '';
-	let webSearchFadeState: 'in' | 'out' = 'out';
-	let webSearchFadeHandle: ReturnType<typeof setTimeout> | null = null;
+    // visual handling moved to WebSearchStatus component
 
 	// Handle initial loading progression: "Just a sec..." -> "Processing documents..."
 	$: if (
@@ -227,41 +224,11 @@
 		}
 	}
 
-	// Drive visual fade-out/fade-in around webSearchStatus changes
-	$: {
-		// When status text changes, transition out then in
-		if (webSearchStatus && webSearchStatus !== webSearchDisplayText) {
-			if (!webSearchDisplayText) {
-				// First-time show
-				webSearchDisplayText = webSearchStatus;
-				webSearchFadeState = 'in';
-			} else {
-				// Subsequent changes: fade out then swap text and fade in
-				webSearchFadeState = 'out';
-				if (webSearchFadeHandle) clearTimeout(webSearchFadeHandle);
-				const nextText = webSearchStatus;
-				webSearchFadeHandle = setTimeout(() => {
-					webSearchDisplayText = nextText;
-					webSearchFadeState = 'in';
-				}, FADE_OUT_MS + GAP_NEXT_MS);
-			}
-		}
-		// When web search clears, fade out
-		if (!webSearchStatus && webSearchDisplayText) {
-			webSearchFadeState = 'out';
-			if (webSearchFadeHandle) {
-				clearTimeout(webSearchFadeHandle);
-				webSearchFadeHandle = null;
-			}
-			webSearchDisplayText = '';
-		}
-	}
+    // visual fade/shimmer handled inside WebSearchStatus
 
 	// Cleanup timers on component destroy
 	onDestroy(() => {
-		if (webSearchFadeHandle) {
-			clearTimeout(webSearchFadeHandle);
-		}
+        // no local visual timers
 		if (initialLoadingTimer) {
 			clearTimeout(initialLoadingTimer);
 		}
@@ -781,39 +748,9 @@
 											</WebSearchResults>
 										{:else}
 											<!-- Web search status without URLs - shimmer + fade like reference -->
-											<div class="flex flex-col justify-center -space-y-0.5">
-												{#if webSearchDisplayText}
-													<div
-														class="status {webSearchFadeState}"
-														aria-live="polite"
-														aria-atomic="true"
-													>
-														<span
-															class="shimmer-text"
-															style="color: {status?.description?.includes('Searched') &&
-															status?.description?.includes('Shortlisted')
-																? '#23282E'
-																: '#666D7A'}"
-														>
-															{#if webSearchDisplayText === 'Just a sec...'}
-																{$i18n.t('Just a sec...')}
-															{:else if webSearchDisplayText === 'Searching on web...'}
-																{$i18n.t('Searching on web...')}
-															{:else if status?.description?.includes('Searched') && status?.description?.includes('Shortlisted')}
-																{$i18n.t(
-																	'Searched {{count}} sites • Shortlisted {{shortlisted}} sites',
-																	{
-																		count: status?.urls?.length || 0,
-																		shortlisted: Math.min(status?.urls?.length || 0, 5)
-																	}
-																)}
-															{:else}
-																{webSearchDisplayText}
-															{/if}
-														</span>
-													</div>
-												{/if}
-											</div>
+                                            <div class="flex flex-col justify-center -space-y-0.5">
+                                                <WebSearchLoading text={webSearchStatus} stage={webSearchStage} />
+                                            </div>
 										{/if}
 									{:else if status?.action === 'knowledge_search'}
 										<div class="flex flex-col justify-center -space-y-0.5">
