@@ -382,6 +382,7 @@
 
 	// Add and remove event listener
 	onMount(() => {
+		dispatch('activateChatMode', selectedModelName);
 		document.addEventListener('click', handleClickOutside);
 	});
 
