@@ -1579,5 +1579,7 @@
 	"Verify the link before you choose to proceed.": "Verify the link before you choose to proceed.",
 	"Open link": "Open link",
 	"leavingGovGPT": "You're leaving GovGPT",
-	"Processing documents...": "Processing documents..."
+	"Processing documents...": "Processing documents...",
+	"Loading repositories...": "Loading repositories...",
+	"Error loading repositories:": "Error loading repositories:"
 }
