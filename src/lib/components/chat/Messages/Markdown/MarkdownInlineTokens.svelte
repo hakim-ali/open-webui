@@ -19,6 +19,7 @@
 	export let id: string;
 	export let tokens: Token[];
 	export let onSourceClick: Function = () => {};
+	export let getCitationNumber: Function = () => {};
 
 	let showExternalModal = false;
 	let externalUrl = '';
@@ -36,21 +37,36 @@
 	{:else if token.type === 'html'}
 		<HtmlToken {id} {token} {onSourceClick} />
 	{:else if token.type === 'link'}
-		<button
-			class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#CCDDFC] hover:bg-[#B8D1F8] transition-colors cursor-pointer"
-			title={token.title}
+		<span
+			class="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md border border-blue-200 dark:border-blue-700 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+			title={token.title || token.href}
+			role="button"
+			tabindex="0"
 			on:click={(e) => handleExternalLinkClick(e, token.href)}
+			on:keydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					handleExternalLinkClick(e, token.href);
+				}
+			}}
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0 opacity-60">
-				<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
-			</svg>
-		</button>
+			{getCitationNumber(token.href)}
+		</span>
 	{:else if token.type === 'image'}
 		<Image src={token.href} alt={token.text} />
 	{:else if token.type === 'strong'}
-		<strong><svelte:self id={`${id}-strong`} tokens={token.tokens} {onSourceClick} /></strong>
+		<strong
+			><svelte:self
+				id={`${id}-strong`}
+				tokens={token.tokens}
+				{onSourceClick}
+				{getCitationNumber}
+			/></strong
+		>
 	{:else if token.type === 'em'}
-		<em><svelte:self id={`${id}-em`} tokens={token.tokens} {onSourceClick} /></em>
+		<em
+			><svelte:self id={`${id}-em`} tokens={token.tokens} {onSourceClick} {getCitationNumber} /></em
+		>
 	{:else if token.type === 'codespan'}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -64,7 +80,14 @@
 	{:else if token.type === 'br'}
 		<br />
 	{:else if token.type === 'del'}
-		<del><svelte:self id={`${id}-del`} tokens={token.tokens} {onSourceClick} /></del>
+		<del
+			><svelte:self
+				id={`${id}-del`}
+				tokens={token.tokens}
+				{onSourceClick}
+				{getCitationNumber}
+			/></del
+		>
 	{:else if token.type === 'inlineKatex'}
 		{#if token.text}
 			<KatexRenderer content={token.text} displayMode={false} />

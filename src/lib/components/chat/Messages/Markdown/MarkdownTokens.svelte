@@ -37,6 +37,7 @@
 
 	export let onTaskClick: Function = () => {};
 	export let onSourceClick: Function = () => {};
+	export let getCitationNumber: Function = () => {};
 
 	const headerComponent = (depth: number) => {
 		return 'h' + depth;
@@ -85,7 +86,7 @@
 		<hr class=" border-gray-100 dark:border-gray-850" />
 	{:else if token.type === 'heading'}
 		<svelte:element this={headerComponent(token.depth)} dir="auto">
-			<MarkdownInlineTokens id={`${id}-${tokenIdx}-h`} tokens={token.tokens} {onSourceClick} />
+			<MarkdownInlineTokens id={`${id}-${tokenIdx}-h`} tokens={token.tokens} {onSourceClick} {getCitationNumber} />
 		</svelte:element>
 	{:else if token.type === 'code'}
 		{#if token.raw.includes('```')}
@@ -133,6 +134,7 @@
 												id={`${id}-${tokenIdx}-header-${headerIdx}`}
 												tokens={header.tokens}
 												{onSourceClick}
+												{getCitationNumber}
 											/>
 										</div>
 									</div>
@@ -153,6 +155,7 @@
 												id={`${id}-${tokenIdx}-row-${rowIdx}-${cellIdx}`}
 												tokens={cell.tokens}
 												{onSourceClick}
+												{getCitationNumber}
 											/>
 										</div>
 									</td>
@@ -183,7 +186,7 @@
 			<AlertRenderer {token} {alert} />
 		{:else}
 			<blockquote dir="auto">
-				<svelte:self id={`${id}-${tokenIdx}`} tokens={token.tokens} {onTaskClick} {onSourceClick} />
+				<svelte:self id={`${id}-${tokenIdx}`} tokens={token.tokens} {onTaskClick} {onSourceClick} {getCitationNumber} />
 			</blockquote>
 		{/if}
 	{:else if token.type === 'list'}
@@ -215,6 +218,7 @@
 							top={token.loose}
 							{onTaskClick}
 							{onSourceClick}
+							{getCitationNumber}
 						/>
 					</li>
 				{/each}
@@ -247,6 +251,7 @@
 							top={token.loose}
 							{onTaskClick}
 							{onSourceClick}
+							{getCitationNumber}
 						/>
 					</li>
 				{/each}
@@ -267,6 +272,7 @@
 					attributes={token?.attributes}
 					{onTaskClick}
 					{onSourceClick}
+					{getCitationNumber}
 				/>
 			</div>
 		</Collapsible>
@@ -286,13 +292,14 @@
 				id={`${id}-${tokenIdx}-p`}
 				tokens={token.tokens ?? []}
 				{onSourceClick}
+				{getCitationNumber}
 			/>
 		</p>
 	{:else if token.type === 'text'}
 		{#if top}
 			<p dir="auto">
 				{#if token.tokens}
-					<MarkdownInlineTokens id={`${id}-${tokenIdx}-t`} tokens={token.tokens} {onSourceClick} />
+					<MarkdownInlineTokens id={`${id}-${tokenIdx}-t`} tokens={token.tokens} {onSourceClick} {getCitationNumber} />
 				{:else}
 					{unescapeHtml(token.text)}
 				{/if}
@@ -302,6 +309,7 @@
 				id={`${id}-${tokenIdx}-p`}
 				tokens={token.tokens ?? []}
 				{onSourceClick}
+				{getCitationNumber}
 			/>
 		{:else}
 			{unescapeHtml(token.text)}
