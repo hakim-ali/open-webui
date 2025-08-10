@@ -994,7 +994,7 @@
 								document.getElementById('chat-input')?.focus();
 
 								if ($settings?.speechAutoSend ?? false) {
-									dispatch('submit', prompt);
+									dispatch('submit', { prompt, chatMode: selectedModelName });
 								}
 							}}
 						/>
@@ -1291,7 +1291,7 @@
 															if (enterPressed) {
 																e.preventDefault();
 																if (prompt !== '' || files.length > 0) {
-																	dispatch('submit', prompt);
+																	dispatch('submit', { prompt, chatMode: selectedModelName });
 																}
 															}
 														}
@@ -1496,7 +1496,7 @@
 
 														// Submit the prompt when Enter key is pressed
 														if ((prompt !== '' || files.length > 0) && enterPressed) {
-															dispatch('submit', prompt);
+															dispatch('submit', { prompt, chatMode: selectedModelName });
 														}
 													}
 												}
