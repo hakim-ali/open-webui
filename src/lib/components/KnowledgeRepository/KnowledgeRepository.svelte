@@ -15,6 +15,7 @@
 	import { goto } from '$app/navigation';
 	import { documentsArray, mobile } from '$lib/stores';
 	import KnoFolder from '../icons/knoFolder.svelte';
+	import Paper from '$lib/components/icons/Paper.svelte';
 
 	// Types for the government departments data
 	type Document = {
@@ -40,18 +41,18 @@
 		try {
 			loading = true;
 			error = null;
-			
+
 			// Get token from localStorage or context
 			const token = localStorage.getItem('token') || '';
-			
+
 			// Call the API - using a default ID for now, adjust as needed
 			const data = await getKnowledgeRepos(token, 'default');
-			
+
 			if (data) {
 				// Parse the data and transform it for the table
 				departments = data;
 				repositories = departments.map((dept, index) => ({
-					id: index+1, // Using name as ID for now
+					id: index + 1, // Using name as ID for now
 					name: dept.name,
 					nameAr: dept.nameAr,
 					lastModified: Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000, // Random date within last 30 days
@@ -68,12 +69,13 @@
 			loading = false;
 		}
 	});
-	const onClickDepartment= (e: any, repository: any)=> {
+	const onClickDepartment = (e: any, repository: any) => {
 		e.preventDefault();
 		documentsArray.set(repository);
-		goto(`/knowledgeRepository/${repository.id}`)}
+		goto(`/knowledgeRepository/${repository.id}`);
+	};
 	let page = 1;
-	$: paginatedRepositories = sortedRepositories.slice((page - 1) * 10, page * 10);
+	$: paginatedRepositories = repositories.slice((page - 1) * 10, page * 10);
 
 	let orderBy: string = 'lastModified';
 	let direction: 'asc' | 'desc' = 'desc';
@@ -118,7 +120,7 @@
 		<GovKno />
 	</div>
 	<div class="flex md:self-center text-lg font-medium px-0.5">
-		{$i18n?.t('Whole of Government Repository') || 'Whole of Government Repository'}
+		{$i18n?.t('Gov Government Repository') || 'Gov Government Repository'}
 	</div>
 </div>
 <div class="mb-5 gap-2 flex flex-row">
@@ -133,7 +135,7 @@
 	</div>
 {:else if error}
 	<div class="text-center text-sm text-red-500 dark:text-red-400 py-8">
-		{error}
+		{$i18n?.t(error)}
 	</div>
 {:else}
 	<div
@@ -156,10 +158,11 @@
 							class="px-3 py-1.5 cursor-pointer select-none w-1/3 p-2 text-left"
 							on:click={() => setSortKey('name')}
 						>
-							<div class="flex gap-1.5 items-center ml-2">
+							<div class="flex gap-1.5 items-center ml-3 capitalize {$mobile ? 'gap-2' : 'gap-6'}">
+								<Paper />
 								{$i18n?.t('Name') || 'Name'}
 								{#if orderBy === 'name'}
-									<span class="font-normal ">
+									<span class="font-normal">
 										{#if direction === 'asc'}
 											<ChevronUp className="size-3" />
 										{:else}
@@ -179,8 +182,10 @@
 							class="px-3 py-1.5 cursor-pointer select-none w-2/3 p-2 text-left"
 							on:click={() => setSortKey('totalFiles')}
 						>
-							<div  class="flex gap-1.5 items-center justify-start">
-								{$mobile ? $i18n?.t('Files') || 'Total Files': $i18n?.t('Total Files') || 'Total Files'}
+							<div class="flex gap-1.5 items-center justify-start capitalize">
+								{$mobile
+									? $i18n?.t('Files') || 'Total Files'
+									: $i18n?.t('Total Files') || 'Total Files'}
 								{#if orderBy === 'totalFiles'}
 									<span class="font-normal">
 										{#if direction === 'asc'}
@@ -202,21 +207,26 @@
 					{#each paginatedRepositories as repository (repository.id)}
 						<tr
 							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
-						on:click={(e)=>onClickDepartment(e, repository) }
+							on:click={(e) => onClickDepartment(e, repository)}
 						>
 							<td class="py-1 pl-3 flex flex-col">
 								<div class="flex flex-col items-start gap-0.5 h-full">
 									<div class="flex flex-col h-full">
-										<div class="tex-[14px] text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4">
+										<div
+											class="tex-[14px] text-gray-600 dark:text-gray-400 flex-1 flex items-center {$mobile
+												? 'gap-2'
+												: 'gap-4'}"
+										>
 											<KnoFolder />
-											  {$isRTL ?repository.nameAr :repository.name}
+											{$isRTL ? repository.nameAr : repository.name}
 										</div>
 									</div>
 								</div>
 							</td>
 
-							<td class='px-3 py-1 {$isRTL ? "text-right" : "text-left" }  font-medium'>
-								{repository.totalFiles} 	{$i18n?.t("Items")}
+							<td class="px-3 py-1 {$isRTL ? 'text-right' : 'text-left'}  font-medium">
+								{repository.totalFiles}
+								{$i18n?.t('Items')}
 							</td>
 						</tr>
 					{/each}

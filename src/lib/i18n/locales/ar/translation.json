@@ -1525,7 +1525,7 @@
 	"Government Entities": "الجهات الحكومية",
 	"Total Files": "إجمالي الملفات",
 	"Items": "أغراض",
-	"Whole of Knowledge Repository": "مستودع المعرفة الكاملة",
+	"Gov Knowledge Repository": "مستودع المعرفة الكاملة",
 	"Loading documents...": "جارٍ تحميل المستندات...",
 	"No documents found": "لم يتم العثور على وثائق",
 	"Press and hold a document to view a summary": "اضغط مع الاستمرار على مستند لعرض ملخص له",
@@ -1573,5 +1573,7 @@
 	"Verify the link before you choose to proceed.": "تحقق من الرابط قبل أن تختار المتابعة.",
 	"Open link": "فتح الرابط",
 	"leavingGovGPT": "أنت تغادر GovGPT",
-	"Processing documents...": "معالجة المستندات..."
+	"Processing documents...": "معالجة المستندات...",
+	"Loading repositories...": "جاري تحميل المستودعات...",
+	"Error loading repositories:": "خطأ في تحميل المستودعات:"
 }

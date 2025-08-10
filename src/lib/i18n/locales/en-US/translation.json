@@ -1531,8 +1531,8 @@
 	"Access repository": "Access repository",
 	"Government Entities": "Government Entities",
 	"Total Files": "Total Files",
-	"Items":"Items",
-	"Whole of Knowledge Repository": "Whole of Knowledge Repository",
+	"Items": "Items",
+	"Gov Knowledge Repository": "Gov Knowledge Repository",
 	"Loading documents...": "Loading documents...",
 	"No documents found": "No documents found",
 	"Press and hold a document to view a summary": "Press and hold a document to view a summary",
@@ -1579,5 +1579,7 @@
 	"Verify the link before you choose to proceed.": "Verify the link before you choose to proceed.",
 	"Open link": "Open link",
 	"leavingGovGPT": "You're leaving GovGPT",
-	"Processing documents...": "Processing documents..."
+	"Processing documents...": "Processing documents...",
+	"Loading repositories...": "Loading repositories...",
+	"Error loading repositories:": "Error loading repositories:"
 }
