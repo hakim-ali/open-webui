@@ -104,7 +104,7 @@
 					<div
 						class="w-full text-justify {$mobile
 							? ' '
-							: ' mt-[12px]'} text-[16px] leading-[22px] whitespace-nowrap"
+							: ' mt-[12px]'} text-[16px] leading-[22px] whitespace-nowrap overflow-hidden text-ellipsis"
 					>
 						{$i18n.t(`suggestion.${prompt.id}.title`)}
 					</div>

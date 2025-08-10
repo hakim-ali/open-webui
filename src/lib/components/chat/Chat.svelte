@@ -143,6 +143,8 @@
 	let files = [];
 	let params = {};
 
+	let activatedChatMode = '';
+
 	$: if (chatIdProp) {
 		(async () => {
 			loading = true;
@@ -2024,6 +2026,10 @@
 			}
 		}
 	};
+
+	const activateChatMode = (chatMode: string): void => {
+		activatedChatMode = chatMode;
+	};
 </script>
 
 <svelte:head>
@@ -2098,11 +2104,7 @@
 							shareEnabled={!!history.currentId}
 							{initNewChat}
 						/>
-						<p
-							class="absolute top-0 text-xl font-bold bg-gradient-to-r from-[#9ab5fb] to-[#4476f9] bg-clip-text text-transparent w-[120px] px-[20px] py-[18px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0"
-						>
-							GovGPT
-						</p>
+
 						<div class="m-auto h-full w-full flex-1 flex flex-col flex-auto z-10 @container">
 							{#if (false && $settings?.landingPageMode === 'chat') || createMessagesList(history, history.currentId).length > 0}
 								<div
@@ -2151,6 +2153,7 @@
 											bind:codeInterpreterEnabled
 											bind:webSearchEnabled
 											bind:atSelectedModel
+											bind:activatedChatMode
 											toolServers={$toolServers}
 											transparentBackground={$settings?.backgroundImageUrl ?? false}
 											{stopResponse}
@@ -2179,14 +2182,24 @@
 													await uploadGoogleDriveFile(data);
 												}
 											}}
+											on:activateChatMode={(e) => {
+												activateChatMode(e.detail);
+											}}
 											on:submit={async (e) => {
-												if (e.detail || files.length > 0) {
+												// TODO: Refactoring required
+												const isObject = typeof e.detail === 'object' && e.detail !== null;
+												const prompt = isObject ? (e.detail.prompt ?? '') : (e.detail ?? '');
+												const chatMode = isObject ? (e.detail.chatMode ?? '') : '';
+
+												if (prompt || files.length > 0) {
 													await tick();
 													submitPrompt(
 														($settings?.richTextInput ?? true)
-															? e.detail.replaceAll('\n\n', '\n')
-															: e.detail
+															? prompt.replaceAll('\n\n', '\n')
+															: prompt
 													);
+
+													activateChatMode(chatMode);
 												}
 											}}
 										/>
@@ -2206,6 +2219,7 @@
 										bind:codeInterpreterEnabled
 										bind:webSearchEnabled
 										bind:atSelectedModel
+										bind:activatedChatMode
 										transparentBackground={$settings?.backgroundImageUrl ?? false}
 										toolServers={$toolServers}
 										{stopResponse}
@@ -2219,14 +2233,24 @@
 												await uploadYoutubeTranscription(data);
 											}
 										}}
+										on:activateChatMode={(e) => {
+											activateChatMode(e.detail);
+										}}
 										on:submit={async (e) => {
-											if (e.detail || files.length > 0) {
+											// TODO: Refactoring required
+											const isObject = typeof e.detail === 'object' && e.detail !== null;
+											const prompt = isObject ? (e.detail.prompt ?? '') : (e.detail ?? '');
+											const chatMode = isObject ? (e.detail.chatMode ?? '') : '';
+
+											if (prompt || files.length > 0) {
 												await tick();
 												submitPrompt(
 													($settings?.richTextInput ?? true)
-														? e.detail.replaceAll('\n\n', '\n')
-														: e.detail
+														? prompt.replaceAll('\n\n', '\n')
+														: prompt
 												);
+
+												activateChatMode(chatMode);
 											}
 										}}
 									/>
