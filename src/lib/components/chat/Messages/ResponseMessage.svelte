@@ -36,8 +36,8 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import RateComment from './RateComment.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
-import WebSearchResults from './ResponseMessage/WebSearchResults.svelte';
-import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
+	import WebSearchResults from './ResponseMessage/WebSearchResults.svelte';
+	import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
 	import Sparkles from '$lib/components/icons/Sparkles.svelte';
 
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -168,7 +168,7 @@ import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
 	let webSearchStatus = '';
 	let webSearchStage = 0; // 0: none, 1: just a sec, 2: searching, 3: results
 
-    // visual handling moved to WebSearchStatus component
+	// visual handling moved to WebSearchStatus component
 
 	// Handle initial loading progression: "Just a sec..." -> "Processing documents..."
 	$: if (
@@ -224,11 +224,11 @@ import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
 		}
 	}
 
-    // visual fade/shimmer handled inside WebSearchStatus
+	// visual fade/shimmer handled inside WebSearchStatus
 
 	// Cleanup timers on component destroy
 	onDestroy(() => {
-        // no local visual timers
+		// no local visual timers
 		if (initialLoadingTimer) {
 			clearTimeout(initialLoadingTimer);
 		}
@@ -721,12 +721,13 @@ import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
 									{#if status?.action === 'web_search'}
 										{#if status?.urls}
 											<WebSearchResults {status}>
-												<div class="flex flex-col justify-center -space-y-0.5">
+												<div
+													class="flex flex-col justify-center -space-y-0.5 text-gray-700 dark:text-gray-500"
+												>
 													<div
 														class="{status?.done === false
 															? 'shimmer'
 															: ''} text-base line-clamp-1 text-wrap"
-														style="color: #23282E"
 													>
 														{#if status?.description.includes('{{count}}')}
 															{$i18n.t(status?.description, {
@@ -748,9 +749,9 @@ import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
 											</WebSearchResults>
 										{:else}
 											<!-- Web search status without URLs - shimmer + fade like reference -->
-                                            <div class="flex flex-col justify-center -space-y-0.5">
-                                                <WebSearchLoading text={webSearchStatus} stage={webSearchStage} />
-                                            </div>
+											<div class="flex flex-col justify-center -space-y-0.5">
+												<WebSearchLoading text={webSearchStatus} stage={webSearchStage} />
+											</div>
 										{/if}
 									{:else if status?.action === 'knowledge_search'}
 										<div class="flex flex-col justify-center -space-y-0.5">

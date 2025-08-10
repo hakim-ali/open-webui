@@ -39,7 +39,7 @@
 
 <Collapsible bind:open={state} className="w-full space-y-1">
 	<div
-		class="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
+		class="flex items-center gap-2 text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-300 transition"
 	>
 		<slot />
 
@@ -49,10 +49,7 @@
 			<ChevronDown strokeWidth="3.5" className="size-3.5 " />
 		{/if}
 	</div>
-	<div
-		class="text-sm rounded-xl mb-1.5"
-		slot="content"
-	>
+	<div class="text-sm rounded-xl mb-1.5" slot="content">
 		{#if status?.query}
 			<button
 				on:click={() => handleUrlClick(`https://www.google.com/search?q=${status.query}`)}
@@ -90,7 +87,7 @@
 			{#each status.urls as url}
 				<button
 					on:click={() => handleUrlClick(url)}
-					class="max-h-10 inline-flex items-center gap-2 px-3 py-1.5 bg-[#CCDDFC4D] hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors no-underline cursor-pointer"
+					class="max-h-10 inline-flex items-center gap-2 px-3 py-1.5 bg-[#CCDDFC4D] hover:bg-gray-200 dark:bg-[#072D5A] dark:hover:bg-menu-hover rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors no-underline cursor-pointer"
 				>
 					<img
 						src={getFaviconUrl(url)}
