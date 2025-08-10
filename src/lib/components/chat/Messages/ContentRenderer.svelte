@@ -338,7 +338,7 @@
 	{#if collectedLinks.length > 0}
 		<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
 			<button
-				class="inline-flex items-center gap-2 px-2 py-0 max-h-10 rounded-full transition-colors bg-[#E5EBF3] text-[#23282E] hover:bg-[#D1D9E6] cursor-pointer"
+				class="inline-flex items-center gap-2 px-2 py-0 max-h-10 rounded-full transition-colors bg-[#E5EBF3] text-gray-800 dark:text-gray-200 hover:bg-[#D1D9E6] dark:bg-[#072D5A] dark:hover:bg-menu-hover cursor-pointer"
 				on:click={() => {
 					sourcesLinksMessageId.set(id);
 					showSourcesLinks.set(true);

@@ -386,7 +386,7 @@
 						</h3>
 					</div>
 					<button
-						class="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+						class="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-200"
 						on:click={() => {
 							showSourcesLinks.set(false);
 							sourcesLinksMessageId.set(null);
