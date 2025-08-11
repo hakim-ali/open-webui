@@ -1038,7 +1038,7 @@
 										<MaterialIcon name="attach_file" size="1rem" />
 										{$i18n.t("Chat is limited to the '{{count}}' uploaded {{files}} ", {
 											count: fileCount,
-											files: fileCount > 1 ? 'files.' : 'file.'
+											files: fileCount > 1 ? $i18n.t('files.') : $i18n.t('file.')
 										})}
 									</div>
 									<button
