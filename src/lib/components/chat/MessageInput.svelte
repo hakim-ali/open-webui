@@ -396,7 +396,7 @@
 		showGovKnoWebSearchToggle = !showGovKnoWebSearchToggle;
 	};
 
-	const clearFilterToggle = (event) => {
+	const clearFilterToggle = async (event: any) => {
 		event.preventDefault();
 		showGovKnoWebSearchToggle = false;
 		webSearchEnabled = false;
@@ -405,9 +405,14 @@
 			files = [];
 		}
 		attachFileEnabled = false;
-		selectedModelName = '';
-		selectedModels = ['']
 		
+		const modelName = $config.default_models;
+
+		// Update the selectedModels prop to trigger the binding
+		selectedModels = [modelName];
+
+		settings.set({ ...$settings, models: [modelName] });
+		await updateUserSettings(localStorage.token, { ui: $settings });
 	};
 
 	const saveGovKnoModel = async () => {
@@ -1006,7 +1011,7 @@
 								document.getElementById('chat-input')?.focus();
 
 								if ($settings?.speechAutoSend ?? false) {
-									dispatch('submit', { prompt, chatMode: selectedModelName });
+									dispatch('submit', { prompt, chatMode: selectedModelName, selectedModels });
 								}
 							}}
 						/>
@@ -1015,7 +1020,7 @@
 							class="w-full flex flex-col"
 							on:submit|preventDefault={async () => {
 								// check if selectedModels support image input
-								dispatch('submit', { prompt, chatMode: selectedModelName });
+								dispatch('submit', { prompt, chatMode: selectedModelName, selectedModels });
 							}}
 						>
 							{#if hasFilesInHistory}
@@ -1315,7 +1320,7 @@
 																			)
 																		);
 																	} else {
-																		dispatch('submit', { prompt, chatMode: selectedModelName });
+																		dispatch('submit', { prompt, chatMode: selectedModelName, selectedModels});
 																	}
 																}
 															}
@@ -1528,7 +1533,7 @@
 																	)
 																);
 															} else {
-																dispatch('submit', { prompt, chatMode: selectedModelName });
+																dispatch('submit', { prompt, chatMode: selectedModelName, selectedModels });
 															}
 														}
 													}
