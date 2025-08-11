@@ -1369,12 +1369,12 @@
 	const submitPrompt = async (userPrompt, { _raw = false } = {}) => {
 		console.log('submitPrompt', userPrompt, $chatId);
 
-		if (
-			sessionStorage.selectedModels &&
-			sessionStorage.selectedModels !== JSON.stringify(selectedModels)
-		) {
-			selectedModels = JSON.parse(sessionStorage.selectedModels);
-		}
+		// if (
+		// 	sessionStorage.selectedModels &&
+		// 	sessionStorage.selectedModels !== JSON.stringify(selectedModels)
+		// ) {
+		// 	selectedModels = JSON.parse(sessionStorage.selectedModels);
+		// }
 
 		const messages = createMessagesList(history, history.currentId);
 		const _selectedModels = selectedModels.map((modelId) =>
@@ -2190,6 +2190,7 @@
 												const isObject = typeof e.detail === 'object' && e.detail !== null;
 												const prompt = isObject ? (e.detail.prompt ?? '') : (e.detail ?? '');
 												const chatMode = isObject ? (e.detail.chatMode ?? '') : '';
+												selectedModels = e.detail.selectedModels ? e.detail.selectedModels : [];
 
 												if (prompt || files.length > 0) {
 													await tick();
@@ -2241,6 +2242,7 @@
 											const isObject = typeof e.detail === 'object' && e.detail !== null;
 											const prompt = isObject ? (e.detail.prompt ?? '') : (e.detail ?? '');
 											const chatMode = isObject ? (e.detail.chatMode ?? '') : '';
+											selectedModels = e.detail.selectedModels ? e.detail.selectedModels : [];
 
 											if (prompt || files.length > 0) {
 												await tick();
