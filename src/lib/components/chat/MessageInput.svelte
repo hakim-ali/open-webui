@@ -404,6 +404,9 @@
 			files = [];
 		}
 		attachFileEnabled = false;
+		selectedModelName = '';
+		selectedModels = ['']
+		
 	};
 
 	const saveGovKnoModel = async () => {
@@ -1010,9 +1013,13 @@
 								<div
 									class="text-left rounded-tl-[12px] flex items-center justify-between rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
 								>
-									{$i18n.t("Chat is limited to the '{{count}}' uploaded KnowledgeDocuments.", {
-										count: fileCount
+								<div class="flex items-center gap-2">
+								<MaterialIcon name="attach_file" size="1rem" />
+									{$i18n.t("Chat is limited to the '{{count}}' uploaded {{files}} ", {
+										count: fileCount,
+										files: fileCount > 1 ? "files." : "file."
 									})}
+									</div>
 									<button
 										class="flex items-center text-[14px] text-[#004280]"
 										on:click={(e) => {
@@ -1023,9 +1030,10 @@
 										{$i18n.t('Add Files')}
 									</button>
 								</div>
+								
 							{/if}
 							{#if govBtnEnable}<div
-									class="text-left rounded-tl-[12px] rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
+									class="text-left rounded-tl-[12px] flex items-center justify-between rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
 								>
 									{$i18n.t('Chat is limited to the Gov Knowledge Base.')}
 								</div>{/if}
