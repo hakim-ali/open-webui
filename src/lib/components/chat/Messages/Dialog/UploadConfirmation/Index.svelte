@@ -3,19 +3,13 @@
 
 	import { onMount, getContext, createEventDispatcher, onDestroy } from 'svelte';
 	import * as FocusTrap from 'focus-trap';
-	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	import { translateOption } from '$lib/utils/optionTranslations';
 
-	const i18n: Writable<i18nType> = getContext('i18n');
+	const i18n = getContext('i18n');
 	const dispatch = createEventDispatcher();
 
 	import { fade } from 'svelte/transition';
 	import { flyAndScale } from '$lib/utils/transitions';
-	import { marked } from 'marked';
-	import GlobeAlt from '$lib/components/icons/GlobeAlt.svelte';
 	import MaterialIcon from '$lib/components/common/MaterialIcon.svelte';
-	import GovKno from '$lib/components/icons/GovKno.svelte';
 
 	export let message = '';
 
@@ -25,11 +19,11 @@
 	export let inputPlaceholder = '';
 	export let inputValue = '';
 	export let option = '';
-	export let options: Record<string, string> = {};
+	export let options = {};
 
 	export let show = false;
 
-	let modalElement: HTMLElement | null = null;
+	let modalElement = null;
 	let mounted = false;
 
 	let focusTrap: FocusTrap.FocusTrap | null = null;
@@ -42,14 +36,18 @@
 
 		if (event.key === 'Enter') {
 			console.log('Enter');
-			confirmHandler();
+			addFileHandler();
 		}
 	};
 
-	const confirmHandler = async () => {
+	const addFileHandler = () => {
 		show = false;
-		await onConfirm();
-		dispatch('confirm', inputValue);
+		dispatch('addFiles');
+	};
+
+	const newChatHandler = () => {
+		show = false;
+		dispatch('initNewChat');
 	};
 
 	onMount(() => {
@@ -65,9 +63,7 @@
 			window.addEventListener('keydown', handleKeyDown);
 			document.body.style.overflow = 'hidden';
 		} else if (modalElement) {
-			if (focusTrap) {
-				focusTrap.deactivate();
-			}
+			focusTrap.deactivate();
 
 			window.removeEventListener('keydown', handleKeyDown);
 			document.body.removeChild(modalElement);
@@ -109,46 +105,29 @@
 				<div
 					class="flex gap-[10px] items-center pb-[20px] text-neutrals-800 text-[18px] leading-[26px] font-bold dark:text-gray-200"
 				>
-					{#if option === options.webSearch}
-						<GlobeAlt className="size-6" strokeWidth="1.75" />
-					{/if}
-					{#if option === options.attachFiles}
-						<MaterialIcon name="attach_file" />
-					{/if}
-					{#if option === options.govKnowledge}
-						<GovKno />
-					{/if}
-					{$i18n.t('Want to switch to {{option}}?', {
-						option: translateOption(option, $i18n)
-					})}
+					<MaterialIcon iconClass="material-symbols-outlined" name="description" />
+					Uploading files to this chat?
 				</div>
 
-				<slot>
-					<div class=" text-sm text-gray-500 flex-1">
-						{#if message !== ''}
-							{@const html = DOMPurify.sanitize(marked.parse(message))}
-							{@html html}
-						{:else}
-							{$i18n.t('This action cannot be undone. Do you wish to continue?')}
-						{/if}
-
-						{#if input}
-							<textarea
-								bind:value={inputValue}
-								placeholder={inputPlaceholder ? inputPlaceholder : $i18n.t('Enter your message')}
-								class="w-full mt-2 rounded-lg px-4 py-2 text-sm dark:text-gray-300 dark:bg-gray-900 outline-hidden resize-none"
-								rows="3"
-								required
-							/>
-						{/if}
-					</div>
-				</slot>
+				<div>
+					All files uploaded to this chat will be considered while responding. In case you are
+					looking for a fresh analysis, start a new chat.
+				</div>
 
 				<div class="flex justify-start gap-[6px] mt-[20px]">
 					<button
 						class="px-[12px] py-[8px] bg-[#004280] hover:bg-gray-850 text-gray-100 dark:bg-[#F1C9CF] dark:hover:bg-white dark:text-gray-800 font-medium rounded-lg transition"
 						on:click={() => {
-							confirmHandler();
+							addFileHandler();
+						}}
+						type="button"
+					>
+						{$i18n.t('Add Files')}
+					</button>
+					<button
+						class="px-[12px] py-[8px] text-gray-100 dark:bg-[#F1C9CF] dark:hover:bg-white dark:text-gray-800 font-medium rounded-lg transition"
+						on:click={() => {
+							newChatHandler();
 						}}
 						type="button"
 					>

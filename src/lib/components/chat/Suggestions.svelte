@@ -27,6 +27,24 @@
 		selectedIndex = -1;
 	}
 
+	let displayPrompts: any[] = [];
+
+	$: {
+		if (window.innerWidth < 1140 && !$mobile) {
+			displayPrompts = sortedPrompts.slice(0, 4);
+		} else {
+			displayPrompts = sortedPrompts.slice(0, 5);
+		}
+	}
+
+	function handleResize() {
+		if (window.innerWidth < 1140 && !$mobile) {
+			displayPrompts = sortedPrompts.slice(0, 4);
+		} else {
+			displayPrompts = sortedPrompts.slice(0, 5);
+		}
+	}
+
 	// Listen for storage changes (when locale is changed from other components)
 	onMount(() => {
 		const handleStorageChange = (e: StorageEvent) => {
@@ -37,8 +55,12 @@
 
 		window.addEventListener('storage', handleStorageChange);
 
+		window.addEventListener('resize', handleResize);
+		handleResize();
+
 		return () => {
 			window.removeEventListener('storage', handleStorageChange);
+			window.removeEventListener('resize', handleResize);
 		};
 	});
 
@@ -81,7 +103,7 @@
 				: 'grid'}"
 			style={!$mobile ? 'grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));' : ''}
 		>
-			{#each sortedPrompts as prompt, idx (prompt.id || prompt.content)}
+			{#each displayPrompts as prompt, idx (prompt.id || prompt.content)}
 				<button
 					class="flex {$mobile
 						? 'items-center gap-[4px] flex-shrink-0'
@@ -91,7 +113,7 @@
 						? 'border border-[#90C9FF] dark:border-[#90C9FF] text-typography-titles dark:text-white'
 						: 'border border-[#E5EBF3] hover:border-[#90C9FF] dark:border-[#2D3642] dark:hover:border-[#004280] hover:text-typography-titles dark:hover:text-white'}
 					{idx === 0 ? 'rounded-tl-[12px]' : ''} 
-					{idx === sortedPrompts.length - 1 ? 'rounded-tr-[12px]' : ''}
+					{idx === displayPrompts.length - 1 ? 'rounded-tr-[12px]' : ''}
 					rounded-[8px]"
 					style="animation-delay: {idx * 60}ms;"
 					on:click={() => handlePromptSelect(prompt, idx)}
