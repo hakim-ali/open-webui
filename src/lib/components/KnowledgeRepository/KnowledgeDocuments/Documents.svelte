@@ -61,15 +61,15 @@
 	});
 </script>
 
-<div class="mt-0.5 mb-2 gap-2 flex flex-row py-6">
+<!-- <div class="mt-0.5 mb-2 gap-2 flex flex-row py-6">
 	<div class="flex md:self-center px-0.5">
 		<GovKno />
 	</div>
 	<div class="flex md:self-center text-lg font-medium px-0.5">
 		{$i18n?.t('Gov Knowledge Repository') || 'Gov Knowledge Repository'}
 	</div>
-</div>
-<div class="mb-5 flex flex-row">
+</div> -->
+<div class="my-5 flex flex-row">
 	<div
 		class="flex md:self-center text-sm text-gray-500 font-normal px-0.5 cursor-pointer"
 		on:click={() => goto('/knowledgeRepository')}
@@ -91,19 +91,19 @@
 	</div>
 {:else}
 	<div
-		class="h-[calc(100dvh-200px)] bg-white dark:bg-gray-900 scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-sm pt-0.5 flex-col gap-10"
+		class="h-[calc(100dvh-200px)] bg-white dark:bg-[#072D5A4D] scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-md pt-0.5 flex-col gap-10"
 	>
 		{#if $mobile}
 			<table
 				class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
 			>
 				<thead
-					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 -translate-y-0.5"
+					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-[#072D5A4D] dark:text-gray-400 -translate-y-0.5"
 				>
 					<tr class="">
 						<th
 							scope="col"
-							class="px-3 py-1.5 cursor-pointer select-none"
+							class="px-3 py-3 cursor-pointer select-none"
 							on:click={() => setSortKey('title')}
 						>
 							<div class="flex gap-1.5 items-center ml-2 gap-3 capitalize">
@@ -129,7 +129,7 @@
 				<tbody class="w-full">
 					{#each sortedDocuments as document, i (document.title)}
 						<tr
-							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
+							class="bg-white dark:bg-[#072D5A4D] dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
 						>
 							<td class="py-3 pl-3">
 								<!--							<div class="flex flex-col gap-0.5 h-full w-full">-->
@@ -159,7 +159,7 @@
 									<!-- Collapsible content -->
 									<div slot="content">
 										<div
-											class="mt-2 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center dark:bg-gray-900 rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
+											class="mt-2 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center dark:bg-[#072D5A4D] rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
 										>
 											{$isRTL ? document.summaryAr : document.summaryEn}
 										</div>
@@ -230,7 +230,7 @@
 				<tbody class="">
 					{#each sortedDocuments as document (document.title)}
 						<tr
-							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
+							class="bg-white dark:bg-[#072D5A4D] dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
 						>
 							<td class="py-3 pl-3 flex flex-col">
 								<div class="flex flex-col items-start gap-0.5 h-full">
