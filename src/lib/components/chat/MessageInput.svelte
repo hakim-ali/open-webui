@@ -242,14 +242,14 @@
 
 	// Reactive statement to update selectedModelName based on current state
 	$: selectedModelName = (() => {
-		console.log('Reactive selectedModelName update:', {
-			govBtnEnable,
-			webSearchEnabled,
-			attachFileEnabled,
-			filesLength: files.length,
-			selectedModels,
-			historyMessages: history?.messages ? Object.keys(history.messages).length : 0
-		});
+		// console.log('Reactive selectedModelName update:', {
+		// 	govBtnEnable,
+		// 	webSearchEnabled,
+		// 	attachFileEnabled,
+		// 	filesLength: files.length,
+		// 	selectedModels,
+		// 	historyMessages: history?.messages ? Object.keys(history.messages).length : 0
+		// });
 
 		// Priority order: Gov Knowledge > Web Search > Files > Specific Model
 
@@ -287,7 +287,7 @@
 		// 	}
 		// }
 
-		console.log('Returning: empty string');
+		// console.log('Returning: empty string');
 		return '';
 	})();
 
@@ -821,8 +821,10 @@
 	$: messagesString = JSON.stringify(history?.messages || {});
 	$: fileCount = messagesString ? getFilesCount() : 0;
 
+	$: hasResponseStarted = taskIds && taskIds.length > 0;
+	
 	$: isStreamingInProgress =
-		(taskIds && taskIds.length > 0) ||
+		hasResponseStarted ||
 		(history.currentId && history.messages[history.currentId]?.done != true);
 
 	export let activatedChatMode = '';
@@ -1306,7 +1308,15 @@
 															if (enterPressed) {
 																e.preventDefault();
 																if (prompt !== '' || files.length > 0) {
-																	dispatch('submit', { prompt, chatMode: selectedModelName });
+																	if (isUploading) {
+																		toast.error(
+																			$i18n.t(
+																				`Oops! There are files still uploading. Please wait for the upload to complete.`
+																			)
+																		);
+																	} else {
+																		dispatch('submit', { prompt, chatMode: selectedModelName });
+																	}
 																}
 															}
 														}
@@ -1511,7 +1521,15 @@
 
 														// Submit the prompt when Enter key is pressed
 														if ((prompt !== '' || files.length > 0) && enterPressed) {
-															dispatch('submit', { prompt, chatMode: selectedModelName });
+															if (isUploading) {
+																toast.error(
+																	$i18n.t(
+																		`Oops! There are files still uploading. Please wait for the upload to complete.`
+																	)
+																);
+															} else {
+																dispatch('submit', { prompt, chatMode: selectedModelName });
+															}
 														}
 													}
 												}
@@ -2193,11 +2211,20 @@
 
 										{#if isStreamingInProgress}
 											<div class=" flex items-center">
-												<Tooltip content={$i18n.t('Stop')}>
+												<Tooltip
+													content={!hasResponseStarted
+														? $i18n.t('Please wait...')
+														: $i18n.t('Stop')}
+												>
 													<button
-														class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5"
+														class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5 {!hasResponseStarted
+															? 'opacity-50 cursor-not-allowed'
+															: ''}"
+														disabled={!hasResponseStarted}
 														on:click={() => {
-															stopResponse();
+															if (hasResponseStarted) {
+																stopResponse();
+															}
 														}}
 													>
 														<svg
