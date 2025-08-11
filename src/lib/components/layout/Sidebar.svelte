@@ -1244,6 +1244,8 @@
 						? 'bg-menu-hover'
 						: ''} {$showSidebar ? '' : 'justify-center'}"
 					on:click={() => {
+						selectedChatId = null;
+						chatId.set('');
 						goto('/knowledgeRepository');
 						if ($mobile) {
 							showSidebar.set(false);
