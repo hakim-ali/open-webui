@@ -2238,7 +2238,6 @@
 											activateChatMode(e.detail);
 										}}
 										on:submit={async (e) => {
-											debugger;
 											// TODO: Refactoring required
 											const isObject = typeof e.detail === 'object' && e.detail !== null;
 											const prompt = isObject ? (e.detail.prompt ?? '') : (e.detail ?? '');
