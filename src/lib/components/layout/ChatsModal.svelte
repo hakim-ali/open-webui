@@ -18,6 +18,9 @@
 	import XMark from '../icons/XMark.svelte';
 	import ChevronUp from '../icons/ChevronUp.svelte';
 	import ChevronDown from '../icons/ChevronDown.svelte';
+	import { isRTL } from '$lib/i18n';
+	import ArrowRight from '../icons/ArrowRight.svelte';
+	import ArrowLeft from '../icons/ArrowLeft.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -236,18 +239,12 @@
 										href={shareUrl ? `/s/${chat.id}` : `/c/${chat.id}`}
 										on:click={() => (show = false)}
 									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="16"
-											height="16"
-											viewBox="0 0 16 16"
-											fill="none"
-										>
-											<path
-												d="M9.8923 12.4424L9.17947 11.7463L12.4321 8.49359H1.66797V7.49376H12.4385L9.19614 4.24109L9.8923 3.54492L14.341 7.99376L9.8923 12.4424Z"
-												fill="currentColor"
-											/>
-										</svg>
+										{#if $isRTL}
+											<ArrowLeft />
+										{:else}
+											<ArrowRight />
+										{/if}
+
 										<div
 											class="text-neutrals-800 text-[16px] leading-[24px] text-ellipsis line-clamp-1 w-full"
 										>
