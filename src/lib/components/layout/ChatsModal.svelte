@@ -207,9 +207,9 @@
 							{#each chatList as chat, idx (chat.id)}
 								{#if (idx === 0 || (idx > 0 && chat.time_range !== chatList[idx - 1].time_range)) && chat?.time_range}
 									<div
-										class="w-full text-neutrals-400 text-[14px] leading-[22px] {idx === 0
-											? ''
-											: 'pt-5'} pb-[8px]"
+										class="w-full text-neutrals-400 text-[14px] leading-[22px] {$isRTL
+											? 'text-right'
+											: 'text-left'} {idx === 0 ? '' : 'pt-5'} pb-[8px]"
 									>
 										{$i18n.t(chat.time_range)}
 										<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
