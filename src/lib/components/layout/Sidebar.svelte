@@ -100,12 +100,18 @@
 	let isHovered = false;
 	let wasOpenedByClick = false;
 	let hoverTimeout: number | null = null;
-	let scrollContainer;
+	let scrollContainer: HTMLElement;
+	let showScrollToTopButton = false;
+
+	
 
 	function scrollToTop() {
 		scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 
+	function handleScroll() {
+		showScrollToTopButton = scrollContainer.scrollTop > 100;
+	}
 	function openSidebarOnAction() {
 		if (!$showSidebar) {
 			showSidebar.set(true);
@@ -377,6 +383,7 @@
 				}
 			}, 300);
 		}
+		// Removed window scroll event listener - will be added to scrollContainer instead
 	};
 
 	const onSidebarClick = (e: any) => {
@@ -546,8 +553,9 @@
 		class="flex flex-col justify-between max-h-[100dvh] overflow-x-hidden z-50 bg-light-bg shadow-[0px_48px_96px_0px_rgba(0,0,0,0.08)] dark:shadow-none"
 	>
 		<div
-			class="pl-[8px] pr-[2px] py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto"
+			class="{$isRTL? 'pr-[8px] pl-[2px]' :'pl-[8px] pr-[2px]' }  py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto"
 			bind:this={scrollContainer}
+			on:scroll={handleScroll}
 		>
 			{#if $mobile}
 				<div class="sidebar__mobile">
@@ -1208,6 +1216,7 @@
 								{/if}
 							</div>
 						</div>
+						{#if showScrollToTopButton}
 						<div
 							class="scroll-to-top-box fixed bottom-[130px] {$isRTL
 								? 'right-[0]'
@@ -1220,6 +1229,7 @@
 								<ScrollUp />
 							</button>
 						</div>
+						{/if}
 					{/if}
 				</div>
 			</div>
@@ -1234,7 +1244,7 @@
 						goto('/knowledgeRepository');
 					}}
 				>
-					<div class="flex pl-2 gap-2">
+					<div class="flex {$isRTL ? 'pr-2' : 'pl-2'} gap-2">
 						<div class=" self-center {$showSidebar ? 'me-[8px]' : ''}">
 							<GovKno />
 						</div>
