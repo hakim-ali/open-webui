@@ -9,6 +9,7 @@
 	import { pickAndDownloadFile } from '$lib/utils/onedrive-file-picker';
 	import { goto } from '$app/navigation';
 	import { onMount, tick, getContext, createEventDispatcher, onDestroy } from 'svelte';
+	import { translateOption } from '$lib/utils/optionTranslations';
 	const dispatch = createEventDispatcher();
 
 	import {
@@ -93,7 +94,7 @@
 	let selectedModelIds = [];
 	$: selectedModelIds = atSelectedModel !== undefined ? [atSelectedModel.id] : selectedModels;
 	$: showNewChatPopup = false;
-	export let history;
+	export let history = {};
 	export let taskIds = null;
 
 	export let prompt = '';
@@ -817,7 +818,8 @@
 		);
 	}
 
-	$: fileCount = getFilesCount();
+	$: messagesString = JSON.stringify(history?.messages || {});
+	$: fileCount = messagesString ? getFilesCount() : 0;
 
 	$: isStreamingInProgress =
 		(taskIds && taskIds.length > 0) ||
@@ -854,8 +856,13 @@
 	}}
 >
 	<div class="text-sm text-gray-500">
-		{chatOptionClicked} is disabled when {activatedChatMode} is activated. Start a new chat to use this
-		feature.
+		{$i18n.t(
+			'{{chatOption}} is disabled when {{activatedChatMode}} is activated. Start a new chat to use this feature.',
+			{
+				chatOption: translateOption(chatOptionClicked, $i18n),
+				activatedChatMode: translateOption(activatedChatMode, $i18n)
+			}
+		)}
 	</div>
 </NewChatConfirmation>
 
@@ -1808,7 +1815,7 @@
 													<div
 														bind:this={toggleContentElement}
 														class="absolute w-full max-w-[250px] {showFileUploadButton
-															? 'ml-15'
+															? 'mx-15'
 															: ''}  bottom-[0] start-4 z-[40] p-2 mb-18 bg-white border-[#E5EBF3] dark:border-gray-800 dark:bg-[#010E1D] dark:border-gray-00 border rounded-[16px]"
 													>
 														{#if showGovKnoButton}
@@ -1837,7 +1844,7 @@
 																<div
 																	class="flex items-center justify-center gap-[8px] relative flex-row"
 																>
-																	<GovKno />
+																	<GovKno width={20} />
 																	<span
 																		class="whitespace-nowrap overflow-hidden text-ellipsis dark:text-white leading-none pr-0.5"
 																	>
@@ -1876,7 +1883,7 @@
 																<div class="flex items-center justify-center gap-[8px]">
 																	<GlobeAlt className="size-5" strokeWidth="1.75" />
 																	<span
-																		class="font-heading dark:text-white text-left whitespace-nowrap"
+																		class="font-heading dark:text-white mx-[2px] text-left whitespace-nowrap"
 																	>
 																		{$i18n.t('Web Search')}</span
 																	>
