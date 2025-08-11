@@ -1580,5 +1580,9 @@
 	"Processing documents...": "معالجة المستندات...",
 	"Loading repositories...": "جاري تحميل المستودعات...",
 	"Error loading repositories:": "خطأ في تحميل المستودعات:",
-	"Please wait...": "انتظر من فضلك..."
+	"Please wait...": "انتظر من فضلك...",
+	"Chat is limited to the '{{count}}' uploaded {{files}} ": " {{files}} تقتصر الدردشة على '{{count}}' التي تم تحميلها",
+	"files.": "ملفات.",
+	"file.": "ملف."
+
 }

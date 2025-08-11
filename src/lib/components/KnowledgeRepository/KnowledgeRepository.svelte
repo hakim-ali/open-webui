@@ -115,16 +115,8 @@
 	});
 </script>
 
-<div class="mt-0.5 mb-2 gap-2 flex flex-row py-6 dark:bg-transparent">
-	<div class="flex md:self-center text-lg font-medium px-0.5">
-		<GovKno />
-	</div>
-	<div class="flex md:self-center text-lg font-medium px-0.5">
-		{$i18n?.t('Gov Government Repository') || 'Gov Government Repository'}
-	</div>
-</div>
-<div class="mb-5 gap-2 flex flex-row">
-	<div class="flex md:self-center text-lg font-bold px-0.5">
+<div class="my-5 gap-2 flex flex-row">
+	<div class="flex md:self-center text-md font-bold px-0.5">
 		{$i18n?.t('Government Entities') || 'Government Entities'}
 	</div>
 </div>
@@ -139,7 +131,7 @@
 	</div>
 {:else}
 	<div
-		class="h-[calc(100dvh-200px)] bg-white dark:bg-gray-900 scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-sm pt-0.5"
+		class="h-[calc(100dvh-200px)] bg-white dark:bg-[#072D5A4D] scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full rounded-lg pt-0.5"
 	>
 		{#if (repositories ?? []).length === 0}
 			<div class="text-center text-xs text-gray-500 dark:text-gray-400 py-1">
@@ -150,12 +142,12 @@
 				class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
 			>
 				<thead
-					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 -translate-y-0.5"
+					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-[#072D5A4D] dark:text-gray-400 -translate-y-0.5"
 				>
 					<tr class="">
 						<th
 							scope="col"
-							class="px-3 py-1.5 cursor-pointer select-none w-1/3 p-2 text-left"
+							class="px-3 py-3 cursor-pointer select-none w-1/3 p-2 text-left"
 							on:click={() => setSortKey('name')}
 						>
 							<div class="flex gap-1.5 items-center ml-3 capitalize {$mobile ? 'gap-2' : 'gap-6'}">
@@ -206,7 +198,7 @@
 				<tbody class="">
 					{#each paginatedRepositories as repository (repository.id)}
 						<tr
-							class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
+							class="bg-white dark:bg-[#072D5A4D] dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
 							on:click={(e) => onClickDepartment(e, repository)}
 						>
 							<td class="py-1 pl-3 flex flex-col">

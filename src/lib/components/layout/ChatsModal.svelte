@@ -18,6 +18,9 @@
 	import XMark from '../icons/XMark.svelte';
 	import ChevronUp from '../icons/ChevronUp.svelte';
 	import ChevronDown from '../icons/ChevronDown.svelte';
+	import { isRTL } from '$lib/i18n';
+	import ArrowRight from '../icons/ArrowRight.svelte';
+	import ArrowLeft from '../icons/ArrowLeft.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -204,9 +207,9 @@
 							{#each chatList as chat, idx (chat.id)}
 								{#if (idx === 0 || (idx > 0 && chat.time_range !== chatList[idx - 1].time_range)) && chat?.time_range}
 									<div
-										class="w-full text-neutrals-400 text-[14px] leading-[22px] {idx === 0
-											? ''
-											: 'pt-5'} pb-[8px]"
+										class="w-full text-neutrals-400 text-[14px] leading-[22px] {$isRTL
+											? 'text-right'
+											: 'text-left'} {idx === 0 ? '' : 'pt-5'} pb-[8px]"
 									>
 										{$i18n.t(chat.time_range)}
 										<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
@@ -236,18 +239,12 @@
 										href={shareUrl ? `/s/${chat.id}` : `/c/${chat.id}`}
 										on:click={() => (show = false)}
 									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="16"
-											height="16"
-											viewBox="0 0 16 16"
-											fill="none"
-										>
-											<path
-												d="M9.8923 12.4424L9.17947 11.7463L12.4321 8.49359H1.66797V7.49376H12.4385L9.19614 4.24109L9.8923 3.54492L14.341 7.99376L9.8923 12.4424Z"
-												fill="currentColor"
-											/>
-										</svg>
+										{#if $isRTL}
+											<ArrowLeft />
+										{:else}
+											<ArrowRight />
+										{/if}
+
 										<div
 											class="text-neutrals-800 text-[16px] leading-[24px] text-ellipsis line-clamp-1 w-full"
 										>
