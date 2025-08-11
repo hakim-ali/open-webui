@@ -3,6 +3,7 @@
 	import { v4 as uuidv4 } from 'uuid';
 
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import {
 		user,
 		chats,
@@ -1227,7 +1228,7 @@
 		<div class="p-[8px] pb-[2px] sidebar__bottom">
 			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
 				<button
-					class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-menu-hover {$showSidebar
+					class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-menu-hover {$page.url.pathname === '/knowledgeRepository' ? 'bg-menu-hover' : ''} {$showSidebar
 						? ''
 						: 'justify-center'}"
 					on:click={() => {
