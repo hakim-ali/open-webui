@@ -1575,5 +1575,6 @@
 	"leavingGovGPT": "أنت تغادر GovGPT",
 	"Processing documents...": "معالجة المستندات...",
 	"Loading repositories...": "جاري تحميل المستودعات...",
-	"Error loading repositories:": "خطأ في تحميل المستودعات:"
+	"Error loading repositories:": "خطأ في تحميل المستودعات:",
+	"Please wait...": "انتظر من فضلك..."
 }

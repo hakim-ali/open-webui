@@ -816,8 +816,10 @@
 
 	$: fileCount = getFilesCount();
 
+	$: hasResponseStarted = taskIds && taskIds.length > 0;
+	
 	$: isStreamingInProgress =
-		(taskIds && taskIds.length > 0) ||
+		hasResponseStarted ||
 		(history.currentId && history.messages[history.currentId]?.done != true);
 
 	export let activatedChatMode = '';
@@ -2194,11 +2196,20 @@
 
 										{#if isStreamingInProgress}
 											<div class=" flex items-center">
-												<Tooltip content={$i18n.t('Stop')}>
+												<Tooltip
+													content={!hasResponseStarted
+														? $i18n.t('Please wait...')
+														: $i18n.t('Stop')}
+												>
 													<button
-														class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5"
+														class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5 {!hasResponseStarted
+															? 'opacity-50 cursor-not-allowed'
+															: ''}"
+														disabled={!hasResponseStarted}
 														on:click={() => {
-															stopResponse();
+															if (hasResponseStarted) {
+																stopResponse();
+															}
 														}}
 													>
 														<svg

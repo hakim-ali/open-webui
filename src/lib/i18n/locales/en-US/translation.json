@@ -1581,5 +1581,6 @@
 	"leavingGovGPT": "You're leaving GovGPT",
 	"Processing documents...": "Processing documents...",
 	"Loading repositories...": "Loading repositories...",
-	"Error loading repositories:": "Error loading repositories:"
+	"Error loading repositories:": "Error loading repositories:",
+	"Please wait...": "Please wait..."
 }
