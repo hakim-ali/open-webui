@@ -1232,6 +1232,9 @@
 						: 'justify-center'}"
 					on:click={() => {
 						goto('/knowledgeRepository');
+						if ($mobile) {
+							showSidebar.set(false);
+						}
 					}}
 				>
 					<div class="flex pl-2 gap-2">
