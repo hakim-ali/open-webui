@@ -405,7 +405,7 @@
 			files = [];
 		}
 		attachFileEnabled = false;
-		
+
 		const modelName = $config.default_models;
 
 		// Update the selectedModels prop to trigger the binding
@@ -827,10 +827,9 @@
 	$: fileCount = messagesString ? getFilesCount() : 0;
 
 	$: hasResponseStarted = taskIds && taskIds.length > 0;
-	
+
 	$: isStreamingInProgress =
-		hasResponseStarted ||
-		(history.currentId && history.messages[history.currentId]?.done != true);
+		hasResponseStarted || (history.currentId && history.messages[history.currentId]?.done != true);
 
 	export let activatedChatMode = '';
 	let chatOptionClicked = '';
@@ -1019,20 +1018,28 @@
 						<form
 							class="w-full flex flex-col"
 							on:submit|preventDefault={async () => {
-								// check if selectedModels support image input
-								dispatch('submit', { prompt, chatMode: selectedModelName, selectedModels });
+								// Only submit when prompt has content and no uploads are in progress
+								if (prompt.trim() !== '' && !isUploading) {
+									dispatch('submit', { prompt, chatMode: selectedModelName, selectedModels });
+								} else if (isUploading) {
+									toast.error(
+										$i18n.t(
+											`Oops! There are files still uploading. Please wait for the upload to complete.`
+										)
+									);
+								}
 							}}
 						>
 							{#if hasFilesInHistory}
 								<div
 									class="text-left rounded-tl-[12px] flex items-center justify-between rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
 								>
-								<div class="flex items-center gap-2">
-								<MaterialIcon name="attach_file" size="1rem" />
-									{$i18n.t("Chat is limited to the '{{count}}' uploaded {{files}} ", {
-										count: fileCount,
-										files: fileCount > 1 ? "files." : "file."
-									})}
+									<div class="flex items-center gap-2">
+										<MaterialIcon name="attach_file" size="1rem" />
+										{$i18n.t("Chat is limited to the '{{count}}' uploaded {{files}} ", {
+											count: fileCount,
+											files: fileCount > 1 ? 'files.' : 'file.'
+										})}
 									</div>
 									<button
 										class="flex items-center text-[14px] text-[#004280]"
@@ -1044,7 +1051,6 @@
 										{$i18n.t('Add Files')}
 									</button>
 								</div>
-								
 							{/if}
 							{#if govBtnEnable}<div
 									class="text-left rounded-tl-[12px] flex items-center justify-between rounded-tr-[12px] dark:text-white bg-[#D6E5FC] border border-[#90C9FF] dark:bg-[#004280] dark:border-[#002866] py-[12px] pb-[50px] mb-[-42px] px-[16px] text-[11px] leading-[16px] text-typography-titles"
@@ -1312,16 +1318,18 @@
 
 															if (enterPressed) {
 																e.preventDefault();
-																if (prompt !== '' || files.length > 0) {
-																	if (isUploading) {
-																		toast.error(
-																			$i18n.t(
-																				`Oops! There are files still uploading. Please wait for the upload to complete.`
-																			)
-																		);
-																	} else {
-																		dispatch('submit', { prompt, chatMode: selectedModelName, selectedModels});
-																	}
+																if (prompt.trim() !== '' && !isUploading) {
+																	dispatch('submit', {
+																		prompt,
+																		chatMode: selectedModelName,
+																		selectedModels
+																	});
+																} else if (isUploading) {
+																	toast.error(
+																		$i18n.t(
+																			`Oops! There are files still uploading. Please wait for the upload to complete.`
+																		)
+																	);
 																}
 															}
 														}
@@ -1525,15 +1533,19 @@
 														}
 
 														// Submit the prompt when Enter key is pressed
-														if ((prompt !== '' || files.length > 0) && enterPressed) {
-															if (isUploading) {
+														if (enterPressed) {
+															if (prompt.trim() !== '' && !isUploading) {
+																dispatch('submit', {
+																	prompt,
+																	chatMode: selectedModelName,
+																	selectedModels
+																});
+															} else if (isUploading) {
 																toast.error(
 																	$i18n.t(
 																		`Oops! There are files still uploading. Please wait for the upload to complete.`
 																	)
 																);
-															} else {
-																dispatch('submit', { prompt, chatMode: selectedModelName, selectedModels });
 															}
 														}
 													}
