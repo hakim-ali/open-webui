@@ -2,7 +2,7 @@
 	import { onMount, getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	import { WEBUI_NAME, showSidebar, user } from '$lib/stores';
+	import { WEBUI_NAME, mobile, showSidebar, user } from '$lib/stores';
 	import MenuLines from '$lib/components/icons/MenuLines.svelte';
 	import { page } from '$app/stores';
 	import MaterialIcon from '$lib/components/common/MaterialIcon.svelte';
@@ -42,7 +42,11 @@
 					</button>
 				</div>
 
-				<div class="mt-0.5 me-4 gap-2 item-center flex flex-row py-1 dark:bg-transparent">
+				<div
+					class="mt-0.5 {$mobile
+						? 'me-4'
+						: 'ms-6'} gap-2 item-center flex flex-row py-1 dark:bg-transparent"
+				>
 					<div class="flex md:self-center text-lg font-medium px-0.5 mt-1">
 						<GovKno />
 					</div>
@@ -55,7 +59,7 @@
 			</div>
 		</nav>
 		<div class="h-[calc(100vh-2rem)] max-h-[100dvh] dark:bg-transparent">
-			<div class="p-[16px] flex-1 max-h-full overflow-y-auto">
+			<div class="p-[16px] {$mobile ? '' : 'px-8'} flex-1 max-h-full overflow-y-auto">
 				<slot />
 			</div>
 		</div>
