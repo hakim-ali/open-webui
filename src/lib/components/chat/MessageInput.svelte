@@ -241,14 +241,14 @@
 
 	// Reactive statement to update selectedModelName based on current state
 	$: selectedModelName = (() => {
-		console.log('Reactive selectedModelName update:', {
-			govBtnEnable,
-			webSearchEnabled,
-			attachFileEnabled,
-			filesLength: files.length,
-			selectedModels,
-			historyMessages: history?.messages ? Object.keys(history.messages).length : 0
-		});
+		// console.log('Reactive selectedModelName update:', {
+		// 	govBtnEnable,
+		// 	webSearchEnabled,
+		// 	attachFileEnabled,
+		// 	filesLength: files.length,
+		// 	selectedModels,
+		// 	historyMessages: history?.messages ? Object.keys(history.messages).length : 0
+		// });
 
 		// Priority order: Gov Knowledge > Web Search > Files > Specific Model
 
@@ -286,7 +286,7 @@
 		// 	}
 		// }
 
-		console.log('Returning: empty string');
+		// console.log('Returning: empty string');
 		return '';
 	})();
 
@@ -1291,7 +1291,15 @@
 															if (enterPressed) {
 																e.preventDefault();
 																if (prompt !== '' || files.length > 0) {
-																	dispatch('submit', { prompt, chatMode: selectedModelName });
+																	if (isUploading) {
+																		toast.error(
+																			$i18n.t(
+																				`Oops! There are files still uploading. Please wait for the upload to complete.`
+																			)
+																		);
+																	} else {
+																		dispatch('submit', { prompt, chatMode: selectedModelName });
+																	}
 																}
 															}
 														}
@@ -1496,7 +1504,15 @@
 
 														// Submit the prompt when Enter key is pressed
 														if ((prompt !== '' || files.length > 0) && enterPressed) {
-															dispatch('submit', { prompt, chatMode: selectedModelName });
+															if (isUploading) {
+																toast.error(
+																	$i18n.t(
+																		`Oops! There are files still uploading. Please wait for the upload to complete.`
+																	)
+																);
+															} else {
+																dispatch('submit', { prompt, chatMode: selectedModelName });
+															}
 														}
 													}
 												}
