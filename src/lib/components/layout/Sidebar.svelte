@@ -955,7 +955,7 @@
 					</Folder>
 				{/if}
 
-				{#if $user?.role === 'admin'}
+				{#if $user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)}
 					<Folder
 						className=""
 						name={$i18n.t('Folders')}
