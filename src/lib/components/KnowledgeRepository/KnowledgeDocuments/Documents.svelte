@@ -95,10 +95,10 @@
 	>
 		{#if $mobile}
 			<table
-				class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
+				class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-100 table-auto max-w-full rounded-sm"
 			>
 				<thead
-					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-[#072D5A4D] dark:text-gray-400 -translate-y-0.5"
+					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-[#072D5A4D] dark:text-gray-100 -translate-y-0.5"
 				>
 					<tr class="">
 						<th
@@ -136,7 +136,7 @@
 								<Collapsible bind:open={openStates[i]} className="w-full space-y-1 gap-4">
 									<!-- Header: Flex row for title + chevron -->
 									<div
-										class="flex items-center justify-between w-full font-semibold text-gray-600 dark:text-gray-400 gap-1"
+										class="flex items-center justify-between w-full font-semibold text-gray-600 dark:text-gray-100 gap-1"
 									>
 										<!-- Left: Icon + Title -->
 										<div class="flex items-center space-x-2 truncate">
@@ -159,7 +159,7 @@
 									<!-- Collapsible content -->
 									<div slot="content">
 										<div
-											class="mt-2 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center dark:bg-[#072D5A4D] rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
+											class="mt-2 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-100 flex-1 flex items-center dark:bg-[#072D5A4D] rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
 										>
 											{$isRTL ? document.summaryAr : document.summaryEn}
 										</div>
@@ -173,10 +173,10 @@
 			</table>
 		{:else}
 			<table
-				class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
+				class="w-full text-sm text-left text-gray-500 dark:text-gray-100 table-auto max-w-full rounded-sm"
 			>
 				<thead
-					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-400 -translate-y-0.5"
+					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-[#072D5A4D] dark:text-gray-100 -translate-y-0.5"
 				>
 					<tr class="">
 						<th
@@ -205,7 +205,7 @@
 
 						<th
 							scope="col"
-							class="px-3 py-1.5 cursor-pointer select-none"
+							class="px-3 py-3 cursor-pointer select-none"
 							on:click={() => setSortKey('summary')}
 						>
 							<div class="flex gap-1.5 items-center capitalize">
@@ -236,7 +236,7 @@
 								<div class="flex flex-col items-start gap-0.5 h-full">
 									<div class="flex flex-col h-full">
 										<div
-											class="font-semibold text-gray-600 dark:text-gray-400 flex-1 flex items-center gap-4"
+											class="font-semibold text-gray-600 dark:text-gray-100 flex-1 flex items-center gap-4"
 										>
 											<KnoDocs />
 											{document.title}

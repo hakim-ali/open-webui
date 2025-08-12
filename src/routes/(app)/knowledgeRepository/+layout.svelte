@@ -32,7 +32,7 @@
 	>
 		<nav class="px-2.5 pt-2 backdrop-blur-xl drag-region">
 			<div class="flex justify-between items-center gap-1">
-				<div class="{$showSidebar ? 'md:hidden' : ''} self-center flex flex-none items-center">
+				<div class="{!$mobile ? 'hidden' : ''} self-center flex flex-none items-center">
 					<button
 						class="flex items-center justify-center rounded-lg size-10 hover:bg-gray-100 dark:hover:bg-gray-850 transition"
 						aria-label="Toggle Sidebar"
