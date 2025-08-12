@@ -1218,9 +1218,9 @@
 							</div>
 							{#if showScrollToTopButton}
 							<div
-								class="scroll-to-top-box fixed bottom-[130px] {$isRTL
-									? 'right-[0]'
-									: 'left-[0]'} pt-[36px] flex justify-center w-[300px] h-[108px] shadow-bg"
+								class="scroll-to-top-box fixed bottom-[130px]  {$isRTL
+									? 'right-[142px]'
+									: 'left-[142px]'}  flex justify-center  h-[25px] shadow-bg"
 							>
 								<button
 									class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
