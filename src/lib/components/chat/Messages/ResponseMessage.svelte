@@ -3,7 +3,7 @@
 	import dayjs from 'dayjs';
 
 	import { createEventDispatcher } from 'svelte';
-	import { onMount, tick, getContext } from 'svelte';
+	import { onMount, onDestroy, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import type { i18n as i18nType, t } from 'i18next';
 
@@ -160,6 +160,72 @@
 	let showRateComment = false;
 
 	let showJustASecond = false;
+
+	// Loading sequence for web search
+	const loadingSequence = [
+		{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
+		{ icon: '🔎', text: 'Searching the Web...', holdMs: 3000 },
+		{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
+		{ icon: '✅', text: 'Searched 9 sites • Shortlisted 3', holdMs: 2200 }
+	];
+
+	let currentStep = 0;
+	let loadingInterval: ReturnType<typeof setInterval> | null = null;
+
+	// Watch for loading states
+	$: {
+		const status = (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).at(
+			-1
+		);
+		const isGeneralLoading =
+			message.content === '' &&
+			!message.error &&
+			(message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0;
+		const isWebSearchLoading = status?.action === 'web_search' && !status?.urls;
+		const hasStartedStreaming = message.content && message.content.length > 0;
+
+		// For general loading, stop when streaming starts
+		// For web search loading, only stop when URLs are available (WebSearchResults will show)
+		if (isGeneralLoading && !hasStartedStreaming) {
+			startLoadingSequence();
+		} else if (isWebSearchLoading) {
+			startLoadingSequence();
+		} else {
+			stopLoadingSequence();
+		}
+	}
+
+	function startLoadingSequence() {
+		if (loadingInterval) return;
+
+		currentStep = 0;
+		scheduleNextStep();
+	}
+
+	function scheduleNextStep() {
+		if (loadingInterval) {
+			clearTimeout(loadingInterval);
+		}
+
+		loadingInterval = setTimeout(() => {
+			if (currentStep < loadingSequence.length - 1) {
+				currentStep = currentStep + 1;
+				scheduleNextStep();
+			}
+			// Stay on the last step, don't schedule next
+		}, loadingSequence[currentStep]?.holdMs || 2000);
+	}
+
+	function stopLoadingSequence() {
+		if (loadingInterval) {
+			clearTimeout(loadingInterval);
+			loadingInterval = null;
+		}
+	}
+
+	onDestroy(() => {
+		stopLoadingSequence();
+	});
 
 	const copyToClipboard = async (text) => {
 		text = removeAllDetails(text);
@@ -676,24 +742,18 @@
 											</WebSearchResults>
 										{:else}
 											<div class="flex flex-col justify-center -space-y-0.5">
-												<div
-													class="{status?.done === false
-														? 'shimmer'
-														: ''} text-base line-clamp-1 text-wrap"
-												>
-													{#if status?.description.includes('{{count}}')}
-														{$i18n.t(status?.description, {
-															count: status?.urls?.length ?? 0
-														})}
-													{:else if status?.description === 'No search query generated'}
-														{$i18n.t('No search query generated')}
-													{:else if status?.description === 'Generating search query'}
-														{$i18n.t('Generating search query')}
-													{:else if status?.description === 'Searching the web'}
-														{$i18n.t('Searching the web')}
-													{:else}
-														{status?.description}
-													{/if}
+												<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
+													{#each loadingSequence as step, i}
+														<div
+															class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
+															currentStep
+																? 'fade-in'
+																: 'fade-out'}"
+														>
+															<span>{step.icon}</span>
+															<span class="shimmer-text">{step.text}</span>
+														</div>
+													{/each}
 												</div>
 											</div>
 										{/if}
@@ -828,22 +888,19 @@
 							>
 								{#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
 									<div class="flex flex-col justify-center -space-y-0.5 py-4">
-										{#key showJustASecond}
-											<div
-												class="text-base line-clamp-1 text-wrap shimmer-text"
-												style="color: #666D7A"
-												in:fade={{ duration: 150 }}
-												out:fade={{ duration: 300 }}
-											>
-												{#if showJustASecond}
-													{$i18n.t('Just a sec...')}
-												{:else if history?.messages && Object.values(history.messages).some((msg) => msg?.files && msg.files.length > 0)}
-													{$i18n.t('Processing documents...')}
-												{:else}
-													{$i18n.t('Just a sec...')}
-												{/if}
-											</div>
-										{/key}
+										<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
+											{#each loadingSequence as step, i}
+												<div
+													class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
+													currentStep
+														? 'fade-in'
+														: 'fade-out'}"
+												>
+													<span>{step.icon}</span>
+													<span class="shimmer-text">{step.text}</span>
+												</div>
+											{/each}
+										</div>
 									</div>
 								{:else if message.content && message.error !== true}
 									<!-- always show message contents even if there's an error -->
@@ -1521,6 +1578,19 @@
 	.buttons {
 		-ms-overflow-style: none; /* IE and Edge */
 		scrollbar-width: none; /* Firefox */
+	}
+
+	.loading-step {
+		transition: opacity 0.5s ease-in-out;
+		position: absolute;
+	}
+
+	.fade-in {
+		opacity: 1;
+	}
+
+	.fade-out {
+		opacity: 0;
 	}
 
 	@keyframes typing {
