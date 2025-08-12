@@ -1,5 +1,6 @@
 import os
 import re
+import time
 
 import logging
 import aiohttp
@@ -22,6 +23,7 @@ from open_webui.constants import ERROR_MESSAGES
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from open_webui.utils.auth import get_admin_user, get_verified_user
 from open_webui.env import SRC_LOG_LEVELS
+from open_webui.utils.url_security import get_function_url_validator
 from pydantic import BaseModel, HttpUrl
 
 
@@ -30,6 +32,23 @@ log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 
 router = APIRouter()
+
+# Get URL validator for function loading
+url_validator = get_function_url_validator()
+
+def is_url_allowed(url: str) -> bool:
+    """
+    Validate if the URL is allowed using the common URL security validator.
+    This prevents SSRF attacks by only permitting connections to approved domains.
+    
+    Args:
+        url: The URL to validate
+        
+    Returns:
+        bool: True if the URL is allowed, False otherwise
+    """
+    return url_validator.is_url_allowed(url)
+
 
 ############################
 # GetFunctions
@@ -83,15 +102,58 @@ def github_url_to_raw_url(url: str) -> str:
 async def load_function_from_url(
     request: Request, form_data: LoadUrlForm, user=Depends(get_admin_user)
 ):
-    # NOTE: This is NOT a SSRF vulnerability:
-    # This endpoint is admin-only (see get_admin_user), meant for *trusted* internal use,
+    # Log the request for security auditing
+    log.info(f"Function load request from user {user.id} for URL: {form_data.url}")
+    
+    # Rate limiting: Check if user has made too many requests recently
+    # This is a simple in-memory rate limiter - in production, consider using Redis
+    user_id = str(user.id)
+    current_time = time.time()
+    
+    # Simple rate limiting: max 10 requests per hour per user
+    if not hasattr(request.app.state, 'function_load_requests'):
+        request.app.state.function_load_requests = {}
+    
+    if user_id in request.app.state.function_load_requests:
+        user_requests = request.app.state.function_load_requests[user_id]
+        # Clean old requests (older than 1 hour)
+        user_requests = [req_time for req_time in user_requests if current_time - req_time < 3600]
+        
+        if len(user_requests) >= 10:  # 10 requests per hour limit
+            log.warning(f"Rate limit exceeded for user {user_id}")
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded. Maximum 10 function load requests per hour."
+            )
+        
+        user_requests.append(current_time)
+        request.app.state.function_load_requests[user_id] = user_requests
+    else:
+        request.app.state.function_load_requests[user_id] = [current_time]
+    # NOTE: This endpoint is admin-only (see get_admin_user), meant for *trusted* internal use,
     # and does NOT accept untrusted user input. Access is enforced by authentication.
+    # However, we still implement strict URL validation to prevent SSRF attacks.
 
     url = str(form_data.url)
     if not url:
         raise HTTPException(status_code=400, detail="Please enter a valid URL")
 
+    # Validate URL against allow-list to prevent SSRF attacks
+    if not is_url_allowed(url):
+        raise HTTPException(
+            status_code=400, 
+            detail="URL not allowed. Only approved domains are permitted for security reasons."
+        )
+
     url = github_url_to_raw_url(url)
+    
+    # Re-validate the transformed URL to ensure it's still allowed
+    if not is_url_allowed(url):
+        raise HTTPException(
+            status_code=400, 
+            detail="Transformed URL not allowed. Only approved domains are permitted for security reasons."
+        )
+    
     url_parts = url.rstrip("/").split("/")
 
     file_name = url_parts[-1]
@@ -105,24 +167,69 @@ async def load_function_from_url(
     )
 
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                url, headers={"Content-Type": "application/json"}
-            ) as resp:
+        # Set strict timeout and size limits to prevent abuse
+        timeout = aiohttp.ClientTimeout(total=30, connect=10)
+        connector = aiohttp.TCPConnector(limit=1, limit_per_host=1)
+        
+        async with aiohttp.ClientSession(
+            timeout=timeout, 
+            connector=connector,
+            headers={
+                "User-Agent": "GovGPT-Function-Loader/1.0",
+                "Accept": "text/plain,text/x-python,application/x-python",
+                "Accept-Encoding": "gzip, deflate"
+            }
+        ) as session:
+            async with session.get(url) as resp:
                 if resp.status != 200:
                     raise HTTPException(
                         status_code=resp.status, detail="Failed to fetch the function"
                     )
+                
+                # Check content length to prevent large file downloads
+                content_length = resp.headers.get('content-length')
+                if content_length and int(content_length) > 1024 * 1024:  # 1MB limit
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="File too large. Maximum size allowed is 1MB."
+                    )
+                
                 data = await resp.text()
                 if not data:
                     raise HTTPException(
                         status_code=400, detail="No data received from the URL"
                     )
+                
+                # Additional size check for the actual content
+                if len(data) > 1024 * 1024:  # 1MB limit
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="Content too large. Maximum size allowed is 1MB."
+                    )
+                
+                # Validate content type - ensure it's Python code
+                content_type = resp.headers.get('content-type', '').lower()
+                if not any(py_type in content_type for py_type in ['text/plain', 'text/x-python', 'application/x-python']):
+                    # Check if the content looks like Python code
+                    if not data.strip().startswith(('#', '"""', "'''", 'import ', 'from ', 'def ', 'class ')):
+                        log.warning(f"Content from {url} doesn't appear to be Python code")
+                        # Don't block, but log for monitoring
+                
+                # Log successful function load
+                log.info(f"Successfully loaded function '{function_name}' from {url} (size: {len(data)} bytes)")
+                    
         return {
             "name": function_name,
             "content": data,
         }
+    except aiohttp.ClientError as e:
+        log.warning(f"Network error when loading function from {url}: {e}")
+        raise HTTPException(
+            status_code=400, 
+            detail="Network error when fetching the function. Please check the URL and try again."
+        )
     except Exception as e:
+        log.error(f"Error importing function from {url}: {e}")
         raise HTTPException(status_code=500, detail=f"Error importing function: {e}")
 
 

@@ -275,7 +275,7 @@
 					<MaterialIcon name="translate" size="1.1rem" />
 				</div>
 			</button>
-			{#if role === 'admin'}
+			{#if role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)}
 				<div
 					class="flex px-[16px] py-[11px] w-full items-center justify-between border-b border-gray-100 dark:border-transparent hover:bg-menu-hover"
 				>
@@ -317,7 +317,7 @@
 			</button>
 
 
-			{#if role === 'admin'}
+			{#if role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)}
 				<button
 					class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-menu-hover"
 					on:click={async () => {
@@ -357,7 +357,7 @@
 				</div>
 			</button>
 
-			{#if role === 'admin'}
+			{#if role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)}
 				<button
 					class="flex justify-between items-center border-b border-gray-100 dark:border-transparent px-[16px] py-[11px] w-full transition hover:bg-menu-hover"
 					on:click={() => {
@@ -437,7 +437,7 @@
 				</DropdownMenu.Item>
 			{/if}
 
-			{#if role === 'admin'}
+			{#if role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)}
 				<button
 					class="flex px-[16px] justify-between items-center border-b border-gray-100 dark:border-transparent py-[11px] w-full transition hover:bg-menu-hover"
 					on:click={() => {

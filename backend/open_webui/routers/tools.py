@@ -21,6 +21,7 @@ from open_webui.utils.tools import get_tool_specs
 from open_webui.utils.auth import get_admin_user, get_verified_user
 from open_webui.utils.access_control import has_access, has_permission
 from open_webui.env import SRC_LOG_LEVELS
+from open_webui.utils.url_security import get_tool_url_validator
 
 from open_webui.utils.tools import get_tool_servers_data
 
@@ -30,6 +31,23 @@ log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 
 router = APIRouter()
+
+# Get URL validator for tool loading
+url_validator = get_tool_url_validator()
+
+
+def is_url_allowed(url: str) -> bool:
+    """
+    Validate if the URL is allowed using the common URL security validator.
+    This prevents SSRF attacks by only permitting connections to approved domains.
+    
+    Args:
+        url: The URL to validate
+        
+    Returns:
+        bool: True if the URL is allowed, False otherwise
+    """
+    return url_validator.is_url_allowed(url)
 
 ############################
 # GetTools
@@ -131,15 +149,30 @@ def github_url_to_raw_url(url: str) -> str:
 async def load_tool_from_url(
     request: Request, form_data: LoadUrlForm, user=Depends(get_admin_user)
 ):
-    # NOTE: This is NOT a SSRF vulnerability:
-    # This endpoint is admin-only (see get_admin_user), meant for *trusted* internal use,
+    # NOTE: This endpoint is admin-only (see get_admin_user), meant for *trusted* internal use,
     # and does NOT accept untrusted user input. Access is enforced by authentication.
+    # However, we still implement strict URL validation to prevent SSRF attacks.
 
     url = str(form_data.url)
     if not url:
         raise HTTPException(status_code=400, detail="Please enter a valid URL")
 
+    # Validate URL against allow-list to prevent SSRF attacks
+    if not is_url_allowed(url):
+        raise HTTPException(
+            status_code=400, 
+            detail="URL not allowed. Only approved domains are permitted for security reasons."
+        )
+
     url = github_url_to_raw_url(url)
+    
+    # Re-validate the transformed URL to ensure it's still allowed
+    if not is_url_allowed(url):
+        raise HTTPException(
+            status_code=400, 
+            detail="Transformed URL not allowed. Only approved domains are permitted for security reasons."
+        )
+    
     url_parts = url.rstrip("/").split("/")
 
     file_name = url_parts[-1]
@@ -153,24 +186,69 @@ async def load_tool_from_url(
     )
 
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                url, headers={"Content-Type": "application/json"}
-            ) as resp:
+        # Set strict timeout and size limits to prevent abuse
+        timeout = aiohttp.ClientTimeout(total=30, connect=10)
+        connector = aiohttp.TCPConnector(limit=1, limit_per_host=1)
+        
+        async with aiohttp.ClientSession(
+            timeout=timeout, 
+            connector=connector,
+            headers={
+                "User-Agent": "GovGPT-Tool-Loader/1.0",
+                "Accept": "text/plain,text/x-python,application/x-python",
+                "Accept-Encoding": "gzip, deflate"
+            }
+        ) as session:
+            async with session.get(url) as resp:
                 if resp.status != 200:
                     raise HTTPException(
                         status_code=resp.status, detail="Failed to fetch the tool"
                     )
+                
+                # Check content length to prevent large file downloads
+                content_length = resp.headers.get('content-length')
+                if content_length and int(content_length) > 1024 * 1024:  # 1MB limit
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="File too large. Maximum size allowed is 1MB."
+                    )
+                
                 data = await resp.text()
                 if not data:
                     raise HTTPException(
                         status_code=400, detail="No data received from the URL"
                     )
+                
+                # Additional size check for the actual content
+                if len(data) > 1024 * 1024:  # 1MB limit
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="Content too large. Maximum size allowed is 1MB."
+                    )
+                
+                # Validate content type - ensure it's Python code
+                content_type = resp.headers.get('content-type', '').lower()
+                if not any(py_type in content_type for py_type in ['text/plain', 'text/x-python', 'application/x-python']):
+                    # Check if the content looks like Python code
+                    if not data.strip().startswith(('#', '"""', "'''", 'import ', 'from ', 'def ', 'class ')):
+                        log.warning(f"Content from {url} doesn't appear to be Python code")
+                        # Don't block, but log for monitoring
+                
+                # Log successful tool load
+                log.info(f"Successfully loaded tool '{tool_name}' from {url} (size: {len(data)} bytes)")
+                    
         return {
             "name": tool_name,
             "content": data,
         }
+    except aiohttp.ClientError as e:
+        log.warning(f"Network error when loading tool from {url}: {e}")
+        raise HTTPException(
+            status_code=400, 
+            detail="Network error when fetching the tool. Please check the URL and try again."
+        )
     except Exception as e:
+        log.error(f"Error importing tool from {url}: {e}")
         raise HTTPException(status_code=500, detail=f"Error importing tool: {e}")
 
 
