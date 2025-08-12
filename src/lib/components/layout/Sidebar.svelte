@@ -104,8 +104,6 @@
 	let scrollContainer: HTMLElement;
 	let showScrollToTopButton = false;
 
-	
-
 	function scrollToTop() {
 		scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
 	}
@@ -554,7 +552,9 @@
 		class="flex flex-col justify-between max-h-[100dvh] overflow-x-hidden z-50 bg-light-bg shadow-[0px_48px_96px_0px_rgba(0,0,0,0.08)] dark:shadow-none"
 	>
 		<div
-			class="{$isRTL? 'pr-[8px] pl-[2px]' :'pl-[8px] pr-[2px]' }  py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto"
+			class="{$isRTL
+				? 'pr-[8px] pl-[2px]'
+				: 'pl-[8px] pr-[2px]'}  py-[24px] sidebar__top h-[calc(100vh-58px)] overflow-y-auto"
 			bind:this={scrollContainer}
 			on:scroll={handleScroll}
 		>
@@ -651,7 +651,7 @@
 					<!-- Menu Icon behaves like other sidebar buttons -->
 					<button
 						type="button"
-						class="ml-[8px] w-[28px] h-[28px] flex items-center rounded-lg transition-all duration-300 ease-in-out hover:bg-gradient-bg-2"
+						class="w-[28px] h-[28px] flex items-center rounded-lg transition-all duration-300 ease-in-out hover:bg-gradient-bg-2"
 						class:justify-center={!$showSidebar}
 						on:click={(e) => {
 							if (!$showSidebar) onSidebarClick(e);
@@ -756,7 +756,7 @@
 				{#if !$showSidebar}
 					<div class="flex justify-center text-gray-800 dark:text-gray-200">
 						<button
-							class="pl-[20px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
+							class="ps-[20px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
 							on:click={() => {
 								showSearch.set(true);
 							}}
@@ -955,7 +955,7 @@
 					</Folder>
 				{/if}
 
-				{#if $user?.role === 'admin'}
+				{#if $user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)}
 					<Folder
 						className=""
 						name={$i18n.t('Folders')}
@@ -1216,21 +1216,22 @@
 									</div>
 								{/if}
 							</div>
-						</div>
-						{#if showScrollToTopButton}
-						<div
-							class="scroll-to-top-box fixed bottom-[130px] {$isRTL
-								? 'right-[0]'
-								: 'left-[0]'} pt-[36px] flex justify-center w-[300px] h-[108px] shadow-bg"
-						>
-							<button
-								class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
-								on:click={scrollToTop}
+							{#if showScrollToTopButton}
+							<div
+								class="scroll-to-top-box fixed bottom-[130px]  {$isRTL
+									? 'right-[142px]'
+									: 'left-[142px]'}  flex justify-center  h-[25px] shadow-bg"
 							>
-								<ScrollUp />
-							</button>
-						</div>
+								<button
+									class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
+									on:click={scrollToTop}
+								>
+									<ScrollUp />
+								</button>
+							</div>
 						{/if}
+						</div>
+						
 					{/if}
 				</div>
 			</div>
@@ -1238,17 +1239,21 @@
 		<div class="p-[8px] pb-[2px] sidebar__bottom">
 			<div class="w-full flex flex-col left-[20px] bottom-[20px] dark:border-gray-900">
 				<button
-					class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-menu-hover {$page.url.pathname === '/knowledgeRepository' ? 'bg-menu-hover' : ''} {$showSidebar
-						? ''
-						: 'justify-center'}"
+					class="px-[12px] py-[8px] flex items-center justify-between cursor-pointer rounded-xl w-full hover:bg-menu-hover {$page.url.pathname.includes(
+						'/knowledgeRepository'
+					)
+						? 'bg-menu-hover'
+						: ''} {$showSidebar ? '' : 'justify-center'}"
 					on:click={() => {
+						selectedChatId = null;
+						chatId.set('');
 						goto('/knowledgeRepository');
 						if ($mobile) {
 							showSidebar.set(false);
 						}
 					}}
 				>
-					<div class="flex {$isRTL ? 'pr-2' : 'pl-2'} gap-2">
+					<div class="flex {$showSidebar ? $isRTL  ? 'pr-2' : 'pl-2':""} gap-2">
 						<div class=" self-center {$showSidebar ? 'me-[8px]' : ''}">
 							<GovKno />
 						</div>
@@ -1320,6 +1325,7 @@
 			</div>
 		</div>
 	</div>
+	
 </div>
 
 <style>
