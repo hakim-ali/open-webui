@@ -174,21 +174,14 @@
 
 	// Watch for loading states
 	$: {
-		const status = (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).at(
-			-1
-		);
 		const isGeneralLoading =
 			message.content === '' &&
 			!message.error &&
-			(message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0;
-		const isWebSearchLoading = status?.action === 'web_search' && !status?.urls;
+			!message.done;
 		const hasStartedStreaming = message.content && message.content.length > 0;
 
-		// For general loading, stop when streaming starts
-		// For web search loading, only stop when URLs are available (WebSearchResults will show)
+		// Start loading sequence for empty messages that aren't done yet
 		if (isGeneralLoading && !hasStartedStreaming) {
-			startLoadingSequence();
-		} else if (isWebSearchLoading) {
 			startLoadingSequence();
 		} else {
 			stopLoadingSequence();
@@ -640,7 +633,7 @@
 
 		await tick();
 		if (buttonsContainerElement) {
-			console.log(buttonsContainerElement);
+			// console.log(buttonsContainerElement);
 
 			buttonsContainerElement.addEventListener('wheel', function (event) {
 				if (buttonsContainerElement.scrollWidth <= buttonsContainerElement.clientWidth) {
