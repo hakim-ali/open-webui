@@ -47,6 +47,7 @@
 	export let imageGenerationEnabled = false;
 	export let codeInterpreterEnabled = false;
 	export let webSearchEnabled = false;
+	export let govBtnEnable = false;
 
 	export let toolServers = [];
 
@@ -107,6 +108,7 @@
 
 		// Reset feature toggles
 		webSearchEnabled = false;
+		govBtnEnable = false;
 		imageGenerationEnabled = false;
 		codeInterpreterEnabled = false;
 
@@ -268,7 +270,7 @@
 			</div>
 
 			<div class="suggestion-inputbox w-full">
-				{#if !webSearchEnabled}
+				{#if !(webSearchEnabled || govBtnEnable)}
 					<div class="mx-auto font-primary" in:fade={{ duration: 200, delay: 200 }}>
 						<div class="">
 							<Suggestions
@@ -297,6 +299,7 @@
 						bind:imageGenerationEnabled
 						bind:codeInterpreterEnabled
 						bind:webSearchEnabled
+						bind:govBtnEnable
 						bind:atSelectedModel
 						{toolServers}
 						{transparentBackground}
