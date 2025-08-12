@@ -3,7 +3,7 @@
 	import dayjs from 'dayjs';
 
 	import { createEventDispatcher } from 'svelte';
-	import { onMount, tick, getContext, onDestroy } from 'svelte';
+	import { onMount, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import type { i18n as i18nType, t } from 'i18next';
 
@@ -37,7 +37,6 @@
 	import RateComment from './RateComment.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import WebSearchResults from './ResponseMessage/WebSearchResults.svelte';
-	import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
 	import Sparkles from '$lib/components/icons/Sparkles.svelte';
 
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -160,79 +159,7 @@
 
 	let showRateComment = false;
 
-	// Initial loading progression timing
 	let showJustASecond = false;
-	let initialLoadingTimer: ReturnType<typeof setTimeout> | null = null;
-
-	// Web search progression timing
-	let webSearchStatus = '';
-	let webSearchStage = 0; // 0: none, 1: just a sec, 2: searching, 3: results
-
-	// visual handling moved to WebSearchStatus component
-
-	// Handle initial loading progression: "Just a sec..." -> "Processing documents..."
-	$: if (
-		message.content === '' &&
-		!message.error &&
-		(message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0
-	) {
-		if (!showJustASecond && !initialLoadingTimer) {
-			showJustASecond = true;
-
-			// After 2 seconds, hide "Just a sec..." and show document-specific message
-			initialLoadingTimer = setTimeout(() => {
-				showJustASecond = false;
-			}, 2000);
-		}
-	} else {
-		// Clear timer when content arrives or status appears
-		if (initialLoadingTimer) {
-			clearTimeout(initialLoadingTimer);
-			initialLoadingTimer = null;
-		}
-		showJustASecond = false;
-	}
-
-	// Track web search progression
-	$: if ((message?.statusHistory?.length ?? 0) > 0 || message?.status) {
-		const currentStatus = (
-			message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]
-		).at(-1);
-		if (currentStatus?.action === 'web_search') {
-			// Monotonic stage progression to avoid duplicates/regressions
-			const desc = currentStatus?.description ?? '';
-			const nextStage =
-				desc.includes('Searched') && desc.includes('Shortlisted')
-					? 3
-					: desc === 'Searching on web...'
-						? 2
-						: desc === 'Just a sec...'
-							? 1
-							: 2; // default mid stage for other strings
-
-			if (nextStage > webSearchStage) {
-				webSearchStage = nextStage;
-				webSearchStatus = desc;
-			} else if (nextStage === webSearchStage) {
-				// Allow updates within the same stage only for final results to refresh counts
-				if (nextStage === 3 && desc && desc !== webSearchStatus) {
-					webSearchStatus = desc;
-				}
-			} // ignore regressions
-		} else {
-			// Do not forcibly reset to avoid flicker; rendering is scoped by action above
-		}
-	}
-
-	// visual fade/shimmer handled inside WebSearchStatus
-
-	// Cleanup timers on component destroy
-	onDestroy(() => {
-		// no local visual timers
-		if (initialLoadingTimer) {
-			clearTimeout(initialLoadingTimer);
-		}
-	});
 
 	const copyToClipboard = async (text) => {
 		text = removeAllDetails(text);
@@ -748,9 +675,26 @@
 												</div>
 											</WebSearchResults>
 										{:else}
-											<!-- Web search status without URLs - shimmer + fade like reference -->
 											<div class="flex flex-col justify-center -space-y-0.5">
-												<WebSearchLoading text={webSearchStatus} stage={webSearchStage} />
+												<div
+													class="{status?.done === false
+														? 'shimmer'
+														: ''} text-base line-clamp-1 text-wrap"
+												>
+													{#if status?.description.includes('{{count}}')}
+														{$i18n.t(status?.description, {
+															count: status?.urls?.length ?? 0
+														})}
+													{:else if status?.description === 'No search query generated'}
+														{$i18n.t('No search query generated')}
+													{:else if status?.description === 'Generating search query'}
+														{$i18n.t('Generating search query')}
+													{:else if status?.description === 'Searching the web'}
+														{$i18n.t('Searching the web')}
+													{:else}
+														{status?.description}
+													{/if}
+												</div>
 											</div>
 										{/if}
 									{:else if status?.action === 'knowledge_search'}
