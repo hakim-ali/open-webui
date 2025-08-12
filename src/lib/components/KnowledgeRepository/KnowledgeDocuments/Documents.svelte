@@ -69,15 +69,15 @@
 		{$i18n?.t('Gov Knowledge Repository') || 'Gov Knowledge Repository'}
 	</div>
 </div> -->
-<div class="my-5 flex flex-row">
+<div class="my-5 flex flex-row {$isRTL ? 'gap-2' : ''}">
 	<div
 		class="flex md:self-center text-sm text-gray-500 font-normal px-0.5 cursor-pointer"
 		on:click={() => goto('/knowledgeRepository')}
 	>
-		{$i18n?.t('Government Entities') || 'Government Entities'} >
+		{$i18n?.t('Government Entities') || 'Government Entities'} <span class="text-sm text-gray-500 font-normal {$isRTL ? 'mr-2' : 'mx-2'}">></span>
 	</div>
 	<div class="flex md:self-center text-sm text-gray-1000 font-normal px-0.5 dark:text-white">
-		{receivedStoreData?.name}
+		{$isRTL ? receivedStoreData?.nameAr : receivedStoreData?.name}
 	</div>
 </div>
 
@@ -95,7 +95,7 @@
 	>
 		{#if $mobile}
 			<table
-				class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-100 table-auto max-w-full rounded-sm"
+				class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-100 max-w-full rounded-sm"
 			>
 				<thead
 					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-[#072D5A4D] dark:text-gray-100 -translate-y-0.5"
@@ -103,7 +103,7 @@
 					<tr class="">
 						<th
 							scope="col"
-							class="px-3 py-3 cursor-pointer select-none"
+							class="px-3 py-3 cursor-pointer select-none w-full"
 							on:click={() => setSortKey('title')}
 						>
 							<div class="flex gap-1.5 items-center ml-2 gap-3 capitalize">
@@ -126,28 +126,28 @@
 						</th>
 					</tr>
 				</thead>
-				<tbody class="w-full">
+				<tbody class="w-full ">
 					{#each sortedDocuments as document, i (document.title)}
 						<tr
-							class="bg-white dark:bg-[#072D5A4D] dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition"
+							class="bg-white dark:bg-[#072D5A4D] dark:border-gray-850 text-xs cursor-pointer hover:bg-gradient-bg-2 dark:hover:bg-gray-850 transition w-full"
 						>
-							<td class="py-3 pl-3">
-								<!--							<div class="flex flex-col gap-0.5 h-full w-full">-->
-								<Collapsible bind:open={openStates[i]} className="w-full space-y-1 gap-4">
+							<td class="py-3 pl-3 w-full">
+								<Collapsible bind:open={openStates[i]} className="w-full space-y-3">
 									<!-- Header: Flex row for title + chevron -->
 									<div
-										class="flex items-center justify-between w-full font-semibold text-gray-600 dark:text-gray-100 gap-1"
+										class="flex flex-row items-center justify-between font-semibold text-gray-600 dark:text-gray-100 py-1 {$isRTL ? "pl-2":"pr-3" }"
+										style="width: calc(100vw - 50px);"
 									>
 										<!-- Left: Icon + Title -->
-										<div class="flex items-center space-x-2 truncate">
+										<div class="flex items-center space-x-3 flex-1">
 											<KnoDocs />
-											<div class="truncate max-w-[250px]">
+											<div class="truncate max-w-[260px]">
 												{document.title}
 											</div>
 										</div>
 
 										<!-- Right: Chevron -->
-										<div class="flex items-center">
+										<div class="flex items-center ml-4">
 											{#if openStates[i]}
 												<ChevronUp strokeWidth="3.5" className="size-3.5" />
 											{:else}
@@ -159,13 +159,12 @@
 									<!-- Collapsible content -->
 									<div slot="content">
 										<div
-											class="mt-2 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-100 flex-1 flex items-center dark:bg-[#072D5A4D] rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
+											class="mt-3 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-100 flex-1 flex items-center dark:bg-[#072D5A4D] rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
 										>
 											{$isRTL ? document.summaryAr : document.summaryEn}
 										</div>
 									</div>
 								</Collapsible>
-								<!--							</div>-->
 							</td>
 						</tr>
 					{/each}
