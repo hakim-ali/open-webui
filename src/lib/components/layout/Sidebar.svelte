@@ -788,7 +788,7 @@
 
 			<!-- Search icon only when sidebar is expanded, right aligned -->
 
-			{#if $user?.role === 'admin' && ($config?.features?.enable_notes ?? false) && ($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true))}
+			{#if ($user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true) && ($config?.features?.enable_notes ?? false)) || ($user?.role !== 'admin' && ($user?.permissions?.features?.notes ?? true))}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
 						class="px-[12px] py-[8px] grow flex items-center rounded-lg hover:bg-menu-hover transition-all duration-300 ease-in-out"
@@ -849,7 +849,7 @@
 				</div>
 			{/if}
 
-			{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
+			{#if ($user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)) || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
 						class="px-[12px] py-[8px] grow flex items-center rounded-lg hover:bg-menu-hover transition-all duration-300 ease-in-out"
@@ -927,14 +927,14 @@
 					</div>
 				{/if}
 
-				{#if $config?.features?.enable_channels && ($user?.role === 'admin' || $channels.length > 0)}
+				{#if $config?.features?.enable_channels && ($channels.length > 0 || ($user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)))}
 					<Folder
 						className=" mt-0.5"
 						name={$i18n.t('Channels')}
 						dragAndDrop={false}
 						showSidebar={$showSidebar}
 						onAdd={async () => {
-							if ($user?.role === 'admin') {
+							if ($user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)) {
 								await tick();
 
 								setTimeout(() => {

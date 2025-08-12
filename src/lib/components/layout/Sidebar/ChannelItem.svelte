@@ -4,7 +4,7 @@
 	const i18n = getContext('i18n');
 
 	import { page } from '$app/stores';
-	import { mobile, showSidebar, user } from '$lib/stores';
+	import { mobile, showSidebar, user, config } from '$lib/stores';
 	import { updateChannelById } from '$lib/apis/channels';
 
 	import Cog6 from '$lib/components/icons/Cog6.svelte';
@@ -78,7 +78,7 @@
 		</div>
 	</a>
 
-	{#if $user?.role === 'admin'}
+	{#if $user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)}
 		<button
 			class="absolute z-10 right-2 invisible group-hover:visible self-center flex items-center dark:text-gray-300"
 			on:click={(e) => {
