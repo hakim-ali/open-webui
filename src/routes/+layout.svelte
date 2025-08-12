@@ -51,15 +51,26 @@
 	import { beforeNavigate } from '$app/navigation';
 	import { updated } from '$app/state';
 	import { get } from 'svelte/store';
+	import { checkAdminRoute } from '$lib/utils/routeGuard';
 
 	// handle frontend updates (https://svelte.dev/docs/kit/configuration#version)
 	beforeNavigate(({ willUnload, to }) => {
 		if (updated.current && !willUnload && to?.url) {
 			location.href = to.url.href;
 		}
+		
+		// Check admin routes when navigating
+		if (to?.url && !willUnload) {
+			checkAdminRoute(to.url.pathname);
+		}
 	});
 
 	setContext('i18n', i18n);
+
+	// Monitor page changes and block admin routes
+	$: if ($page.url.pathname.startsWith('/admin')) {
+		checkAdminRoute($page.url.pathname);
+	}
 
 	const bc = new BroadcastChannel('active-tab-channel');
 
