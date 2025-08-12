@@ -1583,6 +1583,7 @@
 	"Please wait...": "انتظر من فضلك...",
 	"Chat is limited to the '{{count}}' uploaded {{files}} ": " {{files}} تقتصر الدردشة على '{{count}}' التي تم تحميلها",
 	"files.": "ملفات.",
-	"file.": "ملف."
+	"file.": "ملف.",
+	"Gov Government Repository": "مستودع الحكومة"
 
 }
