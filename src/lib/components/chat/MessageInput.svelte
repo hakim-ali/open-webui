@@ -228,7 +228,7 @@
 	$: showToolsButton = toolServers.length + selectedToolIds.length > 0;
 
 	let showGovKnoWebSearchToggle = false;
-	let govBtnEnable = false;
+	export let govBtnEnable = false;
 	let showGovKnoButton = false;
 	$: showGovKnoButton = $models.find((model) =>
 		model.id.includes($config.govgpt.rag_wog_model_name)

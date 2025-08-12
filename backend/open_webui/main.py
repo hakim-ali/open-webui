@@ -376,6 +376,7 @@ from open_webui.config import (
     # Admin
     ENABLE_ADMIN_CHAT_ACCESS,
     ENABLE_ADMIN_EXPORT,
+    ENABLE_ADMIN_FUNCTIONALITY,
     # Tasks
     TASK_MODEL,
     TASK_MODEL_EXTERNAL,
@@ -1163,13 +1164,19 @@ app.include_router(ollama.router, prefix="/ollama", tags=["ollama"])
 app.include_router(openai.router, prefix="/openai", tags=["openai"])
 
 
-app.include_router(pipelines.router, prefix="/api/v1/pipelines", tags=["pipelines"])
+# Conditionally include admin routers based on configuration
+if ENABLE_ADMIN_FUNCTIONALITY:
+    app.include_router(pipelines.router, prefix="/api/v1/pipelines", tags=["pipelines"])
+    app.include_router(functions.router, prefix="/api/v1/functions", tags=["functions"])
+    app.include_router(
+        evaluations.router, prefix="/api/v1/evaluations", tags=["evaluations"]
+    )
+
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(images.router, prefix="/api/v1/images", tags=["images"])
 
 app.include_router(audio.router, prefix="/api/v1/audio", tags=["audio"])
 app.include_router(retrieval.router, prefix="/api/v1/retrieval", tags=["retrieval"])
-
 app.include_router(configs.router, prefix="/api/v1/configs", tags=["configs"])
 
 app.include_router(auths.router, prefix="/api/v1/auths", tags=["auths"])
@@ -1190,10 +1197,6 @@ app.include_router(memories.router, prefix="/api/v1/memories", tags=["memories"]
 app.include_router(folders.router, prefix="/api/v1/folders", tags=["folders"])
 app.include_router(groups.router, prefix="/api/v1/groups", tags=["groups"])
 app.include_router(files.router, prefix="/api/v1/files", tags=["files"])
-app.include_router(functions.router, prefix="/api/v1/functions", tags=["functions"])
-app.include_router(
-    evaluations.router, prefix="/api/v1/evaluations", tags=["evaluations"]
-)
 app.include_router(utils.router, prefix="/api/v1/utils", tags=["utils"])
 app.include_router(custom_document_qa.router, prefix="/api/v1/custom-qa", tags=["custom-qa"])
 
@@ -1676,6 +1679,7 @@ async def get_app_config(request: Request):
                     "enable_user_webhooks": app.state.config.ENABLE_USER_WEBHOOKS,
                     "enable_admin_export": ENABLE_ADMIN_EXPORT,
                     "enable_admin_chat_access": ENABLE_ADMIN_CHAT_ACCESS,
+                    "enable_admin_functionality": ENABLE_ADMIN_FUNCTIONALITY,
                     "enable_google_drive_integration": app.state.config.ENABLE_GOOGLE_DRIVE_INTEGRATION,
                     "enable_onedrive_integration": app.state.config.ENABLE_ONEDRIVE_INTEGRATION,
                 }

@@ -41,7 +41,6 @@
 						<MaterialIcon name="menu" className="w-6 h-6" />
 					</button>
 				</div>
-			
 
 				<div
 					class="mt-0.5 {$mobile

@@ -139,10 +139,10 @@
 			</div>
 		{:else}
 			<table
-				class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto max-w-full rounded-sm"
+				class="w-full text-sm text-left text-gray-500 dark:text-gray-100 table-auto max-w-full rounded-sm"
 			>
 				<thead
-					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-[#072D5A4D] dark:text-gray-400 -translate-y-0.5"
+					class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-[#072D5A4D] dark:text-gray-100 -translate-y-0.5"
 				>
 					<tr class="">
 						<th
@@ -205,7 +205,7 @@
 								<div class="flex flex-col items-start gap-0.5 h-full">
 									<div class="flex flex-col h-full">
 										<div
-											class="tex-[14px] text-gray-600 dark:text-gray-400 flex-1 flex items-center {$mobile
+											class="tex-[14px] text-gray-600 dark:text-gray-100 flex-1 flex items-center {$mobile
 												? 'gap-2'
 												: 'gap-4'}"
 										>
