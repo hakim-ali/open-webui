@@ -651,7 +651,7 @@
 					<!-- Menu Icon behaves like other sidebar buttons -->
 					<button
 						type="button"
-						class="ml-[8px] w-[28px] h-[28px] flex items-center rounded-lg transition-all duration-300 ease-in-out hover:bg-gradient-bg-2"
+						class="w-[28px] h-[28px] flex items-center rounded-lg transition-all duration-300 ease-in-out hover:bg-gradient-bg-2"
 						class:justify-center={!$showSidebar}
 						on:click={(e) => {
 							if (!$showSidebar) onSidebarClick(e);
@@ -1216,12 +1216,11 @@
 									</div>
 								{/if}
 							</div>
-						</div>
-						{#if showScrollToTopButton}
+							{#if showScrollToTopButton}
 							<div
-								class="scroll-to-top-box fixed bottom-[130px] {$isRTL
-									? 'right-[0]'
-									: 'left-[0]'} pt-[36px] flex justify-center w-[300px] h-[108px] shadow-bg"
+								class="scroll-to-top-box fixed bottom-[130px]  {$isRTL
+									? 'right-[142px]'
+									: 'left-[142px]'}  flex justify-center  h-[25px] shadow-bg"
 							>
 								<button
 									class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
@@ -1231,6 +1230,8 @@
 								</button>
 							</div>
 						{/if}
+						</div>
+						
 					{/if}
 				</div>
 			</div>
@@ -1252,7 +1253,7 @@
 						}
 					}}
 				>
-					<div class="flex {$isRTL ? 'pr-2' : 'pl-2'} gap-2">
+					<div class="flex {$showSidebar ? $isRTL  ? 'pr-2' : 'pl-2':""} gap-2">
 						<div class=" self-center {$showSidebar ? 'me-[8px]' : ''}">
 							<GovKno />
 						</div>
@@ -1324,6 +1325,7 @@
 			</div>
 		</div>
 	</div>
+	
 </div>
 
 <style>
