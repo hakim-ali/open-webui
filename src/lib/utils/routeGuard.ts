@@ -21,7 +21,8 @@ export function checkAdminRoute(pathname: string): boolean {
 	}
 	
 	// Block admin API routes (these should be handled by backend, but just in case)
-	if (pathname.startsWith('/api/v1/functions') || 
+	if (pathname.startsWith('/api/v1/functions') ||
+		pathname.startsWith('/openai') || 
 		pathname.startsWith('/api/v1/pipelines') ||
 		pathname.startsWith('/api/v1/evaluations')) {
 		goto('/');
