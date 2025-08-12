@@ -141,7 +141,9 @@
 										<!-- Left: Icon + Title -->
 										<div class="flex items-center space-x-3 flex-1">
 											<KnoDocs />
-											<div class="truncate max-w-[260px]">
+											<div
+											dir ={'ltr'}
+											 class="truncate max-w-[260px]">
 												{document.title}
 											</div>
 										</div>
@@ -159,7 +161,7 @@
 									<!-- Collapsible content -->
 									<div slot="content">
 										<div
-											class="mt-3 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-100 flex-1 flex items-center dark:bg-[#072D5A4D] rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
+											class="rtl:text-right ltr:text-left mt-3 p-[12px] justify-center gap-4 text-wrap font-semibold text-gray-600 dark:text-gray-100 flex-1 flex items-center dark:bg-[#072D5A4D] rounded-[6px] border border-[color:var(--Outline-Outline-default,#E5EBF3)] dark:border-[color:var(--Outline-Outline-default,#2D3642)] bg-[var(--Background-background,#FBFCFC)] shadow-[0_8px_8px_0_rgba(0,0,0,0.08)]"
 										>
 											{$isRTL ? document.summaryAr : document.summaryEn}
 										</div>
@@ -249,7 +251,7 @@
 									content={$isRTL ? document.summaryAr : document.summaryEn}
 									placement="bottom"
 								>
-									<div class="max-w-md truncate">
+									<div class="max-w-lg truncate">
 										{$isRTL ? document.summaryAr : document.summaryEn}
 									</div>
 								</Tooltip>
