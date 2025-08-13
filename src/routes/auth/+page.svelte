@@ -143,7 +143,7 @@
 							<div class="logo-container">
 								<img src="/GovGPT.gif" alt="GovGPT Logo" class="logo-image" />
 							</div>
-							<img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" />
+							<!-- <img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" /> -->
 							<div class="title-container">
 								<h1 class="govgpt-title">GovGPT</h1>
 							</div>
@@ -339,7 +339,7 @@
 								</form>
 							</div>
 						</div>
-						<img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" />
+						<!-- <img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" /> -->
 					</div>
 				{/if}
 				<div
