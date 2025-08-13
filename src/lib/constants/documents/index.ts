@@ -1,8 +1,4 @@
 export const DOCUMENT = {
-    DOC: {
-        TYPE: 'application/msword',
-        EXTENSION: '.doc'
-    },
     DOCX: {
         TYPE: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         EXTENSION: '.docx'

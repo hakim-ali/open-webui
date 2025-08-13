@@ -88,6 +88,8 @@
 				class="self-center"
 				on:click={() => {
 					show = false;
+					query = '';
+					selectedIdx = 0;
 				}}
 			>
 				<svg

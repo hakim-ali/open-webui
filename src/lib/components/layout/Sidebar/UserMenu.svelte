@@ -271,7 +271,7 @@
 				<div class=" self-center truncate gap-[8px] text-[17px] leading-[22px]">
 					{$i18n.t('Switch to Arabic')}
 				</div>
-				<div class=" self-center {$mobile ? '' : 'mr-3'} ">
+				<div class=" self-center {$mobile ? '' : 'mr-3'}">
 					<MaterialIcon name="translate" size="1.1rem" />
 				</div>
 			</button>
@@ -311,7 +311,7 @@
 				<div class=" self-center truncate gap-[8px] text-[17px] leading-[22px]">
 					{$i18n.t($theme === 'dark' ? 'Switch to light mode': 'Switch to dark mode')}
 				</div>
-				<div class=" self-center {$mobile ? '' : 'mr-3'} ">
+				<div class=" self-center {$mobile ? '' : 'mr-3'}">
 					<Theme />
 				</div>
 			</button>
@@ -332,7 +332,7 @@
 					<div class="self-center truncate gap-[8px] text-[17px] leading-[22px]">
 						{$i18n?.t?.('Settings') || 'Settings'}
 					</div>
-					<div class="self-center mr-3">
+					<div class="self-center {$mobile ? '' : 'mr-3'}">
 						<Settings className="w-5 h-5" />
 					</div>
 				</button>
@@ -352,7 +352,7 @@
 				<div class="self-center truncate gap-[8px] text-[17px] leading-[22px]">
 					{$i18n?.t?.('Archived Chats') || 'Archived Chats'}
 				</div>
-				<div class="self-center mr-3">
+				<div class="self-center {$mobile ? '' : 'mr-3'}">
 					<ArchiveBox className="size-5" />
 				</div>
 			</button>
@@ -372,7 +372,7 @@
 					<div class="self-center truncate gap-[8px] text-[17px] leading-[22px]">
 						{$i18n?.t?.('Playground') || 'Playground'}
 					</div>
-					<div class="self-center mr-3">
+					<div class="self-center {$mobile ? '' : 'mr-3'}">
 						<Code className="size-5" />
 					</div>
 				</button>
@@ -391,7 +391,7 @@
 					<div class="self-center truncate gap-[8px] text-[17px] leading-[22px]">
 						{$i18n?.t?.('Admin Panel') || 'Admin Panel'}
 					</div>
-					<div class="self-center mr-3">
+					<div class="self-center {$mobile ? '' : 'mr-3'}">
 						<UserGroup className="w-5 h-5" />
 					</div>
 				</button>
@@ -447,7 +447,7 @@
 					<div class="self-center truncate gap-[8px] text-[17px] leading-[22px]">
 						{$i18n?.t?.('Support') || 'Support'}
 					</div>
-					<div class="self-center mr-3">
+					<div class="self-center {$mobile ? '' : 'mr-3'}">
 						<Support className="w-5 h-5" />
 					</div>
 				</button>
@@ -471,7 +471,7 @@
 				<div class="self-center truncate gap-[8px] text-[17px] leading-[22px]">
 					{$i18n?.t?.('Logout') || 'Logout'}
 				</div>
-				<div class="self-center mr-3">
+				<div class="self-center {$mobile ? '' : 'mr-3'}">
 					<SignOut className="w-5 h-5" />
 				</div>
 			</button>
