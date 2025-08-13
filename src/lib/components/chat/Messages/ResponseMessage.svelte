@@ -3,7 +3,7 @@
 	import dayjs from 'dayjs';
 
 	import { createEventDispatcher } from 'svelte';
-	import { onMount, tick, getContext, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import type { i18n as i18nType, t } from 'i18next';
 
@@ -37,7 +37,6 @@
 	import RateComment from './RateComment.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import WebSearchResults from './ResponseMessage/WebSearchResults.svelte';
-	import WebSearchLoading from './ResponseMessage/WebSearchLoading.svelte';
 	import Sparkles from '$lib/components/icons/Sparkles.svelte';
 
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -160,78 +159,65 @@
 
 	let showRateComment = false;
 
-	// Initial loading progression timing
 	let showJustASecond = false;
-	let initialLoadingTimer: ReturnType<typeof setTimeout> | null = null;
 
-	// Web search progression timing
-	let webSearchStatus = '';
-	let webSearchStage = 0; // 0: none, 1: just a sec, 2: searching, 3: results
+	// Loading sequence for web search
+	const loadingSequence = [
+		{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
+		{ icon: '🔎', text: 'Searching the Web...', holdMs: 3000 },
+		{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
+		{ icon: '✅', text: 'Searched 9 sites • Shortlisted 3', holdMs: 2200 }
+	];
 
-	// visual handling moved to WebSearchStatus component
+	let currentStep = 0;
+	let loadingInterval: ReturnType<typeof setInterval> | null = null;
 
-	// Handle initial loading progression: "Just a sec..." -> "Processing documents..."
-	$: if (
-		message.content === '' &&
-		!message.error &&
-		(message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0
-	) {
-		if (!showJustASecond && !initialLoadingTimer) {
-			showJustASecond = true;
+	// Watch for loading states
+	$: {
+		const isGeneralLoading =
+			message.content === '' &&
+			!message.error &&
+			!message.done;
+		const hasStartedStreaming = message.content && message.content.length > 0;
 
-			// After 2 seconds, hide "Just a sec..." and show document-specific message
-			initialLoadingTimer = setTimeout(() => {
-				showJustASecond = false;
-			}, 2000);
-		}
-	} else {
-		// Clear timer when content arrives or status appears
-		if (initialLoadingTimer) {
-			clearTimeout(initialLoadingTimer);
-			initialLoadingTimer = null;
-		}
-		showJustASecond = false;
-	}
-
-	// Track web search progression
-	$: if ((message?.statusHistory?.length ?? 0) > 0 || message?.status) {
-		const currentStatus = (
-			message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]
-		).at(-1);
-		if (currentStatus?.action === 'web_search') {
-			// Monotonic stage progression to avoid duplicates/regressions
-			const desc = currentStatus?.description ?? '';
-			const nextStage =
-				desc.includes('Searched') && desc.includes('Shortlisted')
-					? 3
-					: desc === 'Searching on web...'
-						? 2
-						: desc === 'Just a sec...'
-							? 1
-							: 2; // default mid stage for other strings
-
-			if (nextStage > webSearchStage) {
-				webSearchStage = nextStage;
-				webSearchStatus = desc;
-			} else if (nextStage === webSearchStage) {
-				// Allow updates within the same stage only for final results to refresh counts
-				if (nextStage === 3 && desc && desc !== webSearchStatus) {
-					webSearchStatus = desc;
-				}
-			} // ignore regressions
+		// Start loading sequence for empty messages that aren't done yet
+		if (isGeneralLoading && !hasStartedStreaming) {
+			startLoadingSequence();
 		} else {
-			// Do not forcibly reset to avoid flicker; rendering is scoped by action above
+			stopLoadingSequence();
 		}
 	}
 
-	// visual fade/shimmer handled inside WebSearchStatus
+	function startLoadingSequence() {
+		if (loadingInterval) return;
 
-	// Cleanup timers on component destroy
-	onDestroy(() => {
-		// no local visual timers
-		if (initialLoadingTimer) {
-			clearTimeout(initialLoadingTimer);
+		currentStep = 0;
+		scheduleNextStep();
+	}
+
+	function scheduleNextStep() {
+		if (loadingInterval) {
+			clearTimeout(loadingInterval);
 		}
+
+		loadingInterval = setTimeout(() => {
+			if (currentStep < loadingSequence.length - 1) {
+				currentStep = currentStep + 1;
+				scheduleNextStep();
+			}
+			// Stay on the last step, don't schedule next
+		}, loadingSequence[currentStep]?.holdMs || 2000);
+	}
+
+	function stopLoadingSequence() {
+		if (loadingInterval) {
+			clearTimeout(loadingInterval);
+			loadingInterval = null;
+		}
+	}
+
+	onDestroy(() => {
+		stopLoadingSequence();
 	});
 
 	const copyToClipboard = async (text) => {
@@ -647,7 +633,7 @@
 
 		await tick();
 		if (buttonsContainerElement) {
-			console.log(buttonsContainerElement);
+			// console.log(buttonsContainerElement);
 
 			buttonsContainerElement.addEventListener('wheel', function (event) {
 				if (buttonsContainerElement.scrollWidth <= buttonsContainerElement.clientWidth) {
@@ -748,9 +734,20 @@
 												</div>
 											</WebSearchResults>
 										{:else}
-											<!-- Web search status without URLs - shimmer + fade like reference -->
 											<div class="flex flex-col justify-center -space-y-0.5">
-												<WebSearchLoading text={webSearchStatus} stage={webSearchStage} />
+												<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
+													{#each loadingSequence as step, i}
+														<div
+															class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
+															currentStep
+																? 'fade-in'
+																: 'fade-out'}"
+														>
+															<span>{step.icon}</span>
+															<span class="shimmer-text">{step.text}</span>
+														</div>
+													{/each}
+												</div>
 											</div>
 										{/if}
 									{:else if status?.action === 'knowledge_search'}
@@ -884,22 +881,19 @@
 							>
 								{#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
 									<div class="flex flex-col justify-center -space-y-0.5 py-4">
-										{#key showJustASecond}
-											<div
-												class="text-base line-clamp-1 text-wrap shimmer-text"
-												style="color: #666D7A"
-												in:fade={{ duration: 150 }}
-												out:fade={{ duration: 300 }}
-											>
-												{#if showJustASecond}
-													{$i18n.t('Just a sec...')}
-												{:else if history?.messages && Object.values(history.messages).some((msg) => msg?.files && msg.files.length > 0)}
-													{$i18n.t('Processing documents...')}
-												{:else}
-													{$i18n.t('Just a sec...')}
-												{/if}
-											</div>
-										{/key}
+										<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
+											{#each loadingSequence as step, i}
+												<div
+													class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
+													currentStep
+														? 'fade-in'
+														: 'fade-out'}"
+												>
+													<span>{step.icon}</span>
+													<span class="shimmer-text">{step.text}</span>
+												</div>
+											{/each}
+										</div>
 									</div>
 								{:else if message.content && message.error !== true}
 									<!-- always show message contents even if there's an error -->
@@ -1577,6 +1571,19 @@
 	.buttons {
 		-ms-overflow-style: none; /* IE and Edge */
 		scrollbar-width: none; /* Firefox */
+	}
+
+	.loading-step {
+		transition: opacity 0.5s ease-in-out;
+		position: absolute;
+	}
+
+	.fade-in {
+		opacity: 1;
+	}
+
+	.fade-out {
+		opacity: 0;
 	}
 
 	@keyframes typing {
