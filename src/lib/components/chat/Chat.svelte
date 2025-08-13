@@ -785,7 +785,10 @@
 		}
 
 		if (selectedModels.length === 0 || (selectedModels.length === 1 && selectedModels[0] === '')) {
-			if (availableModels.length > 0) {
+			if ($config?.default_models) {
+				console.log($config?.default_models.split(',') ?? '');
+				selectedModels = $config?.default_models.split(',');
+			} else if (availableModels.length > 0) {
 				selectedModels = [availableModels?.at(0) ?? ''];
 			} else {
 				selectedModels = [''];

@@ -788,7 +788,7 @@
 
 			<!-- Search icon only when sidebar is expanded, right aligned -->
 
-			{#if ($user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true) && ($config?.features?.enable_notes ?? false)) || ($user?.role !== 'admin' && ($user?.permissions?.features?.notes ?? true))}
+			{#if false && ($user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true) && ($config?.features?.enable_notes ?? false)) || ($user?.role !== 'admin' && ($user?.permissions?.features?.notes ?? true))}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<a
 						class="px-[12px] py-[8px] grow flex items-center rounded-lg hover:bg-menu-hover transition-all duration-300 ease-in-out"
