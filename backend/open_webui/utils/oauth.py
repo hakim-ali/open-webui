@@ -824,5 +824,10 @@ class OAuthManager:
                 "role": user.role,
                 "profile_image_url": user.profile_image_url,
             },
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "role": user.role,
+            "profile_image_url": user.profile_image_url,
             "id_token": token.get("id_token") if ENABLE_OAUTH_SIGNUP.value else None,
         }

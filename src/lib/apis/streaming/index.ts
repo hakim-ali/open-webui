@@ -33,11 +33,28 @@ export async function createOpenAITextStream(
 		.pipeThrough(new TextDecoderStream())
 		.pipeThrough(new EventSourceParserStream())
 		.getReader();
-	let iterator = openAIStreamToIterator(eventStream);
+	
+	const iterator = openAIStreamToIterator(eventStream);
+	
 	if (splitLargeDeltas) {
-		iterator = streamLargeDeltasAsRandomChunks(iterator);
+		return streamLargeDeltasAsRandomChunks(iterator);
 	}
-	return iterator;
+	
+	// Wrap the iterator with timeout protection
+	return (async function* () {
+		try {
+			for await (const update of iterator) {
+				yield update;
+			}
+		} catch (error) {
+			if (error instanceof Error && error.message === 'Streaming timeout after 5 minutes') {
+				console.warn('Streaming: Timeout reached, ending stream');
+				yield { done: true, value: '' };
+			} else {
+				throw error;
+			}
+		}
+	})();
 }
 
 async function* openAIStreamToIterator(
@@ -98,6 +115,8 @@ async function* streamLargeDeltasAsRandomChunks(
 	iterator: AsyncGenerator<TextStreamUpdate>
 ): AsyncGenerator<TextStreamUpdate> {
 	let accumulatedContent = '';
+	let chunkCount = 0;
+	const maxChunks = 50000; // Safety limit to prevent infinite loops
 	
 	for await (const textStreamUpdate of iterator) {
 		if (textStreamUpdate.done) {
@@ -124,6 +143,14 @@ async function* streamLargeDeltasAsRandomChunks(
 
 		let content = textStreamUpdate.value;
 		accumulatedContent += content;
+		chunkCount++;
+		
+		// Safety check to prevent infinite loops
+		if (chunkCount > maxChunks) {
+			console.warn(`Streaming: Hit maximum chunk limit (${maxChunks}), sending remaining content as single chunk`);
+			yield { done: false, value: content };
+			continue;
+		}
 		
 		// Check if we're dealing with a heading or content under a heading
 		const isHeading = /^#+\s/.test(accumulatedContent);
@@ -143,36 +170,57 @@ async function* streamLargeDeltasAsRandomChunks(
 			}
 		}
 		
+		// Handle very small content chunks
 		if (content.length < 3) {
 			yield { done: false, value: content };
 			continue;
 		}
 		
-		while (content != '') {
-			// Adaptive chunk size based on content type
-			let chunkSize;
-			let delay;
-			
-			if (isHeading) {
-				chunkSize = Math.min(Math.floor(Math.random() * 3) + 3, content.length); // 3-5 chars for headings
-				delay = 25; // Slower speed for headings
-			} else if (isUnderHeading) {
-				chunkSize = Math.min(Math.floor(Math.random() * 4) + 5, content.length); // 5-8 chars for content under headings
-				delay = 15; // Slower for content under headings
-			} else {
-				chunkSize = Math.min(Math.floor(Math.random() * 3) + 3, content.length); // 3-5 chars for regular content
-				delay = 25; // Slower speed for regular content
+		// For very large content, use more aggressive chunking to prevent streaming issues
+		const isLargeContent = content.length > 1000;
+		const isUltraLargeContent = content.length > 5000;
+		
+		try {
+			while (content != '') {
+				// Adaptive chunk size based on content type and size
+				let chunkSize;
+				let delay;
+				
+				if (isUltraLargeContent) {
+					// For ultra-large content, use very large chunks and minimal delays for maximum speed
+					chunkSize = Math.min(Math.floor(Math.random() * 8) + 8, content.length); // 8-15 chars for ultra-large content
+					delay = 2; // Ultra-fast speed for very large content
+				} else if (isLargeContent) {
+					// For large content, use larger chunks and faster streaming for speed
+					chunkSize = Math.min(Math.floor(Math.random() * 4) + 4, content.length); // 4-7 chars for large content
+					delay = 5; // Much faster speed for large content
+				} else if (isHeading) {
+					chunkSize = Math.min(Math.floor(Math.random() * 3) + 3, content.length); // 3-5 chars for headings
+					delay = 25; // Slower speed for headings
+				} else if (isUnderHeading) {
+					chunkSize = Math.min(Math.floor(Math.random() * 4) + 5, content.length); // 5-8 chars for content under headings
+					delay = 15; // Slower for content under headings
+				} else {
+					chunkSize = Math.min(Math.floor(Math.random() * 3) + 3, content.length); // 3-5 chars for regular content
+					delay = 25; // Slower speed for regular content
+				}
+				
+				const chunk = content.slice(0, chunkSize);
+				yield { done: false, value: chunk };
+				
+				// Do not sleep if the tab is hidden
+				// Timers are throttled to 1s in hidden tabs
+				if (document?.visibilityState !== 'hidden') {
+					await sleep(delay);
+				}
+				content = content.slice(chunkSize);
 			}
-			
-			const chunk = content.slice(0, chunkSize);
-			yield { done: false, value: chunk };
-			
-			// Do not sleep if the tab is hidden
-			// Timers are throttled to 1s in hidden tabs
-			if (document?.visibilityState !== 'hidden') {
-				await sleep(delay);
+		} catch (error) {
+			console.error('Streaming: Error during chunk processing:', error);
+			// Send the remaining content as a single chunk to prevent streaming from stopping
+			if (content) {
+				yield { done: false, value: content };
 			}
-			content = content.slice(chunkSize);
 		}
 	}
 }
