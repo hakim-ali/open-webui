@@ -102,11 +102,11 @@
 
 			const MAX_BUBBLE_CHARS = 800; // split long messages
 
-			messages.forEach((msg) => {
+			messages.forEach((msg: any) => {
 				const segments = (msg.content || '').split(/\n\s*\n/); // split paragraphs
-				const bubbles = [];
+				const bubbles: string[] = [];
 
-				segments.forEach((seg) => {
+				segments.forEach((seg: string) => {
 					if (seg.length > MAX_BUBBLE_CHARS) {
 						// Break long segments into chunks
 						for (let i = 0; i < seg.length; i += MAX_BUBBLE_CHARS) {
@@ -117,11 +117,90 @@
 					}
 				});
 
-				bubbles.forEach((bubbleText, idx) => {
+				bubbles.forEach((bubbleText: string, idx: number) => {
 					const wrapper = document.createElement('div');
 					wrapper.style.display = 'flex';
-					wrapper.style.margin = '8px 0';
+					wrapper.style.flexDirection = 'column';
+					wrapper.style.alignItems = msg.role === 'user' ? 'flex-end' : 'flex-start';
 					wrapper.style.width = '100%';
+
+					if (msg.files && msg.files.length > 0) {
+						const filesContainer = document.createElement('div');
+						filesContainer.style.display = 'flex';
+						filesContainer.style.flexDirection = 'column';
+						filesContainer.style.gap = '8px';
+						filesContainer.style.marginBottom = '8px';
+						filesContainer.style.maxWidth = '70%';
+
+						msg.files.forEach((file: any) => {
+							const fileItem = document.createElement('div');
+							fileItem.style.display = 'flex';
+							fileItem.style.alignItems = 'center';
+							fileItem.style.gap = '8px';
+							fileItem.style.padding = '8px 12px';
+							fileItem.style.backgroundColor = isDarkMode ? '#444' : '#f8f9fa';
+							fileItem.style.border = `1px solid ${isDarkMode ? '#666' : '#dee2e6'}`;
+							fileItem.style.borderRadius = '8px';
+							fileItem.style.maxWidth = '100%';
+
+							// File icon
+							const fileIcon = document.createElement('div');
+							fileIcon.style.width = '24px';
+							fileIcon.style.height = '24px';
+							fileIcon.style.backgroundColor = '#007bff';
+							fileIcon.style.borderRadius = '4px';
+							fileIcon.style.display = 'flex';
+							fileIcon.style.alignItems = 'center';
+							fileIcon.style.justifyContent = 'center';
+							fileIcon.style.color = 'white';
+							fileIcon.style.fontSize = '12px';
+							fileIcon.style.fontWeight = 'bold';
+							fileIcon.textContent = '📎';
+
+							// File info
+							const fileInfo = document.createElement('div');
+							fileInfo.style.display = 'flex';
+							fileInfo.style.flexDirection = 'column';
+							fileInfo.style.gap = '2px';
+							fileInfo.style.flex = '1';
+							fileInfo.style.minWidth = '0';
+
+							// File name
+							const fileName = document.createElement('div');
+							fileName.style.fontWeight = '500';
+							fileName.style.color = isDarkMode ? '#fff' : '#000';
+							fileName.style.fontSize = '14px';
+							fileName.style.whiteSpace = 'nowrap';
+							fileName.style.overflow = 'hidden';
+							fileName.style.textOverflow = 'ellipsis';
+							fileName.textContent = file.name || 'Unnamed file';
+
+							// File size
+							const fileSize = document.createElement('div');
+							fileSize.style.fontSize = '12px';
+							fileSize.style.color = isDarkMode ? '#ccc' : '#666';
+
+							if (file.size) {
+								if (file.size > 1024 * 1024) {
+									fileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+								} else if (file.size > 1024) {
+									fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+								} else {
+									fileSize.textContent = `${file.size} B`;
+								}
+							} else {
+								fileSize.textContent = 'Unknown size';
+							}
+
+							fileInfo.appendChild(fileName);
+							fileInfo.appendChild(fileSize);
+							fileItem.appendChild(fileIcon);
+							fileItem.appendChild(fileInfo);
+							filesContainer.appendChild(fileItem);
+						});
+
+						wrapper.appendChild(filesContainer);
+					}
 
 					const bubble = document.createElement('div');
 					bubble.style.maxWidth = '70%';
@@ -133,11 +212,9 @@
 					bubble.style.lineHeight = '20px';
 
 					if (msg.role === 'user') {
-						wrapper.style.justifyContent = 'flex-end';
 						bubble.style.backgroundColor = isDarkMode ? '#007bff' : '#d1e7ff';
 						bubble.style.color = isDarkMode ? '#fff' : '#000';
 					} else {
-						wrapper.style.justifyContent = 'flex-start';
 						bubble.style.backgroundColor = isDarkMode ? '#333' : '#f1f1f1';
 						bubble.style.color = isDarkMode ? '#fff' : '#000';
 					}
