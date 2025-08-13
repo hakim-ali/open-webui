@@ -1168,10 +1168,11 @@ app.include_router(openai.router, prefix="/openai", tags=["openai"])
 if ENABLE_ADMIN_FUNCTIONALITY:
     app.include_router(pipelines.router, prefix="/api/v1/pipelines", tags=["pipelines"])
     app.include_router(functions.router, prefix="/api/v1/functions", tags=["functions"])
-    app.include_router(
-        evaluations.router, prefix="/api/v1/evaluations", tags=["evaluations"]
-    )
-
+    
+    
+app.include_router(
+    evaluations.router, prefix="/api/v1/evaluations", tags=["evaluations"]
+)
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(images.router, prefix="/api/v1/images", tags=["images"])
 
