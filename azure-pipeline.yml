@@ -68,6 +68,15 @@ steps:
     echo "Build ID: $(Build.BuildId)"
   displayName: 'Print Build ID'  
 
+# Remove image after push
+- script: |
+    ls
+    docker rmi $(dockerRegistryUrl)/$(sourceImageName):latest
+    docker rmi $(dockerRegistryUrl)/$(sourceImageName):$(Build.BuildId)
+  displayName: 'Removed image'
+
+
+
 # - script: |
 #     echo "Updating image tag in sandbox.yaml to $(Build.BuildId)"
 #     cd gitops/helm-charts/govgpt

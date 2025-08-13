@@ -769,27 +769,15 @@
 			selectedModels = selectedModels.filter((modelId) =>
 				$models.map((m) => m.id).includes(modelId)
 			);
-		} else {
-			if (sessionStorage.selectedModels) {
-				selectedModels = JSON.parse(sessionStorage.selectedModels);
-				sessionStorage.removeItem('selectedModels');
-			} else {
-				if ($settings?.models) {
-					selectedModels = $settings?.models;
-				} else if ($config?.default_models) {
-					console.log($config?.default_models.split(',') ?? '');
-					selectedModels = $config?.default_models.split(',');
-				}
-			}
-			selectedModels = selectedModels.filter((modelId) => availableModels.includes(modelId));
 		}
 
-		if (selectedModels.length === 0 || (selectedModels.length === 1 && selectedModels[0] === '')) {
-			if (availableModels.length > 0) {
-				selectedModels = [availableModels?.at(0) ?? ''];
-			} else {
-				selectedModels = [''];
-			}
+		if ($config?.default_models) {
+			console.log($config?.default_models.split(',') ?? '');
+			selectedModels = $config?.default_models.split(',');
+		} else if (availableModels.length > 0) {
+			selectedModels = [availableModels?.at(0) ?? ''];
+		} else {
+			selectedModels = [''];
 		}
 
 		await showControls.set(false);
@@ -864,10 +852,6 @@
 				submitPrompt(prompt);
 			}
 		}
-
-		selectedModels = selectedModels.map((modelId) =>
-			$models.map((m) => m.id).includes(modelId) ? modelId : ''
-		);
 
 		const userSettings = await getUserSettings(localStorage.token);
 
@@ -1369,12 +1353,12 @@
 	const submitPrompt = async (userPrompt, { _raw = false } = {}) => {
 		console.log('submitPrompt', userPrompt, $chatId);
 
-		// if (
-		// 	sessionStorage.selectedModels &&
-		// 	sessionStorage.selectedModels !== JSON.stringify(selectedModels)
-		// ) {
-		// 	selectedModels = JSON.parse(sessionStorage.selectedModels);
-		// }
+		if (selectedModels.length === 0 || (selectedModels.length === 1 && selectedModels[0] === '')) {
+			if ($config?.default_models) {
+				console.log($config?.default_models.split(',') ?? '');
+				selectedModels = $config?.default_models.split(',');
+			}
+		}
 
 		const messages = createMessagesList(history, history.currentId);
 		const _selectedModels = selectedModels.map((modelId) =>

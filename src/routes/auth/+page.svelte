@@ -32,7 +32,7 @@
 
 	const setSessionUser = async (sessionUser) => {
 		if (sessionUser) {
-			toast.success($i18n.t(`You're now logged in.`));
+			// toast.success($i18n.t(`You're now logged in.`));
 			if (sessionUser.token) {
 				localStorage.token = sessionUser.token;
 			}
@@ -55,7 +55,7 @@
 
 	const signInHandler = async () => {
 		const sessionUser = await userSignIn(email, password).catch((error) => {
-			toast.error(`${error}`);
+			// toast.error(`${error}`);
 			return null;
 		});
 		await setSessionUser(sessionUser);
@@ -64,7 +64,7 @@
 	const signUpHandler = async () => {
 		const sessionUser = await userSignUp(name, email, password, generateInitialsImage(name)).catch(
 			(error) => {
-				toast.error(`${error}`);
+				// toast.error(`${error}`);
 				return null;
 			}
 		);
@@ -73,7 +73,7 @@
 
 	const ldapSignInHandler = async () => {
 		const sessionUser = await ldapUserSignIn(ldapUsername, password).catch((error) => {
-			toast.error(`${error}`);
+			// error(`${error}`);
 			return null;
 		});
 		await setSessionUser(sessionUser);
@@ -97,7 +97,7 @@
 		const token = params.get('token');
 		if (!token) return;
 		const sessionUser = await getSessionUser(token).catch((error) => {
-			toast.error(`${error}`);
+			// toast.error(`${error}`);
 			return null;
 		});
 		if (!sessionUser) return;
@@ -143,7 +143,7 @@
 							<div class="logo-container">
 								<img src="/GovGPT.gif" alt="GovGPT Logo" class="logo-image" />
 							</div>
-							<img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" />
+							<!-- <img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" /> -->
 							<div class="title-container">
 								<h1 class="govgpt-title">GovGPT</h1>
 							</div>
@@ -339,7 +339,7 @@
 								</form>
 							</div>
 						</div>
-						<img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" />
+						<!-- <img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" /> -->
 					</div>
 				{/if}
 				<div

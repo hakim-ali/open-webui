@@ -1168,10 +1168,11 @@ app.include_router(openai.router, prefix="/openai", tags=["openai"])
 if ENABLE_ADMIN_FUNCTIONALITY:
     app.include_router(pipelines.router, prefix="/api/v1/pipelines", tags=["pipelines"])
     app.include_router(functions.router, prefix="/api/v1/functions", tags=["functions"])
-    app.include_router(
-        evaluations.router, prefix="/api/v1/evaluations", tags=["evaluations"]
-    )
-
+    
+    
+app.include_router(
+    evaluations.router, prefix="/api/v1/evaluations", tags=["evaluations"]
+)
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(images.router, prefix="/api/v1/images", tags=["images"])
 
@@ -1429,64 +1430,155 @@ async def chat_completion(
                     
                     log.info(f"govGpt-file-search-service: Starting stream with {len(custom_response)} characters")
                     
-                    # Adaptive chunking based on content type
+                    # Improved chunking for large responses
                     def get_chunk_size(position, text):
-                        # Look ahead to see if we're near a heading
-                        look_ahead = text[position:position + 50] if position + 50 < len(text) else text[position:]
-                        
-                        # Check for markdown headings (# ## ### #### ##### ######)
-                        if any(look_ahead.startswith(prefix) for prefix in ['# ', '## ', '### ', '#### ', '##### ', '###### ']):
-                            return 5  # Normal chunks for headings
-                        
-                        # Check if we're in content under a heading (after any heading line)
-                        lines = text[:position].split('\n')
-                        for line in reversed(lines):
-                            line = line.strip()
-                            if line.startswith('#'):
-                                return 12  # Larger chunks for content under headings
-                            elif line == '':  # Empty line, continue checking
-                                continue
-                            else:
-                                break  # Found non-heading content, stop checking
-                        
-                        return 8  # Small chunks for regular content
+                        # For very large responses, use smaller chunks to prevent streaming issues
+                        if len(text) > 50000:  # Ultra-large response threshold
+                            # For extremely large responses, use larger chunks and minimal delays for maximum speed
+                            look_ahead = text[position:position + 150] if position + 150 < len(text) else text[position:]
+                            
+                            if any(look_ahead.startswith(prefix) for prefix in ['# ', '## ', '### ', '#### ', '##### ', '###### ']):
+                                return 12  # Large chunks for headings in ultra-large responses
+                            
+                            lines = text[:position].split('\n')
+                            for line in reversed(lines):
+                                line = line.strip()
+                                if line.startswith('#'):
+                                    return 25  # Very large chunks for content under headings in ultra-large responses
+                                elif line == '':  # Empty line, continue checking
+                                    continue
+                                else:
+                                    break  # Found non-heading content, stop checking
+                            
+                            return 20  # Very large chunks for regular content in ultra-large responses
+                        elif len(text) > 10000:  # Large response threshold
+                            # Look ahead to see if we're near a heading
+                            look_ahead = text[position:position + 100] if position + 100 < len(text) else text[position:]
+                            
+                            # Check for markdown headings (# ## ### #### ##### ######)
+                            if any(look_ahead.startswith(prefix) for prefix in ['# ', '## ', '### ', '#### ', '##### ', '###### ']):
+                                return 6  # Larger chunks for headings in large responses for speed
+                            
+                            # Check if we're in content under a heading
+                            lines = text[:position].split('\n')
+                            for line in reversed(lines):
+                                line = line.strip()
+                                if line.startswith('#'):
+                                    return 15  # Larger chunks for content under headings in large responses for speed
+                                elif line == '':  # Empty line, continue checking
+                                    continue
+                                else:
+                                    break  # Found non-heading content, stop checking
+                            
+                            return 10  # Larger chunks for regular content in large responses for speed
+                        else:
+                            # Original logic for smaller responses
+                            look_ahead = text[position:position + 50] if position + 50 < len(text) else text[position:]
+                            
+                            if any(look_ahead.startswith(prefix) for prefix in ['# ', '## ', '### ', '#### ', '##### ', '###### ']):
+                                return 5  # Normal chunks for headings
+                            
+                            lines = text[:position].split('\n')
+                            for line in reversed(lines):
+                                line = line.strip()
+                                if line.startswith('#'):
+                                    return 12  # Larger chunks for content under headings
+                                elif line == '':  # Empty line, continue checking
+                                    continue
+                                else:
+                                    break  # Found non-heading content, stop checking
+                            
+                            return 8  # Small chunks for regular content
                     
-                    # Process text with adaptive chunking
+                    # Process text with improved chunking and error handling
                     position = 0
                     chunk_number = 0
+                    max_chunks = 10000  # Safety limit to prevent infinite loops
                     
-                    while position < len(custom_response):
-                        chunk_size = get_chunk_size(position, custom_response)
-                        chunk = custom_response[position:position + chunk_size]
-                        chunk_number += 1
+                    try:
+                        while position < len(custom_response) and chunk_number < max_chunks:
+                            chunk_size = get_chunk_size(position, custom_response)
+                            
+                            # Ensure we don't exceed the remaining text
+                            remaining_text = len(custom_response) - position
+                            if chunk_size > remaining_text:
+                                chunk_size = remaining_text
+                            
+                            chunk = custom_response[position:position + chunk_size]
+                            chunk_number += 1
+                            
+                            # Create streaming event
+                            event_data = {
+                                "choices": [
+                                    {
+                                        "delta": {
+                                            "content": chunk
+                                        }
+                                    }
+                                ]
+                            }
+                            
+                            # Add metadata to the first chunk
+                            if position == 0 and custom_metadata:
+                                event_data["choices"][0]["delta"]["metadata"] = custom_metadata
+                                log.info(f"govGpt-file-search-service: Added metadata to first chunk")
+                            
+                            log.debug(f"govGpt-file-search-service: Sending chunk {chunk_number} ({len(chunk)} chars) at position {position}")
+                            yield f"data: {json.dumps(event_data)}\n\n"
+                            
+                            # Adaptive delay based on response size and chunk size
+                            if len(custom_response) > 50000:
+                                # For ultra-large responses, use minimal delays for maximum speed
+                                delay = 0.005 if chunk_size > 10 else 0.008  # Ultra-fast delays for very large content
+                            elif len(custom_response) > 10000:
+                                # For large responses, use much shorter delays for faster streaming
+                                delay = 0.01 if chunk_size > 5 else 0.015  # Faster delays for large content
+                            else:
+                                # Original delays for smaller responses
+                                delay = 0.05 if chunk_size > 5 else 0.08
+                            
+                            await asyncio.sleep(delay)
+                            
+                            position += chunk_size
+                            
+                            # Add progress logging for large responses
+                            if len(custom_response) > 10000 and chunk_number % 100 == 0:
+                                progress = (position / len(custom_response)) * 100
+                                log.info(f"govGpt-file-search-service: Streaming progress: {progress:.1f}% ({position}/{len(custom_response)} chars)")
                         
-                        # Create streaming event
+                        # Check if we hit the safety limit
+                        if chunk_number >= max_chunks:
+                            log.warning(f"govGpt-file-search-service: Hit maximum chunk limit ({max_chunks}), sending remaining content as single chunk")
+                            remaining_content = custom_response[position:]
+                            if remaining_content:
+                                event_data = {
+                                    "choices": [
+                                        {
+                                            "delta": {
+                                                "content": remaining_content
+                                            }
+                                        }
+                                    ]
+                                }
+                                yield f"data: {json.dumps(event_data)}\n\n"
+                    
+                    except Exception as e:
+                        log.error(f"govGpt-file-search-service: Error during streaming: {str(e)}")
+                        # Send error chunk and continue
+                        error_chunk = f"\n\n[Error during streaming: {str(e)}]"
                         event_data = {
                             "choices": [
                                 {
                                     "delta": {
-                                        "content": chunk
+                                        "content": error_chunk
                                     }
                                 }
                             ]
                         }
-                        
-                        # Add metadata to the first chunk
-                        if position == 0 and custom_metadata:
-                            event_data["choices"][0]["delta"]["metadata"] = custom_metadata
-                            log.info(f"govGpt-file-search-service: Added metadata to first chunk")
-                        
-                        log.debug(f"govGpt-file-search-service: Sending chunk {chunk_number} ({len(chunk)} chars) at position {position}")
                         yield f"data: {json.dumps(event_data)}\n\n"
-                        
-                        # Adaptive delay based on chunk size - slower for more natural streaming
-                        delay = 0.05 if chunk_size > 5 else 0.08  # Slower delays for more natural streaming
-                        await asyncio.sleep(delay)
-                        
-                        position += chunk_size
                     
                     # Send completion event
-                    log.info(f"govGpt-file-search-service: Sending completion event")
+                    log.info(f"govGpt-file-search-service: Sending completion event after {chunk_number} chunks")
                     yield "data: [DONE]\n\n"
                 
                 # Create StreamingResponse
@@ -1497,9 +1589,17 @@ async def chat_completion(
                         "Cache-Control": "no-cache",
                         "Connection": "keep-alive",
                         "Content-Type": "text/event-stream",
+                        "X-Accel-Buffering": "no",  # Disable nginx buffering
                     }
                 )
-                log.info(f"govGpt-file-search-service: Created streaming response")
+                
+                # Set a reasonable timeout for large responses
+                if len(form_data["custom_response"]) > 10000:
+                    response.timeout = 300  # 5 minutes for large responses
+                else:
+                    response.timeout = 120  # 2 minutes for smaller responses
+                
+                log.info(f"govGpt-file-search-service: Created streaming response with {response.timeout}s timeout")
             else:
                 # Create a mock response that will be processed normally
                 response = {

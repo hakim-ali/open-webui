@@ -163,7 +163,8 @@
 		codeInterpreterEnabled = false;
 		attachFileEnabled = false;
 
-		sessionStorage.selectedModels = JSON.stringify([$config.default_models]);
+		selectedModels = [''];
+		selectedModelName = '';
 	}
 
 	let showTools = false;
@@ -424,8 +425,8 @@
 		// Update the selectedModels prop to trigger the binding
 		selectedModels = [modelName];
 
-		settings.set({ ...$settings, models: [modelName] });
-		await updateUserSettings(localStorage.token, { ui: $settings });
+		// settings.set({ ...$settings, models: [modelName] });
+		// await updateUserSettings(localStorage.token, { ui: $settings });
 		// toast.success($i18n.t('Gov Knowledge model updated'));
 
 		showGovKnoWebSearchToggle = false;
@@ -433,7 +434,7 @@
 		attachFileEnabled = false;
 
 		// Save session selected models
-		sessionStorage.selectedModels = JSON.stringify([modelName]);
+		// sessionStorage.selectedModels = JSON.stringify([modelName]);
 	};
 
 	let showWebSearchButton = true;

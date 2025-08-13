@@ -2,7 +2,7 @@
 	import { onMount, getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	import { WEBUI_NAME, showSidebar, user } from '$lib/stores';
+	import { WEBUI_NAME, showSidebar, user, config } from '$lib/stores';
 	import MenuLines from '$lib/components/icons/MenuLines.svelte';
 	import { page } from '$app/stores';
 
@@ -11,7 +11,8 @@
 	let loaded = false;
 
 	onMount(async () => {
-		if ($user?.role !== 'admin') {
+		// Check if user is admin and admin functionality is enabled
+		if ($user?.role !== 'admin' || !($config?.features?.enable_admin_functionality ?? true)) {
 			await goto('/');
 		}
 		loaded = true;

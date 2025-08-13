@@ -17,6 +17,6 @@
 			</div>
 			<slot />
 		</div>
-		<img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" />
+		<!-- <img src="/GovGPT-background.gif" alt="GovGPT Logo" class="logo-image-bottom" /> -->
 	</div>
 </div>
