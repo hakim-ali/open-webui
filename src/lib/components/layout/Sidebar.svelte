@@ -769,7 +769,7 @@
 			{/if}
 
 			<!-- Search icon only when sidebar is expanded, right aligned -->
-			{#if $showSidebar}
+			{#if $showSidebar && !$mobile}
 				<div class="flex justify-center text-gray-800 dark:text-gray-200">
 					<button
 						class="px-[12px] gap-2 py-[8px] flex items-center flex-1 rounded-lg h-full text-right hover:bg-gradient-bg-2 dark:hover:bg-gray-900 transition-all duration-300 ease-in-out no-drag-region"
@@ -1124,6 +1124,12 @@
 									title={chat.title}
 									{shiftKey}
 									selected={selectedChatId === chat.id}
+									on:select={() => {
+										selectedChatId = chat.id;
+									}}
+									on:unselect={() => {
+									selectedChatId = null;
+									}}
 									on:change={async () => {
 										initChatList();
 									}}
