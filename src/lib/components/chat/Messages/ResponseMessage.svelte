@@ -108,6 +108,7 @@
 	export let chatId = '';
 	export let history;
 	export let messageId;
+	export let activatedChatMode = '';
 
 	let message: MessageType = JSON.parse(JSON.stringify(history.messages[messageId]));
 	$: if (history.messages) {
@@ -161,16 +162,54 @@
 
 	let showJustASecond = false;
 
-	// Loading sequence for web search
-	const loadingSequence = [
-		{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
-		{ icon: '🔎', text: 'Searching the Web...', holdMs: 3000 },
-		{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
-		{ icon: '✅', text: 'Searched 9 sites • Shortlisted 3', holdMs: 2200 }
-	];
+	// Loading sequences for different contexts
+	const loadingSequences = {
+		web_search: [
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
+			{ icon: '🔎', text: 'Searching the Web...', holdMs: 3000 },
+			{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
+			{ icon: '✅', text: 'Searched 9 sites • Shortlisting sites', holdMs: 2200 }
+		],
+		gov_knowledge: [
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
+			{ icon: '🔎', text: 'Scanning through Gov Knowledge Base', holdMs: 3000 },
+			{ icon: '📚', text: 'Retrieving the right documents', holdMs: 2500 },
+			{ icon: '✅', text: 'Building the response...', holdMs: 2200 }
+		],
+		default: [
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
+			{ icon: '🔎', text: 'Searching the Web...', holdMs: 3000 },
+			{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
+			{ icon: '✅', text: 'Searched 9 sites • Shortlisting sites', holdMs: 2200 }
+		]
+	};
 
 	let currentStep = 0;
 	let loadingInterval: ReturnType<typeof setInterval> | null = null;
+	let nextStep = -1; // Used to track the step we're transitioning to
+
+	// Determine which loading sequence to use
+	$: activeSequence = (() => {
+		// Check activatedChatMode first
+		if (activatedChatMode === 'Gov Knowledge') {
+			return loadingSequences.gov_knowledge;
+		} else if (activatedChatMode === 'Web Search') {
+			return loadingSequences.web_search;
+		}
+
+		// Fallback: check message model for context clues
+		const modelName = message?.model || message?.modelName || '';
+		if (modelName.toLowerCase().includes('gov') || modelName.toLowerCase().includes('knowledge')) {
+			return loadingSequences.gov_knowledge;
+		} else if (
+			modelName.toLowerCase().includes('web') ||
+			modelName.toLowerCase().includes('search')
+		) {
+			return loadingSequences.web_search;
+		}
+
+		return loadingSequences.web_search; //todo: Add BYD + GenAI strings from Naseer
+	})();
 
 	// Watch for loading states
 	$: {
@@ -197,13 +236,24 @@
 			clearTimeout(loadingInterval);
 		}
 
+		const holdTime = activeSequence[currentStep]?.holdMs || 2000;
+
 		loadingInterval = setTimeout(() => {
-			if (currentStep < loadingSequence.length - 1) {
-				currentStep = currentStep + 1;
-				scheduleNextStep();
+			if (currentStep < activeSequence.length - 1) {
+				// Start fade-out phase: set next step but don't change current yet
+				nextStep = currentStep + 1;
+
+				// After fade-out completes, switch to next step
+				setTimeout(() => {
+					currentStep = nextStep;
+					nextStep = -1;
+
+					// Schedule the next transition
+					scheduleNextStep();
+				}, 800 + 120); // fade-out duration + gap
 			}
 			// Stay on the last step, don't schedule next
-		}, loadingSequence[currentStep]?.holdMs || 2000);
+		}, holdTime);
 	}
 
 	function stopLoadingSequence() {
@@ -211,6 +261,7 @@
 			clearTimeout(loadingInterval);
 			loadingInterval = null;
 		}
+		nextStep = -1;
 	}
 
 	onDestroy(() => {
@@ -733,12 +784,14 @@
 										{:else}
 											<div class="flex flex-col justify-center -space-y-0.5">
 												<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
-													{#each loadingSequence as step, i}
+													{#each activeSequence as step, i}
 														<div
 															class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
-															currentStep
+																currentStep && nextStep === -1
 																? 'fade-in'
-																: 'fade-out'}"
+																: i === currentStep && nextStep !== -1
+																	? 'fade-out'
+																	: 'fade-out'}"
 														>
 															<span>{step.icon}</span>
 															<span class="shimmer-text">{step.text}</span>
@@ -879,12 +932,14 @@
 								{#if message.content === '' && !message.error && (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length === 0}
 									<div class="flex flex-col justify-center -space-y-0.5 py-4">
 										<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
-											{#each loadingSequence as step, i}
+											{#each activeSequence as step, i}
 												<div
 													class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
-													currentStep
+														currentStep && nextStep === -1
 														? 'fade-in'
-														: 'fade-out'}"
+														: i === currentStep && nextStep !== -1
+															? 'fade-out'
+															: 'fade-out'}"
 												>
 													<span>{step.icon}</span>
 													<span class="shimmer-text">{step.text}</span>
@@ -1571,16 +1626,18 @@
 	}
 
 	.loading-step {
-		transition: opacity 0.5s ease-in-out;
+		transition: opacity 180ms ease;
 		position: absolute;
 	}
 
 	.fade-in {
 		opacity: 1;
+		transition: opacity 180ms ease;
 	}
 
 	.fade-out {
 		opacity: 0;
+		transition: opacity 800ms ease;
 	}
 
 	@keyframes typing {
