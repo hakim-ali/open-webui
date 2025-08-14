@@ -174,10 +174,7 @@
 
 	// Watch for loading states
 	$: {
-		const isGeneralLoading =
-			message.content === '' &&
-			!message.error &&
-			!message.done;
+		const isGeneralLoading = message.content === '' && !message.error && !message.done;
 		const hasStartedStreaming = message.content && message.content.length > 0;
 
 		// Start loading sequence for empty messages that aren't done yet
@@ -662,7 +659,7 @@
 
 {#key message.id}
 	<div
-		class=" flex w-full message-{message.id} {$isRTL ? 'text-right' : 'text-left'}"
+		class=" flex w-full message-{message.id}"
 		id="message-{message.id}"
 		dir={$isRTL ? 'rtl' : 'ltr'}
 	>
