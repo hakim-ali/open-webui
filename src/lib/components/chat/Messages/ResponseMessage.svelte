@@ -165,15 +165,15 @@
 	// Loading sequences for different contexts
 	const loadingSequences = {
 		web_search: [
-			{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
-			{ icon: '🔎', text: 'Searching the Web...', holdMs: 3000 },
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
+			{ icon: '🔎', text: 'Searching the Web...', holdMs: 2700 },
 			{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
 			{ icon: '✅', text: 'Searched 9 sites • Shortlisting sites', holdMs: 2200 }
 		],
 		gov_knowledge: [
-			{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
-			{ icon: '🔎', text: 'Scanning through Gov Knowledge Base', holdMs: 3000 },
-			{ icon: '📚', text: 'Retrieving the right documents', holdMs: 2500 },
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
+			{ icon: '🔎', text: 'Scanning through Gov Knowledge Base', holdMs: 2500 },
+			{ icon: '📚', text: 'Retrieving the right documents', holdMs: 2700 },
 			{ icon: '✅', text: 'Building the response...', holdMs: 2200 }
 		],
 		default: [
