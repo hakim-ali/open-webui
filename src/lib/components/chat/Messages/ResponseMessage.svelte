@@ -161,26 +161,31 @@
 	let showRateComment = false;
 
 	let showJustASecond = false;
+	let randomSites = Math.floor(Math.random() * 3) + 8; // 8-10 sites
 
 	// Loading sequences for different contexts
 	const loadingSequences = {
 		web_search: [
 			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
 			{ icon: '🔎', text: 'Searching the Web...', holdMs: 2700 },
-			{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
-			{ icon: '✅', text: 'Searched 9 sites • Shortlisting sites', holdMs: 2200 }
+			{ icon: '🌐', text: `Searched ${randomSites} sites`, holdMs: 2500 },
+			{ icon: '✅', text: `Searched ${randomSites} sites • Shortlisting results`, holdMs: 2200 }
 		],
 		gov_knowledge: [
 			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
-			{ icon: '🔎', text: 'Scanning through Gov Knowledge Base', holdMs: 2500 },
-			{ icon: '📚', text: 'Retrieving the right documents', holdMs: 2700 },
-			{ icon: '✅', text: 'Building the response...', holdMs: 2200 }
+			{ icon: '📂', text: 'Scanning the Gov Knowledge Base...', holdMs: 2500 },
+			{ icon: '📄', text: 'Retrieving the right documents...', holdMs: 2700 },
+			{ icon: '🧠', text: 'Analyzing documents & preparing answer...', holdMs: 2200 }
+		],
+		file_upload: [
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
+			{ icon: '📄', text: 'Scanning your document...', holdMs: 2500 },
+			{ icon: '📑', text: 'Finding the most relevant sections...', holdMs: 2700 },
+			{ icon: '🧠', text: 'Analyzing & summarizing content...', holdMs: 2200 }
 		],
 		default: [
 			{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
-			{ icon: '🔎', text: 'Searching the Web...', holdMs: 3000 },
-			{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
-			{ icon: '✅', text: 'Searched 9 sites • Shortlisting sites', holdMs: 2200 }
+			{ icon: '💡', text: 'Processing your request..', holdMs: 3000 }
 		]
 	};
 
@@ -208,7 +213,7 @@
 			return loadingSequences.web_search;
 		}
 
-		return loadingSequences.web_search; //todo: Add BYD + GenAI strings from Naseer
+		return loadingSequences.default;
 	})();
 
 	// Watch for loading states
