@@ -173,9 +173,9 @@
 			{ icon: '✅', text: `Searched ${randomSites} sites • Shortlisting results`, holdMs: 2200 }
 		],
 		gov_knowledge: [
-			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
-			{ icon: '📂', text: 'Scanning the Gov Knowledge Base...', holdMs: 2500 },
-			{ icon: '📄', text: 'Retrieving the right documents...', holdMs: 2700 },
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 2000 },
+			{ icon: '📂', text: 'Scanning the Gov Knowledge Base...', holdMs: 2200 },
+			{ icon: '📄', text: 'Retrieving the right documents...', holdMs: 2200 },
 			{ icon: '🧠', text: 'Analyzing documents & preparing answer...', holdMs: 2200 }
 		],
 		file_upload: [
@@ -185,7 +185,7 @@
 			{ icon: '🧠', text: 'Analyzing & summarizing content...', holdMs: 2200 }
 		],
 		default: [
-			{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 1500 },
 			{ icon: '💡', text: 'Processing your request..', holdMs: 3000 }
 		]
 	};
@@ -206,15 +206,15 @@
 		}
 
 		// Fallback: check message model for context clues
-		const modelName = message?.model || message?.modelName || '';
-		if (modelName.toLowerCase().includes('gov') || modelName.toLowerCase().includes('knowledge')) {
-			return loadingSequences.gov_knowledge;
-		} else if (
-			modelName.toLowerCase().includes('web') ||
-			modelName.toLowerCase().includes('search')
-		) {
-			return loadingSequences.web_search;
-		}
+		// const modelName = message?.model || message?.modelName || '';
+		// if (modelName.toLowerCase().includes('gov') || modelName.toLowerCase().includes('knowledge')) {
+		// 	return loadingSequences.gov_knowledge;
+		// } else if (
+		// 	modelName.toLowerCase().includes('web') ||
+		// 	modelName.toLowerCase().includes('search')
+		// ) {
+		// 	return loadingSequences.web_search;
+		// }
 
 		return loadingSequences.default;
 	})();
@@ -754,14 +754,14 @@
 			<div>
 				<div class="chat-{message.role} w-full min-w-full markdown-prose" dir="auto">
 					<div>
-						{#if (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length > 0}
+						{#if activatedChatMode || (message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]).length > 0}
 							{@const status = (
 								message?.statusHistory ?? [...(message?.status ? [message?.status] : [])]
 							).at(-1)}
 							{#if !status?.hidden}
 								<div class="status-description flex items-center gap-2 py-0.5">
 									{#if status?.action === 'web_search'}
-										{#if status?.urls && message.content === '' && !message.error && !message.done && !(message.content && message.content.length > 0)}
+										{#if message.content === '' && !message.error && !message.done && !(message.content && message.content.length > 0)}
 											<WebSearchResults {status}>
 												<div class="flex flex-col justify-center -space-y-0.5">
 													<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
@@ -781,26 +781,8 @@
 													</div>
 												</div>
 											</WebSearchResults>
-										{:else}
-											<div class="flex flex-col justify-center -space-y-0.5">
-												<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
-													{#each activeSequence as step, i}
-														<div
-															class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
-																currentStep && nextStep === -1
-																? 'fade-in'
-																: i === currentStep && nextStep !== -1
-																	? 'fade-out'
-																	: 'fade-out'}"
-														>
-															<span>{step.icon}</span>
-															<span class="shimmer-text">{step.text}</span>
-														</div>
-													{/each}
-												</div>
-											</div>
 										{/if}
-									{:else if status?.action === 'knowledge_search'}
+									{:else if status && status.action === 'knowledge_search'}
 										<div class="flex flex-col justify-center -space-y-0.5">
 											<div
 												class="{status?.done === false
@@ -812,7 +794,7 @@
 												})}
 											</div>
 										</div>
-									{:else}
+									{:else if status}
 										<div class="flex flex-col justify-center -space-y-0.5">
 											<div
 												class="{status?.done === false
