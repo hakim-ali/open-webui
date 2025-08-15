@@ -755,29 +755,21 @@
 									{#if status?.action === 'web_search'}
 										{#if status?.urls}
 											<WebSearchResults {status}>
-												<div
-													class="flex flex-col justify-center -space-y-0.5 text-gray-700 dark:text-gray-500"
-												>
-													<div
-														class="{status?.done === false
-															? 'shimmer'
-															: ''} text-base line-clamp-1 text-wrap"
-													>
-														{#if status?.description.includes('{{count}}')}
-															{$i18n.t(status?.description, {
-																count: status?.urls.length
-															})}
-														{:else if status?.description === 'No search query generated'}
-															{$i18n.t('No search query generated')}
-														{:else if status?.description === 'Generating search query'}
-															{$i18n.t('Generating search query')}
-														{:else if status?.description === 'Searching the web'}
-															{$i18n.t('Searching the web')}
-														{:else if status?.description?.includes('Searched') && status?.description?.includes('Shortlisted')}
-															{status?.description}
-														{:else}
-															{status?.description}
-														{/if}
+												<div class="flex flex-col justify-center -space-y-0.5">
+													<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
+														{#each activeSequence as step, i}
+															<div
+																class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
+																	currentStep && nextStep === -1
+																	? 'fade-in'
+																	: i === currentStep && nextStep !== -1
+																		? 'fade-out'
+																		: 'fade-out'}"
+															>
+																<span>{step.icon}</span>
+																<span class="shimmer-text">{step.text}</span>
+															</div>
+														{/each}
 													</div>
 												</div>
 											</WebSearchResults>
