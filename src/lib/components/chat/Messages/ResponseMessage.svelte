@@ -53,6 +53,7 @@
 	import Copy from '$lib/components/icons/Copy.svelte';
 	import VolumeUp from '$lib/components/icons/VolumeUp.svelte';
 	import { isRTL } from '$lib/i18n';
+	import { toolOption } from '$lib/constants/toolOptions';
 
 	interface MessageType {
 		id: string;
@@ -109,7 +110,7 @@
 	export let history;
 	export let messageId;
 	export let activatedChatMode = '';
-
+	console.log('===activatedChatMode: ', activatedChatMode);
 	let message: MessageType = JSON.parse(JSON.stringify(history.messages[messageId]));
 	$: if (history.messages) {
 		if (JSON.stringify(message) !== JSON.stringify(history.messages[messageId])) {
@@ -196,10 +197,12 @@
 	// Determine which loading sequence to use
 	$: activeSequence = (() => {
 		// Check activatedChatMode first
-		if (activatedChatMode === 'Gov Knowledge') {
+		if (activatedChatMode === toolOption.govKnowledge) {
 			return loadingSequences.gov_knowledge;
-		} else if (activatedChatMode === 'Web Search') {
+		} else if (activatedChatMode === toolOption.webSearch) {
 			return loadingSequences.web_search;
+		} else if (activatedChatMode === toolOption.attachFiles) {
+			return loadingSequences.file_upload;
 		}
 
 		// Fallback: check message model for context clues
