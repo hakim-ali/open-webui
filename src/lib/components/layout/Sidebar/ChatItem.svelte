@@ -16,6 +16,7 @@
 		getChatList,
 		getChatListByTagName,
 		getPinnedChatList,
+		toggleChatPinnedStatusById,
 		updateChatById
 	} from '$lib/apis/chats';
 	import {
@@ -41,6 +42,7 @@
 	import Document from '$lib/components/icons/Document.svelte';
 	import Sparkles from '$lib/components/icons/Sparkles.svelte';
 	import { generateTitle } from '$lib/apis';
+	import Pin from '$lib/components/icons/Pin.svelte';
 
 	export let className = '';
 
@@ -49,6 +51,7 @@
 
 	export let selected = false;
 	export let shiftKey = false;
+	export let isPinned = false;
 
 	let chat = null;
 
@@ -404,6 +407,18 @@
 				{/if}
 			</div>
 		</a>
+	{/if}
+
+	{#if isPinned}
+		<button
+			class="p-1 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 transition-all duration-200 ease-in-out hover:scale-110"
+			on:click={async () => {
+				await toggleChatPinnedStatusById(localStorage.token, id);
+				dispatch('change');
+			}}
+		>
+			<Pin />
+		</button>
 	{/if}
 
 	<!-- svelte-ignore a11y-no-static-element-interactions -->

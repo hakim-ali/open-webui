@@ -934,7 +934,10 @@
 						dragAndDrop={false}
 						showSidebar={$showSidebar}
 						onAdd={async () => {
-							if ($user?.role === 'admin' && ($config?.features?.enable_admin_functionality ?? true)) {
+							if (
+								$user?.role === 'admin' &&
+								($config?.features?.enable_admin_functionality ?? true)
+							) {
 								await tick();
 
 								setTimeout(() => {
@@ -1128,11 +1131,12 @@
 										selectedChatId = chat.id;
 									}}
 									on:unselect={() => {
-									selectedChatId = null;
+										selectedChatId = null;
 									}}
 									on:change={async () => {
 										initChatList();
 									}}
+									isPinned
 								/>
 							{/each}
 						</div>
@@ -1223,21 +1227,20 @@
 								{/if}
 							</div>
 							{#if showScrollToTopButton}
-							<div
-								class="scroll-to-top-box fixed bottom-[130px]  {$isRTL
-									? 'right-[142px]'
-									: 'left-[142px]'}  flex justify-center  h-[25px] shadow-bg"
-							>
-								<button
-									class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
-									on:click={scrollToTop}
+								<div
+									class="scroll-to-top-box fixed bottom-[130px] {$isRTL
+										? 'right-[142px]'
+										: 'left-[142px]'}  flex justify-center h-[25px] shadow-bg"
 								>
-									<ScrollUp />
-								</button>
-							</div>
-						{/if}
+									<button
+										class="flex justify-center items-center w-[32px] h-[32px] border border-[#E5EBF3] bg-[#FBFCFC] rounded-full"
+										on:click={scrollToTop}
+									>
+										<ScrollUp />
+									</button>
+								</div>
+							{/if}
 						</div>
-						
 					{/if}
 				</div>
 			</div>
@@ -1259,7 +1262,7 @@
 						}
 					}}
 				>
-					<div class="flex {$showSidebar ? $isRTL  ? 'pr-2' : 'pl-2':""} gap-2">
+					<div class="flex {$showSidebar ? ($isRTL ? 'pr-2' : 'pl-2') : ''} gap-2">
 						<div class=" self-center {$showSidebar ? 'me-[8px]' : ''}">
 							<GovKno />
 						</div>
@@ -1331,7 +1334,6 @@
 			</div>
 		</div>
 	</div>
-	
 </div>
 
 <style>

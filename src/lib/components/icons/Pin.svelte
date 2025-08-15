@@ -1,0 +1,10 @@
+<script lang="ts">
+	export let className = 'size-4';
+</script>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+	<path
+		d="M12.9165 10.1756L14.4069 11.666V12.916H10.6249V17.4993L9.99986 18.1243L9.37486 17.4993V12.916H5.59277V11.666L7.08319 10.1756V4.16602H6.24986V2.91602H13.7499V4.16602H12.9165V10.1756ZM7.37486 11.666H12.6249L11.6665 10.7077V4.16602H8.33319V10.7077L7.37486 11.666Z"
+		fill="currentColor"
+	/>
+</svg>
