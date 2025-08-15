@@ -753,7 +753,7 @@
 							{#if !status?.hidden}
 								<div class="status-description flex items-center gap-2 py-0.5">
 									{#if status?.action === 'web_search'}
-										{#if status?.urls}
+										{#if status?.urls && message.content === '' && !message.error && !message.done && !(message.content && message.content.length > 0)}
 											<WebSearchResults {status}>
 												<div class="flex flex-col justify-center -space-y-0.5">
 													<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
