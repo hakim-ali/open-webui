@@ -2117,6 +2117,7 @@
 											{mergeResponses}
 											{chatActionHandler}
 											{addMessages}
+											{activatedChatMode}
 											bottomPadding={files.length > 0}
 										/>
 									</div>

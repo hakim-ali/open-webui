@@ -37,6 +37,7 @@
 	import { deleteFileById } from '$lib/apis/files';
 
 	import { WEBUI_BASE_URL, WEBUI_API_BASE_URL, PASTED_TEXT_CHARACTER_LIMIT } from '$lib/constants';
+	import { toolOption } from '$lib/constants/toolOptions';
 
 	import InputMenu from './MessageInput/InputMenu.svelte';
 	import VoiceRecording from './MessageInput/VoiceRecording.svelte';
@@ -235,11 +236,6 @@
 		model.id.includes($config.govgpt.rag_wog_model_name)
 	);
 
-	const toolOption = {
-		govKnowledge: 'Gov Knowledge',
-		webSearch: 'Web Search',
-		attachFiles: 'Attach Files'
-	};
 
 	// Reactive statement to update selectedModelName based on current state
 	$: selectedModelName = (() => {
@@ -836,22 +832,22 @@
 		}
 
 		const currentMessage = history.messages[history.currentId];
-		
+
 		// If message has content and is marked as done, not streaming
 		if (currentMessage.content && currentMessage.done === true) {
 			return false;
 		}
-		
+
 		// If message has no content and no taskIds, not streaming
 		if (!currentMessage.content && (!taskIds || taskIds.length === 0)) {
 			return false;
 		}
-		
+
 		// If we have active taskIds, we're streaming
 		if (hasResponseStarted) {
 			return true;
 		}
-		
+
 		// If message exists, has no content, and is not done, might be streaming
 		return currentMessage && !currentMessage.content && currentMessage.done !== true;
 	})();

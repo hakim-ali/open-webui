@@ -41,15 +41,14 @@
 	<div
 		class="flex items-center gap-2 text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-300 transition"
 	>
-		<slot />
-
-		{#if state}
+		<!-- {#if state}
 			<ChevronUp strokeWidth="3.5" className="size-3.5 " />
 		{:else}
 			<ChevronDown strokeWidth="3.5" className="size-3.5 " />
-		{/if}
+		{/if} -->
 	</div>
 	<div class="text-sm rounded-xl mb-1.5" slot="content">
+		<slot />
 		{#if status?.query}
 			<button
 				on:click={() => handleUrlClick(`https://www.google.com/search?q=${status.query}`)}

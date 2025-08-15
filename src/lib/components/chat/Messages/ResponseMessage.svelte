@@ -53,6 +53,7 @@
 	import Copy from '$lib/components/icons/Copy.svelte';
 	import VolumeUp from '$lib/components/icons/VolumeUp.svelte';
 	import { isRTL } from '$lib/i18n';
+	import { toolOption } from '$lib/constants/toolOptions';
 
 	interface MessageType {
 		id: string;
@@ -109,7 +110,7 @@
 	export let history;
 	export let messageId;
 	export let activatedChatMode = '';
-
+	console.log('===activatedChatMode: ', activatedChatMode);
 	let message: MessageType = JSON.parse(JSON.stringify(history.messages[messageId]));
 	$: if (history.messages) {
 		if (JSON.stringify(message) !== JSON.stringify(history.messages[messageId])) {
@@ -161,26 +162,31 @@
 	let showRateComment = false;
 
 	let showJustASecond = false;
+	let randomSites = Math.floor(Math.random() * 3) + 8; // 8-10 sites
 
 	// Loading sequences for different contexts
 	const loadingSequences = {
 		web_search: [
 			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
 			{ icon: '🔎', text: 'Searching the Web...', holdMs: 2700 },
-			{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
-			{ icon: '✅', text: 'Searched 9 sites • Shortlisting sites', holdMs: 2200 }
+			{ icon: '🌐', text: `Searched ${randomSites} sites`, holdMs: 2500 },
+			{ icon: '✅', text: `Searched ${randomSites} sites • Shortlisting results`, holdMs: 2200 }
 		],
 		gov_knowledge: [
 			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
-			{ icon: '🔎', text: 'Scanning through Gov Knowledge Base', holdMs: 2500 },
-			{ icon: '📚', text: 'Retrieving the right documents', holdMs: 2700 },
-			{ icon: '✅', text: 'Building the response...', holdMs: 2200 }
+			{ icon: '📂', text: 'Scanning the Gov Knowledge Base...', holdMs: 2500 },
+			{ icon: '📄', text: 'Retrieving the right documents...', holdMs: 2700 },
+			{ icon: '🧠', text: 'Analyzing documents & preparing answer...', holdMs: 2200 }
+		],
+		file_upload: [
+			{ icon: '⏳', text: 'Just a sec...', holdMs: 2500 },
+			{ icon: '📄', text: 'Scanning your document...', holdMs: 2500 },
+			{ icon: '📑', text: 'Finding the most relevant sections...', holdMs: 2700 },
+			{ icon: '🧠', text: 'Analyzing & summarizing content...', holdMs: 2200 }
 		],
 		default: [
 			{ icon: '⏳', text: 'Just a sec...', holdMs: 3000 },
-			{ icon: '🔎', text: 'Searching the Web...', holdMs: 3000 },
-			{ icon: '🌐', text: 'Searched 9 sites', holdMs: 2500 },
-			{ icon: '✅', text: 'Searched 9 sites • Shortlisting sites', holdMs: 2200 }
+			{ icon: '💡', text: 'Processing your request..', holdMs: 3000 }
 		]
 	};
 
@@ -191,10 +197,12 @@
 	// Determine which loading sequence to use
 	$: activeSequence = (() => {
 		// Check activatedChatMode first
-		if (activatedChatMode === 'Gov Knowledge') {
+		if (activatedChatMode === toolOption.govKnowledge) {
 			return loadingSequences.gov_knowledge;
-		} else if (activatedChatMode === 'Web Search') {
+		} else if (activatedChatMode === toolOption.webSearch) {
 			return loadingSequences.web_search;
+		} else if (activatedChatMode === toolOption.attachFiles) {
+			return loadingSequences.file_upload;
 		}
 
 		// Fallback: check message model for context clues
@@ -208,7 +216,7 @@
 			return loadingSequences.web_search;
 		}
 
-		return loadingSequences.web_search; //todo: Add BYD + GenAI strings from Naseer
+		return loadingSequences.default;
 	})();
 
 	// Watch for loading states
@@ -753,31 +761,23 @@
 							{#if !status?.hidden}
 								<div class="status-description flex items-center gap-2 py-0.5">
 									{#if status?.action === 'web_search'}
-										{#if status?.urls}
+										{#if status?.urls && message.content === '' && !message.error && !message.done && !(message.content && message.content.length > 0)}
 											<WebSearchResults {status}>
-												<div
-													class="flex flex-col justify-center -space-y-0.5 text-gray-700 dark:text-gray-500"
-												>
-													<div
-														class="{status?.done === false
-															? 'shimmer'
-															: ''} text-base line-clamp-1 text-wrap"
-													>
-														{#if status?.description.includes('{{count}}')}
-															{$i18n.t(status?.description, {
-																count: status?.urls.length
-															})}
-														{:else if status?.description === 'No search query generated'}
-															{$i18n.t('No search query generated')}
-														{:else if status?.description === 'Generating search query'}
-															{$i18n.t('Generating search query')}
-														{:else if status?.description === 'Searching the web'}
-															{$i18n.t('Searching the web')}
-														{:else if status?.description?.includes('Searched') && status?.description?.includes('Shortlisted')}
-															{status?.description}
-														{:else}
-															{status?.description}
-														{/if}
+												<div class="flex flex-col justify-center -space-y-0.5">
+													<div class="text-base line-clamp-1 text-wrap relative min-h-[1.5rem]">
+														{#each activeSequence as step, i}
+															<div
+																class="loading-step flex items-center gap-2 text-gray-700 dark:text-gray-500 {i ===
+																	currentStep && nextStep === -1
+																	? 'fade-in'
+																	: i === currentStep && nextStep !== -1
+																		? 'fade-out'
+																		: 'fade-out'}"
+															>
+																<span>{step.icon}</span>
+																<span class="shimmer-text">{step.text}</span>
+															</div>
+														{/each}
 													</div>
 												</div>
 											</WebSearchResults>

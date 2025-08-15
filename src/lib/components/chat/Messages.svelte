@@ -50,6 +50,7 @@
 
 	export let bottomPadding = false;
 	export let autoScroll;
+	export let activatedChatMode;
 
 	let messagesCount = 20;
 	let messagesLoading = false;
@@ -455,6 +456,7 @@
 							{continueResponse}
 							{mergeResponses}
 							{addMessages}
+							{activatedChatMode}
 							{triggerScroll}
 							{readOnly}
 						/>
