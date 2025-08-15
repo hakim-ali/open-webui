@@ -411,7 +411,7 @@
 
 	{#if isPinned}
 		<button
-			class="p-1 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 transition-all duration-200 ease-in-out hover:scale-110"
+			class="p-1 rounded-md text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ease-in-out hover:scale-110"
 			on:click={async () => {
 				await toggleChatPinnedStatusById(localStorage.token, id);
 				dispatch('change');
