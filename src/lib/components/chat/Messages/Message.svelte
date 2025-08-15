@@ -19,6 +19,7 @@
 	export let messageId;
 
 	export let user;
+	export let activatedChatMode = '';
 
 	export let gotoMessage;
 	export let showPreviousMessage;
@@ -70,6 +71,7 @@
 				{chatId}
 				{history}
 				{messageId}
+				{activatedChatMode}
 				isLastMessage={messageId === history.currentId}
 				siblings={history.messages[history.messages[messageId].parentId]?.childrenIds ?? []}
 				{gotoMessage}

@@ -105,6 +105,10 @@
 		await setSessionUser(sessionUser);
 	};
 
+	const loginSSO = () => {
+		window.location.href = `${WEBUI_BASE_URL}/oauth/oidc/login`;
+	};
+
 	onMount(async () => {
 		if ($user !== undefined) {
 			const redirectPath = querystringValue('redirect') || '/';
@@ -157,9 +161,7 @@
 							</p>
 							<div class="absolute sm:static bottom-[20px]">
 								<button
-									on:click={() => {
-										window.location.href = `${WEBUI_BASE_URL}/oauth/oidc/login`;
-									}}
+									on:click={loginSSO}
 									class="mb-[24px] text-[14px] text-[rgba(7, 45, 90, 0.88)] py-[6px] pl-[8px] pr-[16px] w-[334px] h-[48px] rounded-[12px] bg-[linear-gradient(90deg,_#A5C7E6_0%,_#CEE7FF_38.94%,_#A5C7E6_100%)] shadow-[inset_6px_3px_8px_0_#BFDBF6]"
 								>
 									{$i18n.t('Log in using SSO')}
@@ -191,7 +193,7 @@
 							<button
 								type="button"
 								class="text-sm text-blue-200 cursor-pointer hover:text-blue-100 bg-transparent border-none p-2"
-								on:click={() => (showInitialScreen = true)}
+								on:click={loginSSO}
 							>
 								{$i18n.t('Login using SSO')}
 							</button>

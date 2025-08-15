@@ -829,8 +829,32 @@
 
 	$: hasResponseStarted = taskIds && taskIds.length > 0;
 
-	$: isStreamingInProgress =
-		hasResponseStarted || (history.currentId && history.messages[history.currentId]?.done != true);
+	$: isStreamingInProgress = (() => {
+		// If no current message, definitely not streaming
+		if (!history.currentId || !history.messages || !history.messages[history.currentId]) {
+			return false;
+		}
+
+		const currentMessage = history.messages[history.currentId];
+		
+		// If message has content and is marked as done, not streaming
+		if (currentMessage.content && currentMessage.done === true) {
+			return false;
+		}
+		
+		// If message has no content and no taskIds, not streaming
+		if (!currentMessage.content && (!taskIds || taskIds.length === 0)) {
+			return false;
+		}
+		
+		// If we have active taskIds, we're streaming
+		if (hasResponseStarted) {
+			return true;
+		}
+		
+		// If message exists, has no content, and is not done, might be streaming
+		return currentMessage && !currentMessage.content && currentMessage.done !== true;
+	})();
 
 	export let activatedChatMode = '';
 	let chatOptionClicked = '';
