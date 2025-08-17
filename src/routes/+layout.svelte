@@ -58,7 +58,7 @@
 		if (updated.current && !willUnload && to?.url) {
 			location.href = to.url.href;
 		}
-		
+
 		// Check admin routes when navigating
 		if (to?.url && !willUnload) {
 			checkAdminRoute(to.url.pathname);
@@ -294,6 +294,7 @@
 					toast.custom(NotificationToast, {
 						componentProps: {
 							onClick: () => {
+								chatId.set(event.chat_id);
 								goto(`/c/${event.chat_id}`);
 							},
 							content: content,
@@ -671,7 +672,7 @@
 		const i18nLanguage = get(i18n)?.language;
 		const localStorageLang = localStorage?.locale;
 		const documentLang = document.documentElement.lang;
-		
+
 		const lang = i18nLanguage || localStorageLang || documentLang || 'en-US';
 		document.documentElement.dir = lang.startsWith('ar') ? 'rtl' : 'ltr';
 	}

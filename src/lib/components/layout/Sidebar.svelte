@@ -88,6 +88,11 @@
 	let showDropdown = false;
 	let showPinnedChat = true;
 
+	// Update selectedChatId when chatId store changes (e.g from toast navigation)
+	$: if ($chatId) {
+		selectedChatId = $chatId;
+	}
+
 	let showCreateChannel = false;
 
 	// Pagination variables
