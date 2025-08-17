@@ -57,6 +57,7 @@
 
 	let mouseOver = false;
 	let draggable = false;
+	let menuTriggerButton: HTMLElement;
 
 	$: if (mouseOver) {
 		loadChat();
@@ -487,6 +488,7 @@
 			<div class="flex self-center z-10 items-end">
 				<ChatMenu
 					chatId={id}
+					triggerElement={menuTriggerButton}
 					cloneChatHandler={() => {
 						cloneChatHandler(id);
 					}}
@@ -511,6 +513,7 @@
 					}}
 				>
 					<button
+						bind:this={menuTriggerButton}
 						aria-label="Chat Menu"
 						class=" self-center dark:hover:text-white transition m-0"
 						on:click={() => {
