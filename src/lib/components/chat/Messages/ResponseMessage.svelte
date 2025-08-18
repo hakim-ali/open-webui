@@ -186,7 +186,8 @@
 		],
 		default: [
 			{ icon: '⏳', text: 'Just a sec...', holdMs: 1500 },
-			{ icon: '💡', text: 'Processing your request..', holdMs: 3000 }
+			{ icon: '💡', text: 'Thinking through your question...', holdMs: 2000 },
+			{ icon: '📝', text: 'Formulating the best answer..', holdMs: 2000 }
 		]
 	};
 
