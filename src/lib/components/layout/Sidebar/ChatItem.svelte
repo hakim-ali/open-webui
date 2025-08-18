@@ -16,6 +16,7 @@
 		getChatList,
 		getChatListByTagName,
 		getPinnedChatList,
+		toggleChatPinnedStatusById,
 		updateChatById
 	} from '$lib/apis/chats';
 	import {
@@ -41,6 +42,7 @@
 	import Document from '$lib/components/icons/Document.svelte';
 	import Sparkles from '$lib/components/icons/Sparkles.svelte';
 	import { generateTitle } from '$lib/apis';
+	import Pin from '$lib/components/icons/Pin.svelte';
 
 	export let className = '';
 
@@ -49,11 +51,13 @@
 
 	export let selected = false;
 	export let shiftKey = false;
+	export let isPinned = false;
 
 	let chat = null;
 
 	let mouseOver = false;
 	let draggable = false;
+	let menuTriggerButton: HTMLElement;
 
 	$: if (mouseOver) {
 		loadChat();
@@ -406,6 +410,18 @@
 		</a>
 	{/if}
 
+	{#if isPinned}
+		<button
+			class="p-1 rounded-md text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ease-in-out hover:scale-110"
+			on:click={async () => {
+				await toggleChatPinnedStatusById(localStorage.token, id);
+				dispatch('change');
+			}}
+		>
+			<Pin />
+		</button>
+	{/if}
+
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		class="
@@ -472,6 +488,7 @@
 			<div class="flex self-center z-10 items-end">
 				<ChatMenu
 					chatId={id}
+					triggerElement={menuTriggerButton}
 					cloneChatHandler={() => {
 						cloneChatHandler(id);
 					}}
@@ -496,6 +513,7 @@
 					}}
 				>
 					<button
+						bind:this={menuTriggerButton}
 						aria-label="Chat Menu"
 						class=" self-center dark:hover:text-white transition m-0"
 						on:click={() => {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DropdownMenu } from 'bits-ui';
 	import { flyAndScale } from '$lib/utils/transitions';
-	import { getContext, createEventDispatcher } from 'svelte';
+	import { getContext, createEventDispatcher, onMount, onDestroy } from 'svelte';
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -39,11 +39,13 @@
 	export let renameHandler: Function;
 	export let deleteHandler: Function;
 	export let onClose: Function;
+	export let triggerElement: HTMLElement | null = null;
 
 	export let chatId = '';
 
 	let show = false;
 	let pinned = false;
+	let scrollContainer: HTMLElement | null = null;
 
 	const pinHandler = async () => {
 		await toggleChatPinnedStatusById(localStorage.token, chatId);
@@ -308,6 +310,36 @@
 			saveAs(blob, `chat-export-${Date.now()}.json`);
 		}
 	};
+
+	const handleScroll = () => {
+		if (scrollContainer && triggerElement && show) {
+			const containerRect = scrollContainer.getBoundingClientRect();
+			const triggerRect = triggerElement.getBoundingClientRect();
+			
+			// Check if trigger button is above the top of the sidebar viewport
+			const isAboveTop = triggerRect.bottom < containerRect.top;
+			// Check if trigger button is below the bottom of the sidebar viewport  
+			const isBelowBottom = triggerRect.top > containerRect.bottom;
+			
+			if (isAboveTop || isBelowBottom) {
+				show = false;
+			}
+		}
+	};
+
+	onMount(() => {
+		// Find the sidebar scroll container
+		scrollContainer = document.querySelector('.sidebar__top');
+		if (scrollContainer) {
+			scrollContainer.addEventListener('scroll', handleScroll);
+		}
+	});
+
+	onDestroy(() => {
+		if (scrollContainer) {
+			scrollContainer.removeEventListener('scroll', handleScroll);
+		}
+	});
 
 	$: if (show) {
 		checkPinned();
