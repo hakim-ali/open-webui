@@ -110,7 +110,7 @@
 	export let history;
 	export let messageId;
 	export let activatedChatMode = '';
-	console.log('===activatedChatMode: ', activatedChatMode);
+
 	let message: MessageType = JSON.parse(JSON.stringify(history.messages[messageId]));
 	$: if (history.messages) {
 		if (JSON.stringify(message) !== JSON.stringify(history.messages[messageId])) {

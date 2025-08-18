@@ -301,7 +301,7 @@
 	};
 
 	const chatEventHandler = async (event, cb) => {
-		console.log(event);
+		// console.log(event);
 
 		if (event.chat_id === $chatId) {
 			await tick();
@@ -1340,7 +1340,7 @@
 			);
 		}
 
-		console.log(data);
+		// console.log(data);
 		if (autoScroll) {
 			scrollToBottom();
 		}
