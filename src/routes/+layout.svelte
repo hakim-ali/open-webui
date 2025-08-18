@@ -602,7 +602,14 @@
 				if (localStorage.token) {
 					// Get Session User Info
 					const sessionUser = await getSessionUser(localStorage.token).catch((error) => {
-						toast.error(`${error}`);
+						toast.custom(NotificationToast, {
+							componentProps: {
+								title: 'Your session has expired',
+								content: 'Please login again to continue'
+							},
+							duration: 5000,
+							unstyled: true
+						});
 						return null;
 					});
 
