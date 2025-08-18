@@ -604,8 +604,8 @@
 					const sessionUser = await getSessionUser(localStorage.token).catch((error) => {
 						toast.custom(NotificationToast, {
 							componentProps: {
-								title: 'Your session has expired',
-								content: 'Please login again to continue'
+								title: $i18n?.t('Your session has expired'),
+								content: $i18n?.t('Please login again to continue')
 							},
 							duration: 5000,
 							unstyled: true
