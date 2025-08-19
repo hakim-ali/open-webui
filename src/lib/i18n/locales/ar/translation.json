@@ -1584,6 +1584,8 @@
 	"Chat is limited to the '{{count}}' uploaded {{files}} ": " {{files}} تقتصر الدردشة على '{{count}}' التي تم تحميلها",
 	"files.": "ملفات.",
 	"file.": "ملف.",
-	"Gov Government Repository": "مستودع الحكومة"
+	"Gov Government Repository": "مستودع الحكومة",
+	"Your session has expired": "انتهت جلستك",
+	"Please login again to continue": "الرجاء تسجيل الدخول مرة أخرى للمتابعة"
 
 }
