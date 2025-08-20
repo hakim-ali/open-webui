@@ -245,10 +245,4 @@ type SessionUser = {
 	name: string;
 	role: string;
 	profile_image_url: string;
-	permissions?: {
-		chat?: {
-			export?: boolean;
-			share?: boolean;
-		};
-	};
 };

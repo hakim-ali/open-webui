@@ -26,7 +26,7 @@
 		getChatPinnedStatusById,
 		toggleChatPinnedStatusById
 	} from '$lib/apis/chats';
-	import { chats, settings, theme, user } from '$lib/stores';
+	import { chats, settings, theme, user} from '$lib/stores';
 	import { createMessagesList } from '$lib/utils';
 	import { downloadChatAsPDF } from '$lib/apis/utils';
 	import Download from '$lib/components/icons/Download.svelte';
@@ -81,222 +81,126 @@
 	};
 
 	const downloadPdf = async () => {
-		try {
-			const chat = await getChatById(localStorage.token, chatId);
-			if (!chat || !chat.chat) {
-				console.error('Chat not found');
-				return;
-			}
+		const chat = await getChatById(localStorage.token, chatId);
 
-			const isDarkMode = document.documentElement.classList.contains('dark');
-			const virtualWidth = 800;
-			const messages = chat.chat.messages || [];
+		if ($settings?.stylizedPdfExport ?? true) {
+			const containerElement = document.getElementById('messages-container');
 
-			const containerElement = document.createElement('div');
-			containerElement.style.width = `${virtualWidth}px`;
-			containerElement.style.position = 'absolute';
-			containerElement.style.left = '-9999px';
-			containerElement.style.top = '0';
-			containerElement.style.backgroundColor = isDarkMode ? '#000' : '#fff';
-			containerElement.style.fontFamily = 'Arial, sans-serif';
-			containerElement.style.padding = '20px';
-			containerElement.style.boxSizing = 'border-box';
+			if (containerElement) {
+				try {
+					const isDarkMode = document.documentElement.classList.contains('dark');
+					const virtualWidth = 800; // Fixed width in px
+					const pagePixelHeight = 1200; // Each slice height (adjust to avoid canvas bugs; generally 2–4k is safe)
 
-			const MAX_BUBBLE_CHARS = 800; // split long messages
+					// Clone & style once
+					const clonedElement = containerElement.cloneNode(true);
+					clonedElement.classList.add('text-black');
+					clonedElement.classList.add('dark:text-white');
+					clonedElement.style.width = `${virtualWidth}px`;
+					clonedElement.style.position = 'absolute';
+					clonedElement.style.left = '-9999px'; // Offscreen
+					clonedElement.style.height = 'auto';
+					document.body.appendChild(clonedElement);
 
-			messages.forEach((msg: any) => {
-				const segments = (msg.content || '').split(/\n\s*\n/); // split paragraphs
-				const bubbles: string[] = [];
+					// Get total height after attached to DOM
+					const totalHeight = clonedElement.scrollHeight;
+					let offsetY = 0;
+					let page = 0;
 
-				segments.forEach((seg: string) => {
-					if (seg.length > MAX_BUBBLE_CHARS) {
-						// Break long segments into chunks
-						for (let i = 0; i < seg.length; i += MAX_BUBBLE_CHARS) {
-							bubbles.push(seg.slice(i, i + MAX_BUBBLE_CHARS));
+					// Prepare PDF
+					const pdf = new jsPDF('p', 'mm', 'a4');
+					const imgWidth = 210; // A4 mm
+					const pageHeight = 297; // A4 mm
+
+					while (offsetY < totalHeight) {
+						// For each slice, adjust scrollTop to show desired part
+						clonedElement.scrollTop = offsetY;
+
+						// Optionally: mask/hide overflowing content via CSS if needed
+						clonedElement.style.maxHeight = `${pagePixelHeight}px`;
+						// Only render the visible part
+						const canvas = await html2canvas(clonedElement, {
+							backgroundColor: isDarkMode ? '#000' : '#fff',
+							useCORS: true,
+							scale: 2,
+							width: virtualWidth,
+							height: Math.min(pagePixelHeight, totalHeight - offsetY),
+							// Optionally: y offset for correct region?
+							windowWidth: virtualWidth
+							//windowHeight: pagePixelHeight,
+						});
+						const imgData = canvas.toDataURL('image/png');
+						// Maintain aspect ratio
+						const imgHeight = (canvas.height * imgWidth) / canvas.width;
+						const position = 0; // Always first line, since we've clipped vertically
+
+						if (page > 0) pdf.addPage();
+
+						// Set page background for dark mode
+						if (isDarkMode) {
+							pdf.setFillColor(0, 0, 0);
+							pdf.rect(0, 0, imgWidth, pageHeight, 'F'); // black bg
 						}
-					} else {
-						bubbles.push(seg);
-					}
-				});
 
-				bubbles.forEach((bubbleText: string, idx: number) => {
-					const wrapper = document.createElement('div');
-					wrapper.style.display = 'flex';
-					wrapper.style.flexDirection = 'column';
-					wrapper.style.alignItems = msg.role === 'user' ? 'flex-end' : 'flex-start';
-					wrapper.style.width = '100%';
+						pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
 
-					if (msg.files && msg.files.length > 0) {
-						const filesContainer = document.createElement('div');
-						filesContainer.style.display = 'flex';
-						filesContainer.style.flexDirection = 'column';
-						filesContainer.style.gap = '8px';
-						filesContainer.style.marginBottom = '8px';
-						filesContainer.style.maxWidth = '70%';
-
-						msg.files.forEach((file: any) => {
-							const fileItem = document.createElement('div');
-							fileItem.style.display = 'flex';
-							fileItem.style.alignItems = 'center';
-							fileItem.style.gap = '8px';
-							fileItem.style.padding = '8px 12px';
-							fileItem.style.backgroundColor = isDarkMode ? '#444' : '#f8f9fa';
-							fileItem.style.border = `1px solid ${isDarkMode ? '#666' : '#dee2e6'}`;
-							fileItem.style.borderRadius = '8px';
-							fileItem.style.maxWidth = '100%';
-
-							// File icon
-							const fileIcon = document.createElement('div');
-							fileIcon.style.width = '24px';
-							fileIcon.style.height = '24px';
-							fileIcon.style.backgroundColor = '#007bff';
-							fileIcon.style.borderRadius = '4px';
-							fileIcon.style.display = 'flex';
-							fileIcon.style.alignItems = 'center';
-							fileIcon.style.justifyContent = 'center';
-							fileIcon.style.color = 'white';
-							fileIcon.style.fontSize = '12px';
-							fileIcon.style.fontWeight = 'bold';
-							fileIcon.textContent = '📎';
-
-							// File info
-							const fileInfo = document.createElement('div');
-							fileInfo.style.display = 'flex';
-							fileInfo.style.flexDirection = 'column';
-							fileInfo.style.gap = '2px';
-							fileInfo.style.flex = '1';
-							fileInfo.style.minWidth = '0';
-
-							// File name
-							const fileName = document.createElement('div');
-							fileName.style.fontWeight = '500';
-							fileName.style.color = isDarkMode ? '#fff' : '#000';
-							fileName.style.fontSize = '14px';
-							fileName.style.whiteSpace = 'nowrap';
-							fileName.style.overflow = 'hidden';
-							fileName.style.textOverflow = 'ellipsis';
-							fileName.textContent = file.name || 'Unnamed file';
-
-							// File size
-							const fileSize = document.createElement('div');
-							fileSize.style.fontSize = '12px';
-							fileSize.style.color = isDarkMode ? '#ccc' : '#666';
-
-							if (file.size) {
-								if (file.size > 1024 * 1024) {
-									fileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
-								} else if (file.size > 1024) {
-									fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
-								} else {
-									fileSize.textContent = `${file.size} B`;
-								}
-							} else {
-								fileSize.textContent = 'Unknown size';
-							}
-
-							fileInfo.appendChild(fileName);
-							fileInfo.appendChild(fileSize);
-							fileItem.appendChild(fileIcon);
-							fileItem.appendChild(fileInfo);
-							filesContainer.appendChild(fileItem);
-						});
-
-						wrapper.appendChild(filesContainer);
+						offsetY += pagePixelHeight;
+						page++;
 					}
 
-					const bubble = document.createElement('div');
-					bubble.style.maxWidth = '70%';
-					bubble.style.padding = '10px 14px';
-					bubble.style.borderRadius = '12px';
-					bubble.style.wordWrap = 'break-word';
-					bubble.style.whiteSpace = 'pre-wrap';
-					bubble.style.fontSize = '14px';
-					bubble.style.lineHeight = '20px';
+					document.body.removeChild(clonedElement);
 
-					if (msg.role === 'user') {
-						bubble.style.backgroundColor = isDarkMode ? '#007bff' : '#d1e7ff';
-						bubble.style.color = isDarkMode ? '#fff' : '#000';
-					} else {
-						bubble.style.backgroundColor = isDarkMode ? '#333' : '#f1f1f1';
-						bubble.style.color = isDarkMode ? '#fff' : '#000';
+					pdf.save(`chat-${chat.chat.title}.pdf`);
+				} catch (error) {
+					console.error('Error generating PDF', error);
+				}
+			}
+		} else {
+			console.log('Downloading PDF');
+
+			const chatText = await getChatAsText(chat);
+
+			const doc = new jsPDF();
+
+			// Margins
+			const left = 15;
+			const top = 20;
+			const right = 15;
+			const bottom = 20;
+
+			const pageWidth = doc.internal.pageSize.getWidth();
+			const pageHeight = doc.internal.pageSize.getHeight();
+			const usableWidth = pageWidth - left - right;
+			const usableHeight = pageHeight - top - bottom;
+
+			// Font size and line height
+			const fontSize = 8;
+			doc.setFontSize(fontSize);
+			const lineHeight = fontSize * 1; // adjust if needed
+
+			// Split the markdown into lines (handles \n)
+			const paragraphs = chatText.split('\n');
+
+			let y = top;
+
+			for (let paragraph of paragraphs) {
+				// Wrap each paragraph to fit the width
+				const lines = doc.splitTextToSize(paragraph, usableWidth);
+
+				for (let line of lines) {
+					// If the line would overflow the bottom, add a new page
+					if (y + lineHeight > pageHeight - bottom) {
+						doc.addPage();
+						y = top;
 					}
-
-					bubble.innerHTML = bubbleText;
-					wrapper.appendChild(bubble);
-					containerElement.appendChild(wrapper);
-
-					// Only attach sources to last bubble of AI message
-					if (msg.role !== 'user' && idx === bubbles.length - 1 && msg.sources?.length) {
-						const sourceWrapper = document.createElement('div');
-						sourceWrapper.style.display = 'flex';
-						sourceWrapper.style.flexWrap = 'wrap';
-						sourceWrapper.style.marginTop = '6px';
-						sourceWrapper.style.marginLeft = '10px';
-						sourceWrapper.style.gap = '6px';
-
-						msg.sources.forEach((src) => {
-							const sourceDiv = document.createElement('div');
-							sourceDiv.style.display = 'flex';
-							sourceDiv.style.alignItems = 'center';
-							sourceDiv.style.backgroundColor = isDarkMode ? '#222' : '#eee';
-							sourceDiv.style.borderRadius = '6px';
-							sourceDiv.style.padding = '4px 6px';
-
-							const icon = document.createElement('img');
-							icon.src = `https://www.google.com/s2/favicons?domain=${new URL(src.url).hostname}&sz=16`;
-							icon.style.width = '16px';
-							icon.style.height = '16px';
-							icon.style.marginRight = '4px';
-
-							const text = document.createElement('span');
-							text.style.fontSize = '12px';
-							text.style.color = isDarkMode ? '#fff' : '#000';
-							text.textContent = src.title || src.url;
-
-							sourceDiv.appendChild(icon);
-							sourceDiv.appendChild(text);
-							sourceWrapper.appendChild(sourceDiv);
-						});
-
-						containerElement.appendChild(sourceWrapper);
-					}
-				});
-			});
-
-			document.body.appendChild(containerElement);
-
-			// Capture entire chat in one go
-			const canvas = await html2canvas(containerElement, {
-				backgroundColor: isDarkMode ? '#000' : '#fff',
-				useCORS: true,
-				scale: 2,
-				width: virtualWidth,
-				height: containerElement.scrollHeight,
-				windowWidth: virtualWidth
-			});
-
-			const imgData = canvas.toDataURL('image/png');
-			const pdf = new jsPDF('p', 'mm', 'a4');
-			const imgWidth = 210;
-			const pageHeight = 297;
-			const imgHeight = (canvas.height * imgWidth) / canvas.width;
-			let heightLeft = imgHeight;
-			let position = 0;
-
-			pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-			heightLeft -= pageHeight;
-
-			while (heightLeft > 0) {
-				position = heightLeft - imgHeight;
-				pdf.addPage();
-				pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-				heightLeft -= pageHeight;
+					doc.text(line, left, y);
+					y += lineHeight;
+				}
+				// Add empty line at paragraph breaks
+				y += lineHeight * 0.5;
 			}
 
-			pdf.save(`chat-${chat.chat.title}.pdf`);
-			document.body.removeChild(containerElement);
-		} catch (error) {
-			console.error('Error generating PDF', error);
+			doc.save(`chat-${chat.chat.title}.pdf`);
 		}
 	};
 
@@ -362,7 +266,7 @@
 		<DropdownMenu.Content
 			class="w-full max-w-[228px] rounded-xl z-50 bg-light-bg text-label-primary dark:text-white shadow-custom "
 			sideOffset={22}
-			side={$isRTL ? 'left' : 'right'}
+			side={$isRTL ? "left":"right"}
 			align="start"
 			transition={flyAndScale}
 		>
