@@ -196,11 +196,11 @@
 			</div>
 
 			<div
-				class="z-100 absolute bottom-0 right-0 left-0 flex justify-center w-full bg-linear-to-b from-transparent to-white dark:to-gray-900"
+				class="z-100 absolute bottom-0 right-0 left-0 flex justify-center w-full bg-linear-to-b from-transparent to-white dark:to-gray-900 pointer-events-none"
 			>
 				<div class="pb-5">
 					<button
-						class="px-4 py-2 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
+						class="px-4 py-2 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full pointer-events-auto"
 						on:click={cloneSharedChat}
 					>
 						{$i18n.t('Clone Chat')}

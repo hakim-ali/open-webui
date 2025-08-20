@@ -358,7 +358,7 @@
 		<a
 			class="flex items-center justify-between text-typography-titles link-style rounded-[8px] {$isRTL
 				? 'pr-[12px]'
-				: 'pl-[12px]'}  py-[8px] w-[92%]"
+				: 'pl-[12px]'}  py-[8px] {isPinned ? 'w-[80%]' : 'w-[92%]'}"
 			href="/c/{id}"
 			on:click={() => {
 				dispatch('select');

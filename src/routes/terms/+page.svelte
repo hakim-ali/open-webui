@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import ChevronLeft from '$lib/components/icons/ChevronLeft.svelte';
 	import { getContext } from 'svelte';
 	import { changeLanguage } from '$lib/i18n';
@@ -7,6 +8,8 @@
 	import type { i18n as i18nType } from 'i18next';
 
 	const i18n: Writable<i18nType> = getContext('i18n');
+
+	$: isMobile = $page.url.searchParams.get('mobile') === 'true';
 
 	function goBack() {
 		goto('/auth');
@@ -17,18 +20,27 @@
 	}
 </script>
 
-<div class="w-full h-screen dark bg-[#010E1D] p-6 pt-16 overflow-y-auto" dir={$i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+<div
+	class="w-full h-screen dark bg-[#010E1D] p-6 pt-16 overflow-y-auto"
+	dir={$i18n.language === 'ar' ? 'rtl' : 'ltr'}
+>
 	<!-- Back arrow for small devices -->
-	<button
-		on:click={goBack}
-		class="fixed top-4 left-4 z-10 p-2 text-white hover:text-gray-300 transition-colors md:hidden"
-		aria-label="Go back"
-	>
-		<ChevronLeft className="w-6 h-6" strokeWidth="2" />
-	</button>
+	{#if !isMobile}
+		<button
+			on:click={goBack}
+			class="fixed top-4 left-4 z-10 p-2 text-white hover:text-gray-300 transition-colors md:hidden"
+			aria-label="Go back"
+		>
+			<ChevronLeft className="w-6 h-6" strokeWidth="2" />
+		</button>
+	{/if}
 
 	<!-- Language Switcher -->
-	<div class="fixed top-4 z-10" class:right-4={$i18n.language !== 'ar'} class:left-4={$i18n.language === 'ar'}>
+	<div
+		class="fixed top-4 z-10"
+		class:right-4={$i18n.language !== 'ar'}
+		class:left-4={$i18n.language === 'ar'}
+	>
 		{#if $i18n.language === 'ar'}
 			<button
 				on:click={() => switchLanguage('en-US')}
